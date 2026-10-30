@@ -56,6 +56,12 @@ async fn postgres_store_round_trips() {
 
     // Recipients, tokens and grants.
     let recipient = store.create_recipient("pg_recipient", None).await.unwrap();
+    let updated = store
+        .update_recipient("pg_recipient", Some("updated".to_string()))
+        .await
+        .unwrap();
+    assert_eq!(updated.comment.as_deref(), Some("updated"));
+    assert_eq!(updated.id, recipient.id);
     store
         .insert_token(TokenRecord {
             id: "t1".into(),
