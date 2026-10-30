@@ -4,7 +4,7 @@
 //! tables / version / metadata / query); [`opensharing_router`] adds the Open
 //! Sharing asset routes (volumes, agent skills, temporary table credentials).
 //! [`sharing_router`] mounts both under their protocol prefixes
-//! ([`DELTA_SHARING_PREFIX`], [`OPEN_SHARING_PREFIX`]), which is what a host
+//! ([`DELTA_SHARING_PREFIX`], [`OPENSHARING_PREFIX`]), which is what a host
 //! normally serves — wrapped in [`require_recipient`](crate::auth::require_recipient).
 //!
 //! # Response formats
@@ -53,7 +53,7 @@ const DELTA_TABLE_VERSION: &str = "delta-table-version";
 /// Where the Delta Sharing surface is mounted by [`sharing_router`].
 pub const DELTA_SHARING_PREFIX: &str = "/api/v1/delta-sharing";
 /// Where the Open Sharing surface is mounted by [`sharing_router`].
-pub const OPEN_SHARING_PREFIX: &str = "/api/1.0/opensharing";
+pub const OPENSHARING_PREFIX: &str = "/api/1.0/opensharing";
 
 /// Reject a client whose `delta-sharing-capabilities` rule out the `parquet`
 /// response format, the only one served so far.
@@ -203,7 +203,7 @@ where
 }
 
 /// Mount the Delta Sharing surface under [`DELTA_SHARING_PREFIX`] and the Open
-/// Sharing surface under [`OPEN_SHARING_PREFIX`], both served by `state`.
+/// Sharing surface under [`OPENSHARING_PREFIX`], both served by `state`.
 pub fn sharing_router<T, Cx>(state: T) -> Router
 where
     T: SharingHandler<Cx>
@@ -218,7 +218,7 @@ where
 {
     Router::new()
         .nest(DELTA_SHARING_PREFIX, get_router::<T, Cx>(state.clone()))
-        .nest(OPEN_SHARING_PREFIX, opensharing_router::<T, Cx>(state))
+        .nest(OPENSHARING_PREFIX, opensharing_router::<T, Cx>(state))
 }
 
 // ---------------------------------------------------------------------------
