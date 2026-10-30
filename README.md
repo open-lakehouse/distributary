@@ -14,9 +14,9 @@ composable sharing server that maps shares onto any catalog.
 | [`crates/server`](crates/server) | `opensharing-server` | A complete server: share store, recipients, sealed secrets, catalog sources, admin API, `sharing-server` binary |
 | [`crates/neon`](crates/neon) | `opensharing-neon` | The server as a Neon Function (deployment artifact, not published) |
 
-The protocol is defined in [`proto/open_sharing/v1`](proto/open_sharing/v1),
+The protocol is defined in [`proto/opensharing/v1`](proto/opensharing/v1),
 and the provider admin API (wire-compatible with the Databricks Delta Sharing
-REST API) in [`proto/open_sharing/{shares,recipients,providers}`](proto/open_sharing).
+REST API) in [`proto/opensharing/{shares,recipients,providers}`](proto/opensharing).
 Their OpenAPI documents are [`openapi/sharing.yaml`](openapi/sharing.yaml) and
 [`openapi/admin.yaml`](openapi/admin.yaml). The design is in
 [`ARCHITECTURE.md`](ARCHITECTURE.md).

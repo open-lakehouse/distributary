@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package open_sharing.recipients.v1;
+package opensharing.recipients.v1;
 
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";

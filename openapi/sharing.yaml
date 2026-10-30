@@ -1,4 +1,4 @@
-# Generated from `proto/open_sharing` (google-gnostic-openapi) and merged with
+# Generated from `proto/opensharing` (google-gnostic-openapi) and merged with
 # openapi/sharing-query-paths.yaml via dev/scripts/merge_sharing_openapi.py.
 # Do not edit by hand — see `just generate-openapi`.
 openapi: 3.0.3

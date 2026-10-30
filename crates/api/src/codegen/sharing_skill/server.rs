@@ -3,7 +3,7 @@
 use super::handler::SharingSkillHandler;
 use crate::Result;
 use axum::extract::State;
-use opensharing_common::models::open_sharing::v1::*;
+use opensharing_common::models::opensharing::v1::*;
 pub async fn list_skills<T, Cx>(
     State(handler): State<T>,
     context: Cx,

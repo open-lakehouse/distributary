@@ -13,7 +13,7 @@ use tower::ServiceExt;
 use opensharing_api::auth::{Recipient, RecipientAuthenticator, require_recipient};
 use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
 use opensharing_api::{Error, Result, SharingService, sharing_router};
-use opensharing_common::models::open_sharing::v1::SharingTemporaryCredentials;
+use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
 
 const TOKEN: &str = "recipient-token";
 
@@ -115,7 +115,7 @@ async fn negotiates_the_response_format() {
 }
 
 #[tokio::test]
-async fn vends_table_credentials_on_the_open_sharing_surface() {
+async fn vends_table_credentials_on_the_opensharing_surface() {
     let path = "/shares/share1/schemas/schema1/tables/letters/temporary-table-credentials";
     let resp = app()
         .oneshot(

@@ -7,7 +7,7 @@ use opensharing_api::codegen::sharing_skill::SharingSkillHandler;
 use opensharing_api::codegen::sharing_volume::SharingVolumeHandler;
 use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
 use opensharing_api::{Error, SharingQueryHandler, SharingService};
-use opensharing_common::models::open_sharing::v1::*;
+use opensharing_common::models::opensharing::v1::*;
 
 fn backend() -> SharingService<()> {
     in_memory_service(vec![FixtureShare {

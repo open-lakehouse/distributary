@@ -18,7 +18,7 @@
 use async_trait::async_trait;
 use delta_kernel::Version;
 
-use opensharing_common::models::open_sharing::v1::Share as SharingShare;
+use opensharing_common::models::opensharing::v1::Share as SharingShare;
 
 use crate::error::{Error, Result};
 

@@ -14,7 +14,7 @@
 //! storage-backed volumes.
 use crate::Result;
 use async_trait::async_trait;
-use opensharing_common::models::open_sharing::v1::*;
+use opensharing_common::models::opensharing::v1::*;
 #[async_trait]
 pub trait SharingVolumeHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
     /// List the volumes in a given share's schema.

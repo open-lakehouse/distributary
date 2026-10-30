@@ -1,6 +1,6 @@
 // @generated — do not edit by hand.
 #![allow(unused_mut, unused_imports)]
-use crate::models::open_sharing::v1::*;
+use crate::models::opensharing::v1::*;
 use axum::{RequestExt, RequestPartsExt};
 impl<S: Send + Sync> axum::extract::FromRequestParts<S> for ListSkillsRequest {
     type Rejection = axum::response::Response;

@@ -11,8 +11,8 @@ use tower::ServiceExt;
 use url::Url;
 
 use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
-use opensharing_api::{Error, SharingQueryHandler, SharingService, open_sharing_router};
-use opensharing_common::models::open_sharing::v1::*;
+use opensharing_api::{Error, SharingQueryHandler, SharingService, opensharing_router};
+use opensharing_common::models::opensharing::v1::*;
 use opensharing_common::models::{
     MetadataResponseData, ParquetFile, ProtocolResponseData, QueryResponseLine,
 };
@@ -389,7 +389,7 @@ async fn router_query_accepts_string_encoded_predicate_hints() {
     // Delta Sharing clients send `jsonPredicateHints` as a JSON-encoded string.
     let hint = serde_json::to_string(&letter_equals("e")).unwrap();
     let body = serde_json::json!({ "jsonPredicateHints": hint }).to_string();
-    let resp = open_sharing_router::<SharingService<()>, ()>(service())
+    let resp = opensharing_router::<SharingService<()>, ()>(service())
         .oneshot(
             Request::builder()
                 .method("POST")

@@ -487,7 +487,7 @@ mod tests {
 
     #[test]
     fn test_share_fields_round_trip() {
-        use open_sharing::v1::Share;
+        use opensharing::v1::Share;
 
         // The generated serde accepts camelCase and snake_case; verify the new
         // spec fields (display_name/comment/properties) deserialize from
@@ -512,7 +512,7 @@ mod tests {
 
     #[test]
     fn test_table_fields_round_trip() {
-        use open_sharing::v1::Table;
+        use opensharing::v1::Table;
 
         let raw = json!({
             "name": "table1",

@@ -9,7 +9,7 @@
 use bytes::Bytes;
 use chrono::DateTime;
 
-use opensharing_common::models::open_sharing::v1::{
+use opensharing_common::models::opensharing::v1::{
     Schema, Share as SharingShare, SharingSkill, SharingVolume, Table, *,
 };
 

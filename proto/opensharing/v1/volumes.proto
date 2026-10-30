@@ -1,15 +1,15 @@
 syntax = "proto3";
 
-package open_sharing.v1;
+package opensharing.v1;
 
 import "buf/validate/validate.proto";
 import "gnostic/openapi/v3/annotations.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
-import "open_sharing/v1/assets.proto";
+import "opensharing/v1/assets.proto";
 
-// List the agent skills in a schema.
-message ListSkillsRequest {
+// List the volumes in a schema.
+message ListVolumesRequest {
   // The share name to query. It's case-insensitive.
   string share = 1 [
     (buf.validate.field).string.min_len = 1,
@@ -35,17 +35,17 @@ message ListSkillsRequest {
   optional string page_token = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
-// Response for ListSkillsRequest.
-message ListSkillsResponse {
-  // The skills that were requested.
-  repeated SharingSkill items = 1;
+// Response for ListVolumesRequest.
+message ListVolumesResponse {
+  // The volumes that were requested.
+  repeated SharingVolume items = 1;
 
-  // Token that can be used to retrieve the next page of skills.
+  // Token that can be used to retrieve the next page of volumes.
   optional string next_page_token = 2;
 }
 
-// List all the agent skills under a share, across all schemas.
-message ListAllSkillsRequest {
+// List all the volumes under a share, across all schemas.
+message ListAllVolumesRequest {
   // The share name to query. It's case-insensitive.
   string share = 1 [
     (buf.validate.field).string.min_len = 1,
@@ -64,17 +64,17 @@ message ListAllSkillsRequest {
   optional string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
-// Response for ListAllSkillsRequest.
-message ListAllSkillsResponse {
-  // The skills that were requested.
-  repeated SharingSkill items = 1;
+// Response for ListAllVolumesRequest.
+message ListAllVolumesResponse {
+  // The volumes that were requested.
+  repeated SharingVolume items = 1;
 
-  // Token that can be used to retrieve the next page of skills.
+  // Token that can be used to retrieve the next page of volumes.
   optional string next_page_token = 2;
 }
 
-// Get a single agent skill by name.
-message GetSkillRequest {
+// Get a single volume by name.
+message GetVolumeRequest {
   // The share name to query. It's case-insensitive.
   string share = 1 [
     (buf.validate.field).string.min_len = 1,
@@ -89,7 +89,7 @@ message GetSkillRequest {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The skill name to query. It's case-insensitive.
+  // The volume name to query. It's case-insensitive.
   string name = 3 [
     (buf.validate.field).string.min_len = 1,
     (buf.validate.field).string.pattern = "^[a-z][0-9a-z._]*[0-9a-z]$",
@@ -97,8 +97,8 @@ message GetSkillRequest {
   ];
 }
 
-// Request temporary credentials scoped to a shared skill's storage location.
-message GenerateTemporarySkillCredentialsRequest {
+// Request temporary credentials scoped to a shared volume's storage location.
+message GenerateTemporaryVolumeCredentialsRequest {
   // The share name. It's case-insensitive.
   string share = 1 [
     (buf.validate.field).string.min_len = 1,
@@ -113,7 +113,7 @@ message GenerateTemporarySkillCredentialsRequest {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The skill name. It's case-insensitive.
+  // The volume name. It's case-insensitive.
   string name = 3 [
     (buf.validate.field).string.min_len = 1,
     (buf.validate.field).string.pattern = "^[a-z][0-9a-z._]*[0-9a-z]$",
@@ -121,34 +121,34 @@ message GenerateTemporarySkillCredentialsRequest {
   ];
 }
 
-// Open Sharing agent-skill APIs: discovery and credential vending for shared
-// storage-backed agent skills.
-service SharingSkillService {
-  // List the agent skills in a given share's schema.
-  rpc ListSkills(ListSkillsRequest) returns (ListSkillsResponse) {
-    option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/skills"};
-    option (gnostic.openapi.v3.operation) = {operation_id: "ListSkills"};
+// Open Sharing volume APIs: discovery and credential vending for shared
+// storage-backed volumes.
+service SharingVolumeService {
+  // List the volumes in a given share's schema.
+  rpc ListVolumes(ListVolumesRequest) returns (ListVolumesResponse) {
+    option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/volumes"};
+    option (gnostic.openapi.v3.operation) = {operation_id: "ListVolumes"};
   }
 
-  // List all the agent skills under a share, across all schemas.
-  rpc ListAllSkills(ListAllSkillsRequest) returns (ListAllSkillsResponse) {
-    option (google.api.http) = {get: "/shares/{share}/all-skills"};
-    option (gnostic.openapi.v3.operation) = {operation_id: "ListAllSkills"};
+  // List all the volumes under a share, across all schemas.
+  rpc ListAllVolumes(ListAllVolumesRequest) returns (ListAllVolumesResponse) {
+    option (google.api.http) = {get: "/shares/{share}/all-volumes"};
+    option (gnostic.openapi.v3.operation) = {operation_id: "ListAllVolumes"};
   }
 
-  // Get the metadata for a single shared agent skill.
-  rpc GetSkill(GetSkillRequest) returns (SharingSkill) {
-    option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/skills/{name}"};
-    option (gnostic.openapi.v3.operation) = {operation_id: "GetSkill"};
+  // Get the metadata for a single shared volume.
+  rpc GetVolume(GetVolumeRequest) returns (SharingVolume) {
+    option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/volumes/{name}"};
+    option (gnostic.openapi.v3.operation) = {operation_id: "GetVolume"};
   }
 
-  // Generate temporary credentials scoped to a shared skill's storage
+  // Generate temporary credentials scoped to a shared volume's storage
   // location, for direct file access via the cloud storage API.
-  rpc GenerateTemporarySkillCredentials(GenerateTemporarySkillCredentialsRequest) returns (SharingTemporaryCredentials) {
+  rpc GenerateTemporaryVolumeCredentials(GenerateTemporaryVolumeCredentialsRequest) returns (SharingTemporaryCredentials) {
     option (google.api.http) = {
-      post: "/shares/{share}/schemas/{schema}/skills/{name}/temporary-skill-credentials"
+      post: "/shares/{share}/schemas/{schema}/volumes/{name}/temporary-volume-credentials"
       body: "*"
     };
-    option (gnostic.openapi.v3.operation) = {operation_id: "GenerateTemporarySkillCredentials"};
+    option (gnostic.openapi.v3.operation) = {operation_id: "GenerateTemporaryVolumeCredentials"};
   }
 }

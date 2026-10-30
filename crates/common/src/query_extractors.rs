@@ -3,7 +3,7 @@
 //!
 //! These RPCs are deliberately not part of the generated `SharingService`
 //! (their responses are newline-delimited JSON, a streaming contract the code
-//! generator does not model — see `proto/open_sharing/v1/svc.proto`), so
+//! generator does not model — see `proto/opensharing/v1/svc.proto`), so
 //! their extractors are maintained here rather than generated alongside the
 //! discovery extractors in `codegen/extractors`.
 
@@ -11,7 +11,7 @@ use axum::response::IntoResponse;
 use axum::{RequestExt, RequestPartsExt};
 
 use crate::Result;
-use crate::models::open_sharing::v1::{
+use crate::models::opensharing::v1::{
     GetTableMetadataRequest, GetTableVersionRequest, QueryTableRequest,
 };
 
@@ -124,7 +124,7 @@ fn decode_json_predicate_hints(body: &mut serde_json::Value) {
 #[cfg(test)]
 mod tests {
     use super::decode_json_predicate_hints;
-    use crate::models::open_sharing::v1::QueryTableRequest;
+    use crate::models::opensharing::v1::QueryTableRequest;
 
     #[test]
     fn json_predicate_hints_accepts_string_and_object() {

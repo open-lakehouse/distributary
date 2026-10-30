@@ -64,7 +64,7 @@ pub use error::{Error, Result};
 pub use format::TableFormat;
 pub use handler::{SharingApiHandler, SharingQueryHandler};
 #[cfg(feature = "axum")]
-pub use router::{get_router, open_sharing_router, sharing_router};
+pub use router::{get_router, opensharing_router, sharing_router};
 pub use service::SharingService;
 
 /// The generated handler traits (`SharingHandler`, `SharingVolumeHandler`,

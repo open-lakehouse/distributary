@@ -1,7 +1,7 @@
 //! Axum routers for the Delta Sharing and Open Sharing REST surfaces.
 //!
 //! [`get_router`] serves the Delta Sharing tabular surface (shares / schemas /
-//! tables / version / metadata / query); [`open_sharing_router`] adds the Open
+//! tables / version / metadata / query); [`opensharing_router`] adds the Open
 //! Sharing asset routes (volumes, agent skills, temporary table credentials).
 //! [`sharing_router`] mounts both under their protocol prefixes
 //! ([`DELTA_SHARING_PREFIX`], [`OPEN_SHARING_PREFIX`]), which is what a host
@@ -33,7 +33,7 @@ use axum::http::HeaderMap;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{Router, get, post};
 
-use opensharing_common::models::open_sharing::v1::*;
+use opensharing_common::models::opensharing::v1::*;
 use opensharing_common::models::{DeltaSharingCapabilities, ResponseFormat};
 
 use crate::codegen::sharing::{self, SharingHandler};
@@ -185,7 +185,7 @@ where
 
 /// Create a [`Router`] for the **Open Sharing** REST API: the tabular surface
 /// plus the storage-backed asset routes (volumes, agent skills).
-pub fn open_sharing_router<T, Cx>(state: T) -> Router
+pub fn opensharing_router<T, Cx>(state: T) -> Router
 where
     T: SharingHandler<Cx>
         + SharingQueryHandler<Cx>
@@ -218,7 +218,7 @@ where
 {
     Router::new()
         .nest(DELTA_SHARING_PREFIX, get_router::<T, Cx>(state.clone()))
-        .nest(OPEN_SHARING_PREFIX, open_sharing_router::<T, Cx>(state))
+        .nest(OPEN_SHARING_PREFIX, opensharing_router::<T, Cx>(state))
 }
 
 // ---------------------------------------------------------------------------

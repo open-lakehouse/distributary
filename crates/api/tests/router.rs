@@ -4,7 +4,7 @@
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
-use opensharing_api::{SharingService, open_sharing_router};
+use opensharing_api::{SharingService, opensharing_router};
 use tower::ServiceExt; // for `oneshot`
 
 fn router() -> axum::Router {
@@ -18,7 +18,7 @@ fn router() -> axum::Router {
         )],
         ..Default::default()
     }]);
-    open_sharing_router::<SharingService<()>, ()>(service)
+    opensharing_router::<SharingService<()>, ()>(service)
 }
 
 async fn body_string(resp: axum::response::Response) -> String {

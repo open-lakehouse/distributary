@@ -292,7 +292,7 @@ impl Provider {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.Provider";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.Provider";
 }
 impl Provider {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -374,10 +374,10 @@ impl ::buffa::DefaultInstance for Provider {
     }
 }
 impl ::buffa::MessageName for Provider {
-    const PACKAGE: &'static str = "open_sharing.providers.v1";
+    const PACKAGE: &'static str = "opensharing.providers.v1";
     const NAME: &'static str = "Provider";
-    const FULL_NAME: &'static str = "open_sharing.providers.v1.Provider";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.Provider";
+    const FULL_NAME: &'static str = "opensharing.providers.v1.Provider";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.Provider";
 }
 impl ::buffa::Message for Provider {
     /// Returns the total encoded size in bytes.
@@ -766,7 +766,7 @@ impl ::buffa::Message for Provider {
     }
 }
 impl ::buffa::ExtensionSet for Provider {
-    const PROTO_FQN: &'static str = "open_sharing.providers.v1.Provider";
+    const PROTO_FQN: &'static str = "opensharing.providers.v1.Provider";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -789,7 +789,7 @@ impl ::buffa::json_helpers::ProtoElemJson for Provider {
 }
 #[doc(hidden)]
 pub const __PROVIDER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.providers.v1.Provider",
+    type_url: "type.googleapis.com/opensharing.providers.v1.Provider",
     to_json: ::buffa::type_registry::any_to_json::<Provider>,
     from_json: ::buffa::type_registry::any_from_json::<Provider>,
     is_wkt: false,
@@ -837,7 +837,7 @@ impl ListProvidersRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.ListProvidersRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.ListProvidersRequest";
 }
 impl ListProvidersRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -865,10 +865,10 @@ impl ::buffa::DefaultInstance for ListProvidersRequest {
     }
 }
 impl ::buffa::MessageName for ListProvidersRequest {
-    const PACKAGE: &'static str = "open_sharing.providers.v1";
+    const PACKAGE: &'static str = "opensharing.providers.v1";
     const NAME: &'static str = "ListProvidersRequest";
-    const FULL_NAME: &'static str = "open_sharing.providers.v1.ListProvidersRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.ListProvidersRequest";
+    const FULL_NAME: &'static str = "opensharing.providers.v1.ListProvidersRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.ListProvidersRequest";
 }
 impl ::buffa::Message for ListProvidersRequest {
     /// Returns the total encoded size in bytes.
@@ -964,7 +964,7 @@ impl ::buffa::Message for ListProvidersRequest {
     }
 }
 impl ::buffa::ExtensionSet for ListProvidersRequest {
-    const PROTO_FQN: &'static str = "open_sharing.providers.v1.ListProvidersRequest";
+    const PROTO_FQN: &'static str = "opensharing.providers.v1.ListProvidersRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -987,7 +987,7 @@ impl ::buffa::json_helpers::ProtoElemJson for ListProvidersRequest {
 }
 #[doc(hidden)]
 pub const __LIST_PROVIDERS_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.providers.v1.ListProvidersRequest",
+    type_url: "type.googleapis.com/opensharing.providers.v1.ListProvidersRequest",
     to_json: ::buffa::type_registry::any_to_json::<ListProvidersRequest>,
     from_json: ::buffa::type_registry::any_from_json::<ListProvidersRequest>,
     is_wkt: false,
@@ -1032,7 +1032,7 @@ impl ListProvidersResponse {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.ListProvidersResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.ListProvidersResponse";
 }
 impl ListProvidersResponse {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1053,10 +1053,10 @@ impl ::buffa::DefaultInstance for ListProvidersResponse {
     }
 }
 impl ::buffa::MessageName for ListProvidersResponse {
-    const PACKAGE: &'static str = "open_sharing.providers.v1";
+    const PACKAGE: &'static str = "opensharing.providers.v1";
     const NAME: &'static str = "ListProvidersResponse";
-    const FULL_NAME: &'static str = "open_sharing.providers.v1.ListProvidersResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.ListProvidersResponse";
+    const FULL_NAME: &'static str = "opensharing.providers.v1.ListProvidersResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.ListProvidersResponse";
 }
 impl ::buffa::Message for ListProvidersResponse {
     /// Returns the total encoded size in bytes.
@@ -1161,7 +1161,7 @@ impl ::buffa::Message for ListProvidersResponse {
     }
 }
 impl ::buffa::ExtensionSet for ListProvidersResponse {
-    const PROTO_FQN: &'static str = "open_sharing.providers.v1.ListProvidersResponse";
+    const PROTO_FQN: &'static str = "opensharing.providers.v1.ListProvidersResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1184,7 +1184,7 @@ impl ::buffa::json_helpers::ProtoElemJson for ListProvidersResponse {
 }
 #[doc(hidden)]
 pub const __LIST_PROVIDERS_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.providers.v1.ListProvidersResponse",
+    type_url: "type.googleapis.com/opensharing.providers.v1.ListProvidersResponse",
     to_json: ::buffa::type_registry::any_to_json::<ListProvidersResponse>,
     from_json: ::buffa::type_registry::any_from_json::<ListProvidersResponse>,
     is_wkt: false,
@@ -1267,7 +1267,7 @@ impl CreateProviderRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.CreateProviderRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.CreateProviderRequest";
 }
 impl CreateProviderRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1308,10 +1308,10 @@ impl ::buffa::DefaultInstance for CreateProviderRequest {
     }
 }
 impl ::buffa::MessageName for CreateProviderRequest {
-    const PACKAGE: &'static str = "open_sharing.providers.v1";
+    const PACKAGE: &'static str = "opensharing.providers.v1";
     const NAME: &'static str = "CreateProviderRequest";
-    const FULL_NAME: &'static str = "open_sharing.providers.v1.CreateProviderRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.CreateProviderRequest";
+    const FULL_NAME: &'static str = "opensharing.providers.v1.CreateProviderRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.CreateProviderRequest";
 }
 impl ::buffa::Message for CreateProviderRequest {
     /// Returns the total encoded size in bytes.
@@ -1579,7 +1579,7 @@ impl ::buffa::Message for CreateProviderRequest {
     }
 }
 impl ::buffa::ExtensionSet for CreateProviderRequest {
-    const PROTO_FQN: &'static str = "open_sharing.providers.v1.CreateProviderRequest";
+    const PROTO_FQN: &'static str = "opensharing.providers.v1.CreateProviderRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1602,7 +1602,7 @@ impl ::buffa::json_helpers::ProtoElemJson for CreateProviderRequest {
 }
 #[doc(hidden)]
 pub const __CREATE_PROVIDER_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.providers.v1.CreateProviderRequest",
+    type_url: "type.googleapis.com/opensharing.providers.v1.CreateProviderRequest",
     to_json: ::buffa::type_registry::any_to_json::<CreateProviderRequest>,
     from_json: ::buffa::type_registry::any_from_json::<CreateProviderRequest>,
     is_wkt: false,
@@ -1635,7 +1635,7 @@ impl GetProviderRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.GetProviderRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.GetProviderRequest";
 }
 impl ::buffa::DefaultInstance for GetProviderRequest {
     fn default_instance() -> &'static Self {
@@ -1644,10 +1644,10 @@ impl ::buffa::DefaultInstance for GetProviderRequest {
     }
 }
 impl ::buffa::MessageName for GetProviderRequest {
-    const PACKAGE: &'static str = "open_sharing.providers.v1";
+    const PACKAGE: &'static str = "opensharing.providers.v1";
     const NAME: &'static str = "GetProviderRequest";
-    const FULL_NAME: &'static str = "open_sharing.providers.v1.GetProviderRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.GetProviderRequest";
+    const FULL_NAME: &'static str = "opensharing.providers.v1.GetProviderRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.GetProviderRequest";
 }
 impl ::buffa::Message for GetProviderRequest {
     /// Returns the total encoded size in bytes.
@@ -1717,7 +1717,7 @@ impl ::buffa::Message for GetProviderRequest {
     }
 }
 impl ::buffa::ExtensionSet for GetProviderRequest {
-    const PROTO_FQN: &'static str = "open_sharing.providers.v1.GetProviderRequest";
+    const PROTO_FQN: &'static str = "opensharing.providers.v1.GetProviderRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1740,7 +1740,7 @@ impl ::buffa::json_helpers::ProtoElemJson for GetProviderRequest {
 }
 #[doc(hidden)]
 pub const __GET_PROVIDER_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.providers.v1.GetProviderRequest",
+    type_url: "type.googleapis.com/opensharing.providers.v1.GetProviderRequest",
     to_json: ::buffa::type_registry::any_to_json::<GetProviderRequest>,
     from_json: ::buffa::type_registry::any_from_json::<GetProviderRequest>,
     is_wkt: false,
@@ -1825,7 +1825,7 @@ impl UpdateProviderRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.UpdateProviderRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.UpdateProviderRequest";
 }
 impl UpdateProviderRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1876,10 +1876,10 @@ impl ::buffa::DefaultInstance for UpdateProviderRequest {
     }
 }
 impl ::buffa::MessageName for UpdateProviderRequest {
-    const PACKAGE: &'static str = "open_sharing.providers.v1";
+    const PACKAGE: &'static str = "opensharing.providers.v1";
     const NAME: &'static str = "UpdateProviderRequest";
-    const FULL_NAME: &'static str = "open_sharing.providers.v1.UpdateProviderRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.UpdateProviderRequest";
+    const FULL_NAME: &'static str = "opensharing.providers.v1.UpdateProviderRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.UpdateProviderRequest";
 }
 impl ::buffa::Message for UpdateProviderRequest {
     /// Returns the total encoded size in bytes.
@@ -2147,7 +2147,7 @@ impl ::buffa::Message for UpdateProviderRequest {
     }
 }
 impl ::buffa::ExtensionSet for UpdateProviderRequest {
-    const PROTO_FQN: &'static str = "open_sharing.providers.v1.UpdateProviderRequest";
+    const PROTO_FQN: &'static str = "opensharing.providers.v1.UpdateProviderRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2170,7 +2170,7 @@ impl ::buffa::json_helpers::ProtoElemJson for UpdateProviderRequest {
 }
 #[doc(hidden)]
 pub const __UPDATE_PROVIDER_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.providers.v1.UpdateProviderRequest",
+    type_url: "type.googleapis.com/opensharing.providers.v1.UpdateProviderRequest",
     to_json: ::buffa::type_registry::any_to_json::<UpdateProviderRequest>,
     from_json: ::buffa::type_registry::any_from_json::<UpdateProviderRequest>,
     is_wkt: false,
@@ -2203,7 +2203,7 @@ impl DeleteProviderRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.DeleteProviderRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.DeleteProviderRequest";
 }
 impl ::buffa::DefaultInstance for DeleteProviderRequest {
     fn default_instance() -> &'static Self {
@@ -2212,10 +2212,10 @@ impl ::buffa::DefaultInstance for DeleteProviderRequest {
     }
 }
 impl ::buffa::MessageName for DeleteProviderRequest {
-    const PACKAGE: &'static str = "open_sharing.providers.v1";
+    const PACKAGE: &'static str = "opensharing.providers.v1";
     const NAME: &'static str = "DeleteProviderRequest";
-    const FULL_NAME: &'static str = "open_sharing.providers.v1.DeleteProviderRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.DeleteProviderRequest";
+    const FULL_NAME: &'static str = "opensharing.providers.v1.DeleteProviderRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.DeleteProviderRequest";
 }
 impl ::buffa::Message for DeleteProviderRequest {
     /// Returns the total encoded size in bytes.
@@ -2285,7 +2285,7 @@ impl ::buffa::Message for DeleteProviderRequest {
     }
 }
 impl ::buffa::ExtensionSet for DeleteProviderRequest {
-    const PROTO_FQN: &'static str = "open_sharing.providers.v1.DeleteProviderRequest";
+    const PROTO_FQN: &'static str = "opensharing.providers.v1.DeleteProviderRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2308,7 +2308,7 @@ impl ::buffa::json_helpers::ProtoElemJson for DeleteProviderRequest {
 }
 #[doc(hidden)]
 pub const __DELETE_PROVIDER_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.providers.v1.DeleteProviderRequest",
+    type_url: "type.googleapis.com/opensharing.providers.v1.DeleteProviderRequest",
     to_json: ::buffa::type_registry::any_to_json::<DeleteProviderRequest>,
     from_json: ::buffa::type_registry::any_from_json::<DeleteProviderRequest>,
     is_wkt: false,
@@ -2930,10 +2930,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ProviderView<'a> {
-            const PACKAGE: &'static str = "open_sharing.providers.v1";
+            const PACKAGE: &'static str = "opensharing.providers.v1";
             const NAME: &'static str = "Provider";
-            const FULL_NAME: &'static str = "open_sharing.providers.v1.Provider";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.Provider";
+            const FULL_NAME: &'static str = "opensharing.providers.v1.Provider";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.Provider";
         }
         impl<'v> ::buffa::DefaultViewInstance for ProviderView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -3343,10 +3343,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ListProvidersRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.providers.v1";
+            const PACKAGE: &'static str = "opensharing.providers.v1";
             const NAME: &'static str = "ListProvidersRequest";
-            const FULL_NAME: &'static str = "open_sharing.providers.v1.ListProvidersRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.ListProvidersRequest";
+            const FULL_NAME: &'static str = "opensharing.providers.v1.ListProvidersRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.ListProvidersRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for ListProvidersRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -3711,10 +3711,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ListProvidersResponseView<'a> {
-            const PACKAGE: &'static str = "open_sharing.providers.v1";
+            const PACKAGE: &'static str = "opensharing.providers.v1";
             const NAME: &'static str = "ListProvidersResponse";
-            const FULL_NAME: &'static str = "open_sharing.providers.v1.ListProvidersResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.ListProvidersResponse";
+            const FULL_NAME: &'static str = "opensharing.providers.v1.ListProvidersResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.ListProvidersResponse";
         }
         impl<'v> ::buffa::DefaultViewInstance for ListProvidersResponseView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -4286,10 +4286,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for CreateProviderRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.providers.v1";
+            const PACKAGE: &'static str = "opensharing.providers.v1";
             const NAME: &'static str = "CreateProviderRequest";
-            const FULL_NAME: &'static str = "open_sharing.providers.v1.CreateProviderRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.CreateProviderRequest";
+            const FULL_NAME: &'static str = "opensharing.providers.v1.CreateProviderRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.CreateProviderRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for CreateProviderRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -4629,10 +4629,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for GetProviderRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.providers.v1";
+            const PACKAGE: &'static str = "opensharing.providers.v1";
             const NAME: &'static str = "GetProviderRequest";
-            const FULL_NAME: &'static str = "open_sharing.providers.v1.GetProviderRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.GetProviderRequest";
+            const FULL_NAME: &'static str = "opensharing.providers.v1.GetProviderRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.GetProviderRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for GetProviderRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -5177,10 +5177,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for UpdateProviderRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.providers.v1";
+            const PACKAGE: &'static str = "opensharing.providers.v1";
             const NAME: &'static str = "UpdateProviderRequest";
-            const FULL_NAME: &'static str = "open_sharing.providers.v1.UpdateProviderRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.UpdateProviderRequest";
+            const FULL_NAME: &'static str = "opensharing.providers.v1.UpdateProviderRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.UpdateProviderRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for UpdateProviderRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -5521,10 +5521,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for DeleteProviderRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.providers.v1";
+            const PACKAGE: &'static str = "opensharing.providers.v1";
             const NAME: &'static str = "DeleteProviderRequest";
-            const FULL_NAME: &'static str = "open_sharing.providers.v1.DeleteProviderRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.providers.v1.DeleteProviderRequest";
+            const FULL_NAME: &'static str = "opensharing.providers.v1.DeleteProviderRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.providers.v1.DeleteProviderRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for DeleteProviderRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self

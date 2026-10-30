@@ -33,7 +33,7 @@ use olai_vended_store::{CredentialSource, StoreOptions, build_store, presign};
 use opensharing_api::access::{FileSigner, SignedFile, StorageAccess, TableStorage};
 use opensharing_api::auth::Recipient;
 use opensharing_api::catalog::{AssetKind, SharedAsset};
-use opensharing_common::models::open_sharing::v1::{
+use opensharing_common::models::opensharing::v1::{
     SharingAwsCredentials, SharingAzureUserDelegationSas, SharingGcpOauthToken,
     SharingR2Credentials, SharingTemporaryCredentials,
     sharing_temporary_credentials::Credentials as SharingCredentials,
