@@ -1,4 +1,4 @@
-# olai-sharing-common
+# opensharing-common
 
 **Open Sharing** / **Delta Sharing** wire models, shared by client and server.
 
@@ -13,8 +13,8 @@
 - Behind the `axum` feature, the axum request extractors a server needs for
   these types.
 
-[`olai-sharing-client`](../client) sends these types and
-[`olai-sharing-api`](../api) serves them. Keeping them in their own crate
+[`opensharing-client`](../client) sends these types and
+[`opensharing-api`](../api) serves them. Keeping them in their own crate
 lets the server side build without the client's dependencies.
 
 The generated code under `src/models/_gen/` comes from `proto/open_sharing` via

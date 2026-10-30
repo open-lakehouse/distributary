@@ -30,10 +30,10 @@ use olai_storage_credentials::{
     AccessLevel, StorageLocation, StorageProvider, StorageScope, VendedCredential,
 };
 use olai_vended_store::{CredentialSource, StoreOptions, build_store, presign};
-use open_sharing_api::access::{FileSigner, SignedFile, StorageAccess, TableStorage};
-use open_sharing_api::auth::Recipient;
-use open_sharing_api::catalog::{AssetKind, SharedAsset};
-use open_sharing_common::models::open_sharing::v1::{
+use opensharing_api::access::{FileSigner, SignedFile, StorageAccess, TableStorage};
+use opensharing_api::auth::Recipient;
+use opensharing_api::catalog::{AssetKind, SharedAsset};
+use opensharing_common::models::open_sharing::v1::{
     SharingAwsCredentials, SharingAzureUserDelegationSas, SharingGcpOauthToken,
     SharingR2Credentials, SharingTemporaryCredentials,
     sharing_temporary_credentials::Credentials as SharingCredentials,

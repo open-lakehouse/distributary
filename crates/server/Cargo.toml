@@ -1,7 +1,5 @@
 [package]
-# Published under the `olai-sharing-*` prefix, like the sibling crates; the
-# crate identifier is the expanded `open_sharing_server`.
-name = "olai-sharing-server"
+name = "opensharing-server"
 version = "0.0.1"
 description = "A composable Open Sharing / Delta Sharing server: shares mapped onto assets in pluggable source catalogs (static, Unity Catalog behind a feature), recipient tokens, delegated or local storage access, sealed secrets, and a provider admin API."
 edition.workspace = true
@@ -12,9 +10,6 @@ repository.workspace = true
 readme = "README.md"
 rust-version.workspace = true
 
-[lib]
-name = "open_sharing_server"
-
 [[bin]]
 # `serve` | `migrate` | `healthcheck` | `rotate-keys`.
 name = "sharing-server"
@@ -23,9 +18,9 @@ required-features = ["bin"]
 
 [dependencies]
 # local dependencies in alphabetical order
-open-sharing-admin = { package = "olai-sharing-admin", path = "../admin", version = "0.0.1" }
-open-sharing-api = { package = "olai-sharing-api", path = "../api", version = "0.0.1" }
-open-sharing-common = { package = "olai-sharing-common", path = "../common", version = "0.0.1" }
+opensharing-admin = { path = "../admin", version = "0.0.1" }
+opensharing-api = { path = "../api", version = "0.0.1" }
+opensharing-common = { path = "../common", version = "0.0.1" }
 # The Unity Catalog source and the UC-shaped credential admin routes (feature `unity`).
 unitycatalog-client = { workspace = true, optional = true }
 unitycatalog-common = { workspace = true, optional = true, features = [

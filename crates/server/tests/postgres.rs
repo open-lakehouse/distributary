@@ -6,15 +6,13 @@
 //!
 //! ```sh
 //! SHARING_SERVER_TEST_DATABASE_URL=<connection url> \
-//!   cargo test -p olai-sharing-server --test postgres
+//!   cargo test -p opensharing-server --test postgres
 //! ```
 #![cfg(feature = "postgres")]
 
-use open_sharing_server::Error;
-use open_sharing_server::store::postgres::{
-    PostgresStore, connect, ensure_schema_current, migrate,
-};
-use open_sharing_server::store::{
+use opensharing_server::Error;
+use opensharing_server::store::postgres::{PostgresStore, connect, ensure_schema_current, migrate};
+use opensharing_server::store::{
     ExternalLocationRecord, SealedCredential, ShareObject, ShareObjectKind, ShareStore, TokenRecord,
 };
 

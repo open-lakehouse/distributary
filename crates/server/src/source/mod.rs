@@ -16,7 +16,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use olai_storage_credentials::VendedCredential;
-use open_sharing_api::catalog::DataFormat;
+use opensharing_api::catalog::DataFormat;
 
 use crate::{Error, Result};
 

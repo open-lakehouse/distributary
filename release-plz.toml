@@ -6,12 +6,12 @@
 # crates.io in topological order.
 #
 # Bootstrap gate: crates.io OIDC trusted publishing cannot create a name that has
-# never been published, and none of the `olai-sharing-*` names has been. Each
+# never been published, and none of the `opensharing-*` names has been. Each
 # crate therefore carries `release = false` until a one-time token publish has
 # created it and its Trusted Publisher is registered. Bootstrap order (root ->
 # leaf): common, admin -> client, api -> server.
 #
-# `olai-sharing-server` additionally depends on the git-pinned Unity Catalog
+# `opensharing-server` additionally depends on the git-pinned Unity Catalog
 # crates (see the workspace Cargo.toml); it cannot publish until those are
 # re-pinned to a crates.io release.
 #
@@ -45,42 +45,42 @@ pr_draft = false
 
 # ---------------------------------------------------------------------------
 # Per-package overrides. `changelog_path` is pinned because the directory name
-# (e.g. crates/common) differs from the package name (olai-sharing-common).
+# (e.g. crates/common) differs from the package name (opensharing-common).
 # ---------------------------------------------------------------------------
 [[package]]
-name = "olai-sharing-common"
+name = "opensharing-common"
 changelog_path = "crates/common/CHANGELOG.md"
 # Bootstrap gate (see top). The root of the crates; bootstrapped first.
 release = false
 
 [[package]]
-name = "olai-sharing-client"
+name = "opensharing-client"
 changelog_path = "crates/client/CHANGELOG.md"
-# Bootstrap gate (see top), after olai-sharing-common.
+# Bootstrap gate (see top), after opensharing-common.
 release = false
 
 [[package]]
-name = "olai-sharing-admin"
+name = "opensharing-admin"
 changelog_path = "crates/admin/CHANGELOG.md"
 # Bootstrap gate (see top). No in-repo dependencies; bootstrapped first,
-# alongside olai-sharing-common.
+# alongside opensharing-common.
 release = false
 
 [[package]]
-name = "olai-sharing-api"
+name = "opensharing-api"
 changelog_path = "crates/api/CHANGELOG.md"
-# Bootstrap gate (see top), after olai-sharing-common.
+# Bootstrap gate (see top), after opensharing-common.
 release = false
 
 [[package]]
-name = "olai-sharing-server"
+name = "opensharing-server"
 changelog_path = "crates/server/CHANGELOG.md"
-# Bootstrap gate (see top), after olai-sharing-api; also blocked on the
+# Bootstrap gate (see top), after opensharing-api; also blocked on the
 # git-pinned Unity Catalog crates.
 release = false
 
 [[package]]
-name = "olai-sharing-neon"
+name = "opensharing-neon"
 # Deployment artifact (Neon Function bundle), never published.
 publish = false
 release = false

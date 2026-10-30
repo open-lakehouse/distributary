@@ -12,9 +12,9 @@ for the design.
   or `crates/**/codegen/**`, or any file marked `@generated`. Change `proto/` and
   run `just generate`, then commit the output in the same commit as the source
   change.
-- **Keep the catalog boundary.** `olai-sharing-common`, `olai-sharing-admin`,
-  `olai-sharing-client` and `olai-sharing-api` never depend on a catalog crate.
-  `olai-sharing-server` may depend on `olai-uc-*` only behind its `unity`
+- **Keep the catalog boundary.** `opensharing-common`, `opensharing-admin`,
+  `opensharing-client` and `opensharing-api` never depend on a catalog crate.
+  `opensharing-server` may depend on `olai-uc-*` only behind its `unity`
   feature. CI's `catalog-independence` job guards this.
 - **Cargo.lock and trestle.** CI resolves the `olai-*` trestle crates from
   crates.io. A lock resolved under the local `just configure-trestle-deps` patch

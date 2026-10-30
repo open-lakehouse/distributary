@@ -8,7 +8,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use open_sharing_api::auth::{Recipient, RecipientAuthenticator};
+use opensharing_api::auth::{Recipient, RecipientAuthenticator};
 use serde::Serialize;
 
 use crate::secrets::Secrets;
@@ -111,7 +111,7 @@ pub async fn activate(
         share_credentials_version: 1,
         endpoint: format!(
             "{public_url}{}",
-            open_sharing_api::router::DELTA_SHARING_PREFIX
+            opensharing_api::router::DELTA_SHARING_PREFIX
         ),
         bearer_token: String::from_utf8(clear)
             .map_err(|_| Error::generic("stored token is not valid UTF-8"))?,

@@ -1,6 +1,6 @@
 //! The provider admin API, behind provider bearer tokens. It speaks the
 //! Databricks Delta Sharing REST shape (`/api/2.1/unity-catalog/…`), with the
-//! models from `olai-sharing-admin`:
+//! models from `opensharing-admin`:
 //!
 //! - `shares`: create / list / get / update (add, remove or update data objects)
 //!   / delete, and `shares/{name}/permissions` (grant `SELECT` to recipients);
@@ -24,10 +24,10 @@ use axum::http::header::AUTHORIZATION;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
-use open_sharing_admin::models::recipients::v1::{
+use opensharing_admin::models::recipients::v1::{
     AuthenticationType, CreateRecipientRequest, ListRecipientsResponse, Recipient, RecipientToken,
 };
-use open_sharing_admin::models::shares::v1::{
+use opensharing_admin::models::shares::v1::{
     Action, CreateShareRequest, DataObject, DataObjectType, GetPermissionsResponse,
     ListSharesResponse, PrivilegeAssignment, Share, UpdatePermissionsRequest,
     UpdatePermissionsResponse, UpdateShareRequest,

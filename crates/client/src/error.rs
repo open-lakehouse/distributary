@@ -5,7 +5,7 @@ pub enum Error {
     #[error("Model Error: {source}")]
     Model {
         #[from]
-        source: open_sharing_common::Error,
+        source: opensharing_common::Error,
     },
 
     #[error("Client Error: {source}")]

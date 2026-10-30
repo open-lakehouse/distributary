@@ -3,8 +3,8 @@
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
-use open_sharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
-use open_sharing_api::{SharingService, open_sharing_router};
+use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
+use opensharing_api::{SharingService, open_sharing_router};
 use tower::ServiceExt; // for `oneshot`
 
 fn router() -> axum::Router {

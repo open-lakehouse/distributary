@@ -3,8 +3,8 @@
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
-use open_sharing_server::config::DatabaseConfig;
-use open_sharing_server::{Config, embed};
+use opensharing_server::config::DatabaseConfig;
+use opensharing_server::{Config, embed};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[derive(Parser)]
@@ -92,7 +92,7 @@ async fn run(cli: Cli) -> Result<(), String> {
 }
 
 async fn migrate(config: &Config) -> Result<(), String> {
-    use open_sharing_server::store::postgres;
+    use opensharing_server::store::postgres;
     let DatabaseConfig::Postgres {
         url, migration_url, ..
     } = &config.database

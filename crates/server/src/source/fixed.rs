@@ -7,7 +7,7 @@
 use std::collections::BTreeMap;
 
 use async_trait::async_trait;
-use open_sharing_api::catalog::DataFormat;
+use opensharing_api::catalog::DataFormat;
 use serde::{Deserialize, Serialize};
 
 use super::{CatalogSource, SourceTable, SourceVolume, split_name};

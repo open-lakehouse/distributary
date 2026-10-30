@@ -18,10 +18,10 @@
 //!
 //! The crate depends on no catalog. An existing catalog becomes a sharing server
 //! by implementing the ports over its own discovery, authorization and
-//! credential machinery; `olai-sharing-server` is one such host.
+//! credential machinery; `opensharing-server` is one such host.
 //!
-//! The wire types come from `olai-sharing-common`
-//! ([`open_sharing_common`]), shared with the client.
+//! The wire types come from `opensharing-common`
+//! ([`opensharing_common`]), shared with the client.
 //!
 //! # Layout
 //! - [`catalog`] — the [`ShareCatalog`] port and the share / asset types.

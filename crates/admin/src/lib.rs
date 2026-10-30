@@ -7,7 +7,7 @@
 //! JSON as the Databricks Delta Sharing REST API
 //! (`/api/2.1/unity-catalog/{shares,recipients,providers}`).
 //!
-//! The recipient-facing protocol models live in `open-sharing-common`. The
+//! The recipient-facing protocol models live in `opensharing-common`. The
 //! two are separate crates so a protocol-only client or server never compiles
 //! the admin surface.
 //!

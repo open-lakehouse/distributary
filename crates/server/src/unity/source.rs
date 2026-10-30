@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use futures::TryStreamExt;
 use olai_storage_credentials::wire::{VendContext, unity};
 use olai_storage_credentials::{AccessLevel, StorageLocation, StorageScope, VendedCredential};
-use open_sharing_api::catalog::DataFormat;
+use opensharing_api::catalog::DataFormat;
 use unitycatalog_client::{
     TableOperation, TableReference, UnityCatalogClient, VolumeOperation, VolumeReference,
 };

@@ -1,4 +1,4 @@
-# olai-sharing-api
+# opensharing-api
 
 Portable **Open Sharing** / **Delta Sharing** REST API.
 
@@ -19,7 +19,7 @@ handler. `sharing_router` serves it under `/api/v1/delta-sharing` (Delta
 Sharing) and `/api/1.0/opensharing` (Open Sharing, adding volumes, agent skills
 and temporary credentials), and `auth::require_recipient` puts a bearer-token
 `RecipientAuthenticator` in front. The wire types come from
-[`olai-sharing-common`](https://crates.io/crates/olai-sharing-common), which
+[`opensharing-common`](https://crates.io/crates/opensharing-common), which
 the client shares; this crate does not depend on the client.
 
 ## Integrating
@@ -29,7 +29,7 @@ an existing catalog, implement `ShareCatalog`, `StorageAccess` and a
 `RecipientAuthenticator` over the catalog's own discovery, grants and credential
 vending, then mount `sharing_router` behind `auth::require_recipient`. Map
 your own errors onto `Error`, which renders the `{ "errorCode", "message" }`
-envelope. [`olai-sharing-server`](../server) is a complete host built
+envelope. [`opensharing-server`](../server) is a complete host built
 this way.
 
 ## Status

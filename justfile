@@ -82,4 +82,4 @@ fix:
 # apply the sharing-server migrations to DATABASE_URL
 [group('dev')]
 migrate:
-    cargo run -p olai-sharing-server --features bin -- migrate
+    cargo run -p opensharing-server --features bin -- migrate
