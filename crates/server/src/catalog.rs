@@ -22,12 +22,12 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use open_sharing_api::auth::Recipient;
-use open_sharing_api::catalog::{
+use opensharing_api::auth::Recipient;
+use opensharing_api::catalog::{
     AssetKind, AssetRef, Page, PageRequest, ResolvedLocation, ShareCatalog, ShareInfo, SharedAsset,
     SharedObject, SharingAction,
 };
-use open_sharing_api::service::paginate;
+use opensharing_api::service::paginate;
 
 use crate::source::{SourceRegistry, split_name};
 use crate::store::{ShareObject, ShareObjectKind, ShareRecord, ShareStore};

@@ -1,7 +1,7 @@
 [package]
-name = "olai-sharing-client"
+name = "opensharing-client"
 version = "0.0.1"
-description = "Open Sharing / Delta Sharing protocol client."
+description = "OpenSharing / Delta Sharing protocol client."
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -10,14 +10,9 @@ rust-version.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 
-[lib]
-# Stable Rust crate identifier (the expanded `open_sharing_*` name), independent
-# of the `olai-sharing-*` package name.
-name = "open_sharing_client"
-
 [dependencies]
 # local dependencies in alphabetical order
-open-sharing-common = { package = "olai-sharing-common", path = "../common", version = "0.0.1" }
+opensharing-common = { path = "../common", version = "0.0.1" }
 
 # workspace dependencies in alphabetical order
 chrono = { workspace = true }

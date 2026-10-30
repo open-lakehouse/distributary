@@ -10,11 +10,11 @@
 //! A single struct can implement multiple handler traits to serve multiple
 //! services. Use [`axum::Router::merge`] to compose per-service routers together.
 //!
-//! Open Sharing volume APIs: discovery and credential vending for shared
+//! OpenSharing volume APIs: discovery and credential vending for shared
 //! storage-backed volumes.
 use crate::Result;
 use async_trait::async_trait;
-use open_sharing_common::models::open_sharing::v1::*;
+use opensharing_common::models::opensharing::v1::*;
 #[async_trait]
 pub trait SharingVolumeHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
     /// List the volumes in a given share's schema.

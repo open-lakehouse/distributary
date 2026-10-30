@@ -1,4 +1,4 @@
-//! Open Sharing / Delta Sharing wire models shared by client and server.
+//! OpenSharing / Delta Sharing wire models shared by client and server.
 //!
 //! The [`models`] describe the protocol on the wire: the generated
 //! request/response types of the discovery services, the hand-written
@@ -8,7 +8,7 @@
 //! `delta-sharing-capabilities` header
 //! ([`DeltaSharingCapabilities`](models::DeltaSharingCapabilities)).
 //!
-//! The `open-sharing-client` crate sends these types and `open-sharing-api`
+//! The `opensharing-client` crate sends these types and `opensharing-api`
 //! serves them; keeping them here lets the server side build without the
 //! client's HTTP and data-processing dependencies.
 //!

@@ -1,14 +1,14 @@
 # Trestle codegen config for the provider admin API protos
-# (`proto/open_sharing/{shares,recipients,providers}`).
+# (`proto/opensharing/{shares,recipients,providers}`).
 #
 # Kept apart from trestle.yaml: the admin and protocol packages define messages
 # with the same names (`Share`, `ListSharesRequest`, …), and one trestle run
 # over both cross-wires the generated protocol client builders. Each config gets
 # its own descriptor set (see `just generate-code`), and the admin config emits
-# models only (`olai-sharing-admin`).
+# models only (`opensharing-admin`).
 version: 1
 project:
-  name: open-sharing-admin
+  name: opensharing-admin
 generate:
   proto_lib: buffa
   # snake_case JSON field names on the wire, matching the Databricks REST API.
@@ -17,4 +17,4 @@ generate:
 
   models:
     dir: crates/admin/src/models
-    crate_name: open_sharing_admin
+    crate_name: opensharing_admin

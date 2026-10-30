@@ -9,7 +9,7 @@
 use bytes::Bytes;
 use chrono::DateTime;
 
-use open_sharing_common::models::open_sharing::v1::{
+use opensharing_common::models::opensharing::v1::{
     Schema, Share as SharingShare, SharingSkill, SharingVolume, Table, *,
 };
 
@@ -451,7 +451,7 @@ pub trait SharingQueryHandler<Cx = crate::DefaultContext>: Send + Sync + 'static
     async fn query_table(&self, request: QueryTableRequest, context: Cx) -> Result<TableResponse>;
 
     /// Read-only temporary credentials for a shared table's storage location (the
-    /// Open Sharing `temporary-table-credentials` endpoint), so a recipient can
+    /// OpenSharing `temporary-table-credentials` endpoint), so a recipient can
     /// read the table directly instead of through presigned URLs.
     async fn generate_temporary_table_credentials(
         &self,

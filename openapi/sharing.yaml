@@ -1,9 +1,9 @@
-# Generated from `proto/open_sharing` (google-gnostic-openapi) and merged with
+# Generated from `proto/opensharing` (google-gnostic-openapi) and merged with
 # openapi/sharing-query-paths.yaml via dev/scripts/merge_sharing_openapi.py.
 # Do not edit by hand — see `just generate-openapi`.
 openapi: 3.0.3
 info:
-  title: Open Sharing API
+  title: OpenSharing API
   description: An Open Protocol for Secure Data Sharing. Extends the Delta Sharing protocol; the tabular surface remains wire-compatible with Delta Sharing clients.
   license:
     name: Apache 2.0
@@ -1299,6 +1299,6 @@ tags:
 - name: SharingService
   description: Service exposing the official APIs for Delta Sharing.
 - name: SharingSkillService
-  description: "Open Sharing agent-skill APIs: discovery and credential vending for shared\n storage-backed agent skills."
+  description: "OpenSharing agent-skill APIs: discovery and credential vending for shared\n storage-backed agent skills."
 - name: SharingVolumeService
-  description: "Open Sharing volume APIs: discovery and credential vending for shared\n storage-backed volumes."
+  description: "OpenSharing volume APIs: discovery and credential vending for shared\n storage-backed volumes."

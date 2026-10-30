@@ -18,7 +18,7 @@
 use chrono::NaiveDate;
 use delta_kernel::expressions::{Expression, Predicate, Scalar};
 
-use open_sharing_common::models::open_sharing::v1::JsonPredicate;
+use opensharing_common::models::opensharing::v1::JsonPredicate;
 
 /// Translate a JSON predicate hint, or `None` if no sound pruning predicate can be
 /// derived from it.

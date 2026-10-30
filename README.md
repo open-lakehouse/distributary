@@ -1,22 +1,22 @@
 # distributary
 
-An [Open Sharing](https://github.com/OpenSharing-IO/OpenSharing) /
+An [OpenSharing](https://github.com/OpenSharing-IO/OpenSharing) /
 [Delta Sharing](https://github.com/delta-io/delta-sharing) implementation in
 Rust: the protocol models, a client, a portable server-side protocol layer, and a
 composable sharing server that maps shares onto any catalog.
 
 | Crate | Package | What |
 |---|---|---|
-| [`crates/common`](crates/common) | `olai-sharing-common` | Wire models, NDJSON query lines, capabilities, axum extractors |
-| [`crates/client`](crates/client) | `olai-sharing-client` | HTTP client for the sharing protocol |
-| [`crates/api`](crates/api) | `olai-sharing-api` | Protocol ports (`ShareCatalog`, `StorageAccess`, `TableFormat`), handlers and router |
-| [`crates/admin`](crates/admin) | `olai-sharing-admin` | Provider admin API models: shares, permissions, recipients, providers |
-| [`crates/server`](crates/server) | `olai-sharing-server` | A complete server: share store, recipients, sealed secrets, catalog sources, admin API, `sharing-server` binary |
-| [`crates/neon`](crates/neon) | `olai-sharing-neon` | The server as a Neon Function (deployment artifact, not published) |
+| [`crates/common`](crates/common) | `opensharing-common` | Wire models, NDJSON query lines, capabilities, axum extractors |
+| [`crates/client`](crates/client) | `opensharing-client` | HTTP client for the sharing protocol |
+| [`crates/api`](crates/api) | `opensharing-api` | Protocol ports (`ShareCatalog`, `StorageAccess`, `TableFormat`), handlers and router |
+| [`crates/admin`](crates/admin) | `opensharing-admin` | Provider admin API models: shares, permissions, recipients, providers |
+| [`crates/server`](crates/server) | `opensharing-server` | A complete server: share store, recipients, sealed secrets, catalog sources, admin API, `sharing-server` binary |
+| [`crates/neon`](crates/neon) | `opensharing-neon` | The server as a Neon Function (deployment artifact, not published) |
 
-The protocol is defined in [`proto/open_sharing/v1`](proto/open_sharing/v1),
+The protocol is defined in [`proto/opensharing/v1`](proto/opensharing/v1),
 and the provider admin API (wire-compatible with the Databricks Delta Sharing
-REST API) in [`proto/open_sharing/{shares,recipients,providers}`](proto/open_sharing).
+REST API) in [`proto/opensharing/{shares,recipients,providers}`](proto/opensharing).
 Their OpenAPI documents are [`openapi/sharing.yaml`](openapi/sharing.yaml) and
 [`openapi/admin.yaml`](openapi/admin.yaml). The design is in
 [`ARCHITECTURE.md`](ARCHITECTURE.md).

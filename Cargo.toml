@@ -15,7 +15,7 @@ rust-version = "1.95.0"
 # (the release-plz convention), so there is intentionally no workspace-wide
 # `version` here.
 homepage = "https://github.com/open-lakehouse/distributary"
-keywords = ["delta-sharing", "open-sharing", "deltalake", "lakehouse"]
+keywords = ["delta-sharing", "opensharing", "deltalake", "lakehouse"]
 
 [workspace.dependencies]
 # The Delta stack: the published `buoyant_kernel` (the Buoyant Data distribution
@@ -32,7 +32,7 @@ delta_kernel_default_engine = { package = "buoyant_kernel_engine", version = "0.
   "rustls",
 ] }
 
-# The Unity Catalog crates behind `olai-sharing-server`'s `unity` feature (the
+# The Unity Catalog crates behind `opensharing-server`'s `unity` feature (the
 # UC REST catalog source and the UC-shaped credential / external-location admin
 # routes). Git-pinned to mangrove until it publishes a release with the
 # `credential-vending` feature (the crates.io 0.0.5 predates it); switch to the

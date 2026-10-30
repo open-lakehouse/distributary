@@ -15,10 +15,10 @@ pub enum DataObjectType {
     FUNCTION = 8i32,
     /// FEATURE_SPEC = 9;
     ///
-    /// A Unity Catalog volume shared as a storage-backed asset (Open Sharing).
+    /// A Unity Catalog volume shared as a storage-backed asset (OpenSharing).
     VOLUME = 10i32,
     /// An agent skill (a directory of SKILL.md + scripts/assets) shared as a
-    /// storage-backed asset on top of a volume (Open Sharing).
+    /// storage-backed asset on top of a volume (OpenSharing).
     AGENT_SKILL = 11i32,
 }
 impl DataObjectType {
@@ -701,7 +701,7 @@ impl PartitionValue {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PartitionValue";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PartitionValue";
 }
 impl PartitionValue {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -732,10 +732,10 @@ impl ::buffa::DefaultInstance for PartitionValue {
     }
 }
 impl ::buffa::MessageName for PartitionValue {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "PartitionValue";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.PartitionValue";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PartitionValue";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.PartitionValue";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PartitionValue";
 }
 impl ::buffa::Message for PartitionValue {
     /// Returns the total encoded size in bytes.
@@ -882,7 +882,7 @@ impl ::buffa::Message for PartitionValue {
     }
 }
 impl ::buffa::ExtensionSet for PartitionValue {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.PartitionValue";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.PartitionValue";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -905,7 +905,7 @@ impl ::buffa::json_helpers::ProtoElemJson for PartitionValue {
 }
 #[doc(hidden)]
 pub const __PARTITION_VALUE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.PartitionValue",
+    type_url: "type.googleapis.com/opensharing.shares.v1.PartitionValue",
     to_json: ::buffa::type_registry::any_to_json::<PartitionValue>,
     from_json: ::buffa::type_registry::any_from_json::<PartitionValue>,
     is_wkt: false,
@@ -938,7 +938,7 @@ impl Partition {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.Partition";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.Partition";
 }
 impl ::buffa::DefaultInstance for Partition {
     fn default_instance() -> &'static Self {
@@ -947,10 +947,10 @@ impl ::buffa::DefaultInstance for Partition {
     }
 }
 impl ::buffa::MessageName for Partition {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "Partition";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.Partition";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.Partition";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.Partition";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.Partition";
 }
 impl ::buffa::Message for Partition {
     /// Returns the total encoded size in bytes.
@@ -1028,7 +1028,7 @@ impl ::buffa::Message for Partition {
     }
 }
 impl ::buffa::ExtensionSet for Partition {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.Partition";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.Partition";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1051,7 +1051,7 @@ impl ::buffa::json_helpers::ProtoElemJson for Partition {
 }
 #[doc(hidden)]
 pub const __PARTITION_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.Partition",
+    type_url: "type.googleapis.com/opensharing.shares.v1.Partition",
     to_json: ::buffa::type_registry::any_to_json::<Partition>,
     from_json: ::buffa::type_registry::any_from_json::<Partition>,
     is_wkt: false,
@@ -1217,7 +1217,7 @@ impl DataObject {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DataObject";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DataObject";
 }
 impl DataObject {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1309,10 +1309,10 @@ impl ::buffa::DefaultInstance for DataObject {
     }
 }
 impl ::buffa::MessageName for DataObject {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "DataObject";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.DataObject";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DataObject";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.DataObject";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DataObject";
 }
 impl ::buffa::Message for DataObject {
     /// Returns the total encoded size in bytes.
@@ -1650,7 +1650,7 @@ impl ::buffa::Message for DataObject {
     }
 }
 impl ::buffa::ExtensionSet for DataObject {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.DataObject";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.DataObject";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1673,7 +1673,7 @@ impl ::buffa::json_helpers::ProtoElemJson for DataObject {
 }
 #[doc(hidden)]
 pub const __DATA_OBJECT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.DataObject",
+    type_url: "type.googleapis.com/opensharing.shares.v1.DataObject",
     to_json: ::buffa::type_registry::any_to_json::<DataObject>,
     from_json: ::buffa::type_registry::any_from_json::<DataObject>,
     is_wkt: false,
@@ -1797,7 +1797,7 @@ impl Share {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.Share";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.Share";
 }
 impl Share {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1889,10 +1889,10 @@ impl ::buffa::DefaultInstance for Share {
     }
 }
 impl ::buffa::MessageName for Share {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "Share";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.Share";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.Share";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.Share";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.Share";
 }
 impl ::buffa::Message for Share {
     /// Returns the total encoded size in bytes.
@@ -2217,7 +2217,7 @@ impl ::buffa::Message for Share {
     }
 }
 impl ::buffa::ExtensionSet for Share {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.Share";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.Share";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2240,7 +2240,7 @@ impl ::buffa::json_helpers::ProtoElemJson for Share {
 }
 #[doc(hidden)]
 pub const __SHARE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.Share",
+    type_url: "type.googleapis.com/opensharing.shares.v1.Share",
     to_json: ::buffa::type_registry::any_to_json::<Share>,
     from_json: ::buffa::type_registry::any_from_json::<Share>,
     is_wkt: false,
@@ -2286,7 +2286,7 @@ impl PrivilegeAssignment {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PrivilegeAssignment";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PrivilegeAssignment";
 }
 impl ::buffa::DefaultInstance for PrivilegeAssignment {
     fn default_instance() -> &'static Self {
@@ -2295,10 +2295,10 @@ impl ::buffa::DefaultInstance for PrivilegeAssignment {
     }
 }
 impl ::buffa::MessageName for PrivilegeAssignment {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "PrivilegeAssignment";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.PrivilegeAssignment";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PrivilegeAssignment";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.PrivilegeAssignment";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PrivilegeAssignment";
 }
 impl ::buffa::Message for PrivilegeAssignment {
     /// Returns the total encoded size in bytes.
@@ -2390,7 +2390,7 @@ impl ::buffa::Message for PrivilegeAssignment {
     }
 }
 impl ::buffa::ExtensionSet for PrivilegeAssignment {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.PrivilegeAssignment";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.PrivilegeAssignment";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2413,7 +2413,7 @@ impl ::buffa::json_helpers::ProtoElemJson for PrivilegeAssignment {
 }
 #[doc(hidden)]
 pub const __PRIVILEGE_ASSIGNMENT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.PrivilegeAssignment",
+    type_url: "type.googleapis.com/opensharing.shares.v1.PrivilegeAssignment",
     to_json: ::buffa::type_registry::any_to_json::<PrivilegeAssignment>,
     from_json: ::buffa::type_registry::any_from_json::<PrivilegeAssignment>,
     is_wkt: false,
@@ -2467,7 +2467,7 @@ impl PermissionsChange {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PermissionsChange";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PermissionsChange";
 }
 impl ::buffa::DefaultInstance for PermissionsChange {
     fn default_instance() -> &'static Self {
@@ -2476,10 +2476,10 @@ impl ::buffa::DefaultInstance for PermissionsChange {
     }
 }
 impl ::buffa::MessageName for PermissionsChange {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "PermissionsChange";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.PermissionsChange";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PermissionsChange";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.PermissionsChange";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PermissionsChange";
 }
 impl ::buffa::Message for PermissionsChange {
     /// Returns the total encoded size in bytes.
@@ -2593,7 +2593,7 @@ impl ::buffa::Message for PermissionsChange {
     }
 }
 impl ::buffa::ExtensionSet for PermissionsChange {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.PermissionsChange";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.PermissionsChange";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2616,7 +2616,7 @@ impl ::buffa::json_helpers::ProtoElemJson for PermissionsChange {
 }
 #[doc(hidden)]
 pub const __PERMISSIONS_CHANGE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.PermissionsChange",
+    type_url: "type.googleapis.com/opensharing.shares.v1.PermissionsChange",
     to_json: ::buffa::type_registry::any_to_json::<PermissionsChange>,
     from_json: ::buffa::type_registry::any_from_json::<PermissionsChange>,
     is_wkt: false,
@@ -2814,7 +2814,7 @@ impl ListSharesRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.ListSharesRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.ListSharesRequest";
 }
 impl ListSharesRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -2842,10 +2842,10 @@ impl ::buffa::DefaultInstance for ListSharesRequest {
     }
 }
 impl ::buffa::MessageName for ListSharesRequest {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "ListSharesRequest";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.ListSharesRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.ListSharesRequest";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.ListSharesRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.ListSharesRequest";
 }
 impl ::buffa::Message for ListSharesRequest {
     /// Returns the total encoded size in bytes.
@@ -2941,7 +2941,7 @@ impl ::buffa::Message for ListSharesRequest {
     }
 }
 impl ::buffa::ExtensionSet for ListSharesRequest {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.ListSharesRequest";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.ListSharesRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2964,7 +2964,7 @@ impl ::buffa::json_helpers::ProtoElemJson for ListSharesRequest {
 }
 #[doc(hidden)]
 pub const __LIST_SHARES_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.ListSharesRequest",
+    type_url: "type.googleapis.com/opensharing.shares.v1.ListSharesRequest",
     to_json: ::buffa::type_registry::any_to_json::<ListSharesRequest>,
     from_json: ::buffa::type_registry::any_from_json::<ListSharesRequest>,
     is_wkt: false,
@@ -3009,7 +3009,7 @@ impl ListSharesResponse {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.ListSharesResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.ListSharesResponse";
 }
 impl ListSharesResponse {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -3030,10 +3030,10 @@ impl ::buffa::DefaultInstance for ListSharesResponse {
     }
 }
 impl ::buffa::MessageName for ListSharesResponse {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "ListSharesResponse";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.ListSharesResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.ListSharesResponse";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.ListSharesResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.ListSharesResponse";
 }
 impl ::buffa::Message for ListSharesResponse {
     /// Returns the total encoded size in bytes.
@@ -3138,7 +3138,7 @@ impl ::buffa::Message for ListSharesResponse {
     }
 }
 impl ::buffa::ExtensionSet for ListSharesResponse {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.ListSharesResponse";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.ListSharesResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -3161,7 +3161,7 @@ impl ::buffa::json_helpers::ProtoElemJson for ListSharesResponse {
 }
 #[doc(hidden)]
 pub const __LIST_SHARES_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.ListSharesResponse",
+    type_url: "type.googleapis.com/opensharing.shares.v1.ListSharesResponse",
     to_json: ::buffa::type_registry::any_to_json::<ListSharesResponse>,
     from_json: ::buffa::type_registry::any_from_json::<ListSharesResponse>,
     is_wkt: false,
@@ -3215,7 +3215,7 @@ impl CreateShareRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.CreateShareRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.CreateShareRequest";
 }
 impl CreateShareRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -3246,10 +3246,10 @@ impl ::buffa::DefaultInstance for CreateShareRequest {
     }
 }
 impl ::buffa::MessageName for CreateShareRequest {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "CreateShareRequest";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.CreateShareRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.CreateShareRequest";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.CreateShareRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.CreateShareRequest";
 }
 impl ::buffa::Message for CreateShareRequest {
     /// Returns the total encoded size in bytes.
@@ -3371,7 +3371,7 @@ impl ::buffa::Message for CreateShareRequest {
     }
 }
 impl ::buffa::ExtensionSet for CreateShareRequest {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.CreateShareRequest";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.CreateShareRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -3394,7 +3394,7 @@ impl ::buffa::json_helpers::ProtoElemJson for CreateShareRequest {
 }
 #[doc(hidden)]
 pub const __CREATE_SHARE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.CreateShareRequest",
+    type_url: "type.googleapis.com/opensharing.shares.v1.CreateShareRequest",
     to_json: ::buffa::type_registry::any_to_json::<CreateShareRequest>,
     from_json: ::buffa::type_registry::any_from_json::<CreateShareRequest>,
     is_wkt: false,
@@ -3439,7 +3439,7 @@ impl GetShareRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetShareRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetShareRequest";
 }
 impl GetShareRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -3457,10 +3457,10 @@ impl ::buffa::DefaultInstance for GetShareRequest {
     }
 }
 impl ::buffa::MessageName for GetShareRequest {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "GetShareRequest";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.GetShareRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetShareRequest";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.GetShareRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetShareRequest";
 }
 impl ::buffa::Message for GetShareRequest {
     /// Returns the total encoded size in bytes.
@@ -3551,7 +3551,7 @@ impl ::buffa::Message for GetShareRequest {
     }
 }
 impl ::buffa::ExtensionSet for GetShareRequest {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.GetShareRequest";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.GetShareRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -3574,7 +3574,7 @@ impl ::buffa::json_helpers::ProtoElemJson for GetShareRequest {
 }
 #[doc(hidden)]
 pub const __GET_SHARE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.GetShareRequest",
+    type_url: "type.googleapis.com/opensharing.shares.v1.GetShareRequest",
     to_json: ::buffa::type_registry::any_to_json::<GetShareRequest>,
     from_json: ::buffa::type_registry::any_from_json::<GetShareRequest>,
     is_wkt: false,
@@ -3619,7 +3619,7 @@ impl DataObjectUpdate {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DataObjectUpdate";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DataObjectUpdate";
 }
 impl ::buffa::DefaultInstance for DataObjectUpdate {
     fn default_instance() -> &'static Self {
@@ -3628,10 +3628,10 @@ impl ::buffa::DefaultInstance for DataObjectUpdate {
     }
 }
 impl ::buffa::MessageName for DataObjectUpdate {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "DataObjectUpdate";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.DataObjectUpdate";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DataObjectUpdate";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.DataObjectUpdate";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DataObjectUpdate";
 }
 impl ::buffa::Message for DataObjectUpdate {
     /// Returns the total encoded size in bytes.
@@ -3738,7 +3738,7 @@ impl ::buffa::Message for DataObjectUpdate {
     }
 }
 impl ::buffa::ExtensionSet for DataObjectUpdate {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.DataObjectUpdate";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.DataObjectUpdate";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -3761,7 +3761,7 @@ impl ::buffa::json_helpers::ProtoElemJson for DataObjectUpdate {
 }
 #[doc(hidden)]
 pub const __DATA_OBJECT_UPDATE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.DataObjectUpdate",
+    type_url: "type.googleapis.com/opensharing.shares.v1.DataObjectUpdate",
     to_json: ::buffa::type_registry::any_to_json::<DataObjectUpdate>,
     from_json: ::buffa::type_registry::any_from_json::<DataObjectUpdate>,
     is_wkt: false,
@@ -3832,7 +3832,7 @@ impl UpdateShareRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdateShareRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdateShareRequest";
 }
 impl UpdateShareRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -3873,10 +3873,10 @@ impl ::buffa::DefaultInstance for UpdateShareRequest {
     }
 }
 impl ::buffa::MessageName for UpdateShareRequest {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "UpdateShareRequest";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.UpdateShareRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdateShareRequest";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.UpdateShareRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdateShareRequest";
 }
 impl ::buffa::Message for UpdateShareRequest {
     /// Returns the total encoded size in bytes.
@@ -4053,7 +4053,7 @@ impl ::buffa::Message for UpdateShareRequest {
     }
 }
 impl ::buffa::ExtensionSet for UpdateShareRequest {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.UpdateShareRequest";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.UpdateShareRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -4076,7 +4076,7 @@ impl ::buffa::json_helpers::ProtoElemJson for UpdateShareRequest {
 }
 #[doc(hidden)]
 pub const __UPDATE_SHARE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.UpdateShareRequest",
+    type_url: "type.googleapis.com/opensharing.shares.v1.UpdateShareRequest",
     to_json: ::buffa::type_registry::any_to_json::<UpdateShareRequest>,
     from_json: ::buffa::type_registry::any_from_json::<UpdateShareRequest>,
     is_wkt: false,
@@ -4111,7 +4111,7 @@ impl DeleteShareRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DeleteShareRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DeleteShareRequest";
 }
 impl ::buffa::DefaultInstance for DeleteShareRequest {
     fn default_instance() -> &'static Self {
@@ -4120,10 +4120,10 @@ impl ::buffa::DefaultInstance for DeleteShareRequest {
     }
 }
 impl ::buffa::MessageName for DeleteShareRequest {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "DeleteShareRequest";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.DeleteShareRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DeleteShareRequest";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.DeleteShareRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DeleteShareRequest";
 }
 impl ::buffa::Message for DeleteShareRequest {
     /// Returns the total encoded size in bytes.
@@ -4193,7 +4193,7 @@ impl ::buffa::Message for DeleteShareRequest {
     }
 }
 impl ::buffa::ExtensionSet for DeleteShareRequest {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.DeleteShareRequest";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.DeleteShareRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -4216,7 +4216,7 @@ impl ::buffa::json_helpers::ProtoElemJson for DeleteShareRequest {
 }
 #[doc(hidden)]
 pub const __DELETE_SHARE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.DeleteShareRequest",
+    type_url: "type.googleapis.com/opensharing.shares.v1.DeleteShareRequest",
     to_json: ::buffa::type_registry::any_to_json::<DeleteShareRequest>,
     from_json: ::buffa::type_registry::any_from_json::<DeleteShareRequest>,
     is_wkt: false,
@@ -4274,7 +4274,7 @@ impl GetPermissionsRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetPermissionsRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetPermissionsRequest";
 }
 impl GetPermissionsRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -4302,10 +4302,10 @@ impl ::buffa::DefaultInstance for GetPermissionsRequest {
     }
 }
 impl ::buffa::MessageName for GetPermissionsRequest {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "GetPermissionsRequest";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.GetPermissionsRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetPermissionsRequest";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.GetPermissionsRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetPermissionsRequest";
 }
 impl ::buffa::Message for GetPermissionsRequest {
     /// Returns the total encoded size in bytes.
@@ -4423,7 +4423,7 @@ impl ::buffa::Message for GetPermissionsRequest {
     }
 }
 impl ::buffa::ExtensionSet for GetPermissionsRequest {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.GetPermissionsRequest";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.GetPermissionsRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -4446,7 +4446,7 @@ impl ::buffa::json_helpers::ProtoElemJson for GetPermissionsRequest {
 }
 #[doc(hidden)]
 pub const __GET_PERMISSIONS_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.GetPermissionsRequest",
+    type_url: "type.googleapis.com/opensharing.shares.v1.GetPermissionsRequest",
     to_json: ::buffa::type_registry::any_to_json::<GetPermissionsRequest>,
     from_json: ::buffa::type_registry::any_from_json::<GetPermissionsRequest>,
     is_wkt: false,
@@ -4492,7 +4492,7 @@ impl GetPermissionsResponse {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetPermissionsResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetPermissionsResponse";
 }
 impl GetPermissionsResponse {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -4513,10 +4513,10 @@ impl ::buffa::DefaultInstance for GetPermissionsResponse {
     }
 }
 impl ::buffa::MessageName for GetPermissionsResponse {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "GetPermissionsResponse";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.GetPermissionsResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetPermissionsResponse";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.GetPermissionsResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetPermissionsResponse";
 }
 impl ::buffa::Message for GetPermissionsResponse {
     /// Returns the total encoded size in bytes.
@@ -4621,7 +4621,7 @@ impl ::buffa::Message for GetPermissionsResponse {
     }
 }
 impl ::buffa::ExtensionSet for GetPermissionsResponse {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.GetPermissionsResponse";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.GetPermissionsResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -4644,7 +4644,7 @@ impl ::buffa::json_helpers::ProtoElemJson for GetPermissionsResponse {
 }
 #[doc(hidden)]
 pub const __GET_PERMISSIONS_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.GetPermissionsResponse",
+    type_url: "type.googleapis.com/opensharing.shares.v1.GetPermissionsResponse",
     to_json: ::buffa::type_registry::any_to_json::<GetPermissionsResponse>,
     from_json: ::buffa::type_registry::any_from_json::<GetPermissionsResponse>,
     is_wkt: false,
@@ -4698,7 +4698,7 @@ impl UpdatePermissionsRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsRequest";
 }
 impl UpdatePermissionsRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -4716,10 +4716,10 @@ impl ::buffa::DefaultInstance for UpdatePermissionsRequest {
     }
 }
 impl ::buffa::MessageName for UpdatePermissionsRequest {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "UpdatePermissionsRequest";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.UpdatePermissionsRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsRequest";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.UpdatePermissionsRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsRequest";
 }
 impl ::buffa::Message for UpdatePermissionsRequest {
     /// Returns the total encoded size in bytes.
@@ -4840,7 +4840,7 @@ impl ::buffa::Message for UpdatePermissionsRequest {
     }
 }
 impl ::buffa::ExtensionSet for UpdatePermissionsRequest {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.UpdatePermissionsRequest";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.UpdatePermissionsRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -4863,7 +4863,7 @@ impl ::buffa::json_helpers::ProtoElemJson for UpdatePermissionsRequest {
 }
 #[doc(hidden)]
 pub const __UPDATE_PERMISSIONS_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsRequest",
+    type_url: "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsRequest",
     to_json: ::buffa::type_registry::any_to_json::<UpdatePermissionsRequest>,
     from_json: ::buffa::type_registry::any_from_json::<UpdatePermissionsRequest>,
     is_wkt: false,
@@ -4898,7 +4898,7 @@ impl UpdatePermissionsResponse {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsResponse";
 }
 impl ::buffa::DefaultInstance for UpdatePermissionsResponse {
     fn default_instance() -> &'static Self {
@@ -4907,10 +4907,10 @@ impl ::buffa::DefaultInstance for UpdatePermissionsResponse {
     }
 }
 impl ::buffa::MessageName for UpdatePermissionsResponse {
-    const PACKAGE: &'static str = "open_sharing.shares.v1";
+    const PACKAGE: &'static str = "opensharing.shares.v1";
     const NAME: &'static str = "UpdatePermissionsResponse";
-    const FULL_NAME: &'static str = "open_sharing.shares.v1.UpdatePermissionsResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsResponse";
+    const FULL_NAME: &'static str = "opensharing.shares.v1.UpdatePermissionsResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsResponse";
 }
 impl ::buffa::Message for UpdatePermissionsResponse {
     /// Returns the total encoded size in bytes.
@@ -4988,7 +4988,7 @@ impl ::buffa::Message for UpdatePermissionsResponse {
     }
 }
 impl ::buffa::ExtensionSet for UpdatePermissionsResponse {
-    const PROTO_FQN: &'static str = "open_sharing.shares.v1.UpdatePermissionsResponse";
+    const PROTO_FQN: &'static str = "opensharing.shares.v1.UpdatePermissionsResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -5011,7 +5011,7 @@ impl ::buffa::json_helpers::ProtoElemJson for UpdatePermissionsResponse {
 }
 #[doc(hidden)]
 pub const __UPDATE_PERMISSIONS_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsResponse",
+    type_url: "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsResponse",
     to_json: ::buffa::type_registry::any_to_json::<UpdatePermissionsResponse>,
     from_json: ::buffa::type_registry::any_from_json::<UpdatePermissionsResponse>,
     is_wkt: false,
@@ -5302,10 +5302,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for PartitionValueView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "PartitionValue";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.PartitionValue";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PartitionValue";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.PartitionValue";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PartitionValue";
         }
         impl<'v> ::buffa::DefaultViewInstance for PartitionValueView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -5649,10 +5649,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for PartitionView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "Partition";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.Partition";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.Partition";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.Partition";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.Partition";
         }
         impl<'v> ::buffa::DefaultViewInstance for PartitionView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -6371,10 +6371,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for DataObjectView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "DataObject";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.DataObject";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DataObject";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.DataObject";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DataObject";
         }
         impl<'v> ::buffa::DefaultViewInstance for DataObjectView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -7137,10 +7137,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ShareView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "Share";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.Share";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.Share";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.Share";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.Share";
         }
         impl<'v> ::buffa::DefaultViewInstance for ShareView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -7540,10 +7540,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for PrivilegeAssignmentView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "PrivilegeAssignment";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.PrivilegeAssignment";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PrivilegeAssignment";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.PrivilegeAssignment";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PrivilegeAssignment";
         }
         impl<'v> ::buffa::DefaultViewInstance for PrivilegeAssignmentView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -7914,10 +7914,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for PermissionsChangeView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "PermissionsChange";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.PermissionsChange";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.PermissionsChange";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.PermissionsChange";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.PermissionsChange";
         }
         impl<'v> ::buffa::DefaultViewInstance for PermissionsChangeView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -8272,10 +8272,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ListSharesRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "ListSharesRequest";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.ListSharesRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.ListSharesRequest";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.ListSharesRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.ListSharesRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for ListSharesRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -8637,10 +8637,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ListSharesResponseView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "ListSharesResponse";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.ListSharesResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.ListSharesResponse";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.ListSharesResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.ListSharesResponse";
         }
         impl<'v> ::buffa::DefaultViewInstance for ListSharesResponseView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -9013,10 +9013,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for CreateShareRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "CreateShareRequest";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.CreateShareRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.CreateShareRequest";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.CreateShareRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.CreateShareRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for CreateShareRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -9358,10 +9358,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for GetShareRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "GetShareRequest";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.GetShareRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetShareRequest";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.GetShareRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetShareRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for GetShareRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -9736,10 +9736,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for DataObjectUpdateView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "DataObjectUpdate";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.DataObjectUpdate";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DataObjectUpdate";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.DataObjectUpdate";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DataObjectUpdate";
         }
         impl<'v> ::buffa::DefaultViewInstance for DataObjectUpdateView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -10198,10 +10198,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for UpdateShareRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "UpdateShareRequest";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.UpdateShareRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdateShareRequest";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.UpdateShareRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdateShareRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for UpdateShareRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -10535,10 +10535,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for DeleteShareRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "DeleteShareRequest";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.DeleteShareRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.DeleteShareRequest";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.DeleteShareRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.DeleteShareRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for DeleteShareRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -10910,10 +10910,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for GetPermissionsRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "GetPermissionsRequest";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.GetPermissionsRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetPermissionsRequest";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.GetPermissionsRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetPermissionsRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for GetPermissionsRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -11290,10 +11290,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for GetPermissionsResponseView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "GetPermissionsResponse";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.GetPermissionsResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.GetPermissionsResponse";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.GetPermissionsResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.GetPermissionsResponse";
         }
         impl<'v> ::buffa::DefaultViewInstance for GetPermissionsResponseView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -11692,10 +11692,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for UpdatePermissionsRequestView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "UpdatePermissionsRequest";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.UpdatePermissionsRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsRequest";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.UpdatePermissionsRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for UpdatePermissionsRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -12045,10 +12045,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for UpdatePermissionsResponseView<'a> {
-            const PACKAGE: &'static str = "open_sharing.shares.v1";
+            const PACKAGE: &'static str = "opensharing.shares.v1";
             const NAME: &'static str = "UpdatePermissionsResponse";
-            const FULL_NAME: &'static str = "open_sharing.shares.v1.UpdatePermissionsResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/open_sharing.shares.v1.UpdatePermissionsResponse";
+            const FULL_NAME: &'static str = "opensharing.shares.v1.UpdatePermissionsResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.shares.v1.UpdatePermissionsResponse";
         }
         impl<'v> ::buffa::DefaultViewInstance for UpdatePermissionsResponseView<'v> {
             fn default_view_instance<'a>() -> &'a Self

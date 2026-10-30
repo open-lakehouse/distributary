@@ -1,5 +1,5 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
-//! Portable **Open Sharing** / **Delta Sharing** REST API.
+//! Portable **OpenSharing** / **Delta Sharing** REST API.
 //!
 //! This crate owns the sharing *semantics* — share / schema / asset discovery,
 //! the table query path (version / metadata / query) and the storage-backed asset
@@ -18,10 +18,10 @@
 //!
 //! The crate depends on no catalog. An existing catalog becomes a sharing server
 //! by implementing the ports over its own discovery, authorization and
-//! credential machinery; `olai-sharing-server` is one such host.
+//! credential machinery; `opensharing-server` is one such host.
 //!
-//! The wire types come from `olai-sharing-common`
-//! ([`open_sharing_common`]), shared with the client.
+//! The wire types come from `opensharing-common`
+//! ([`opensharing_common`]), shared with the client.
 //!
 //! # Layout
 //! - [`catalog`] — the [`ShareCatalog`] port and the share / asset types.
@@ -30,7 +30,7 @@
 //!   and predicate-hint translation.
 //! - [`service`] — [`SharingService`], the composition root.
 //! - [`handler`] — the handler traits, implemented by [`SharingService`].
-//! - [`router`] — the axum routers for the Delta Sharing + Open Sharing surfaces.
+//! - [`router`] — the axum routers for the Delta Sharing + OpenSharing surfaces.
 //! - [`auth`] — the [`RecipientAuthenticator`](auth::RecipientAuthenticator) port
 //!   and the bearer-token layer.
 //! - [`error`] — the error contract.
@@ -64,7 +64,7 @@ pub use error::{Error, Result};
 pub use format::TableFormat;
 pub use handler::{SharingApiHandler, SharingQueryHandler};
 #[cfg(feature = "axum")]
-pub use router::{get_router, open_sharing_router, sharing_router};
+pub use router::{get_router, opensharing_router, sharing_router};
 pub use service::SharingService;
 
 /// The generated handler traits (`SharingHandler`, `SharingVolumeHandler`,

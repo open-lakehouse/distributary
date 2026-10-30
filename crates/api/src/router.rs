@@ -1,10 +1,10 @@
-//! Axum routers for the Delta Sharing and Open Sharing REST surfaces.
+//! Axum routers for the Delta Sharing and OpenSharing REST surfaces.
 //!
 //! [`get_router`] serves the Delta Sharing tabular surface (shares / schemas /
-//! tables / version / metadata / query); [`open_sharing_router`] adds the Open
+//! tables / version / metadata / query); [`opensharing_router`] adds the Open
 //! Sharing asset routes (volumes, agent skills, temporary table credentials).
 //! [`sharing_router`] mounts both under their protocol prefixes
-//! ([`DELTA_SHARING_PREFIX`], [`OPEN_SHARING_PREFIX`]), which is what a host
+//! ([`DELTA_SHARING_PREFIX`], [`OPENSHARING_PREFIX`]), which is what a host
 //! normally serves — wrapped in [`require_recipient`](crate::auth::require_recipient).
 //!
 //! # Response formats
@@ -33,8 +33,8 @@ use axum::http::HeaderMap;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{Router, get, post};
 
-use open_sharing_common::models::open_sharing::v1::*;
-use open_sharing_common::models::{DeltaSharingCapabilities, ResponseFormat};
+use opensharing_common::models::opensharing::v1::*;
+use opensharing_common::models::{DeltaSharingCapabilities, ResponseFormat};
 
 use crate::codegen::sharing::{self, SharingHandler};
 use crate::codegen::sharing_skill::{self, SharingSkillHandler};
@@ -52,8 +52,8 @@ const DELTA_TABLE_VERSION: &str = "delta-table-version";
 
 /// Where the Delta Sharing surface is mounted by [`sharing_router`].
 pub const DELTA_SHARING_PREFIX: &str = "/api/v1/delta-sharing";
-/// Where the Open Sharing surface is mounted by [`sharing_router`].
-pub const OPEN_SHARING_PREFIX: &str = "/api/1.0/opensharing";
+/// Where the OpenSharing surface is mounted by [`sharing_router`].
+pub const OPENSHARING_PREFIX: &str = "/api/1.0/opensharing";
 
 /// Reject a client whose `delta-sharing-capabilities` rule out the `parquet`
 /// response format, the only one served so far.
@@ -76,7 +76,7 @@ fn check_response_format(headers: &HeaderMap) -> Result<()> {
 /// The tabular Delta Sharing routes (shares / schemas / tables / version /
 /// metadata / query).
 ///
-/// Shared verbatim between the Delta Sharing and Open Sharing mounts. The
+/// Shared verbatim between the Delta Sharing and OpenSharing mounts. The
 /// discovery routes bind to the generated [`SharingHandler`] route functions; the
 /// three NDJSON query routes bind to the hand-written functions below.
 fn tabular_routes<T, Cx>() -> Router<T>
@@ -121,7 +121,7 @@ where
         .route("/queries/{query_id}", post(poll_query::<T, Cx>))
 }
 
-/// The Open-Sharing-only asset routes (volumes, agent skills) bound to the
+/// The OpenSharing-only asset routes (volumes, agent skills) bound to the
 /// generated per-asset route functions, plus temporary table credentials.
 fn asset_routes<T, Cx>() -> Router<T>
 where
@@ -183,9 +183,9 @@ where
     tabular_routes::<T, Cx>().with_state(state)
 }
 
-/// Create a [`Router`] for the **Open Sharing** REST API: the tabular surface
+/// Create a [`Router`] for the **OpenSharing** REST API: the tabular surface
 /// plus the storage-backed asset routes (volumes, agent skills).
-pub fn open_sharing_router<T, Cx>(state: T) -> Router
+pub fn opensharing_router<T, Cx>(state: T) -> Router
 where
     T: SharingHandler<Cx>
         + SharingQueryHandler<Cx>
@@ -203,7 +203,7 @@ where
 }
 
 /// Mount the Delta Sharing surface under [`DELTA_SHARING_PREFIX`] and the Open
-/// Sharing surface under [`OPEN_SHARING_PREFIX`], both served by `state`.
+/// Sharing surface under [`OPENSHARING_PREFIX`], both served by `state`.
 pub fn sharing_router<T, Cx>(state: T) -> Router
 where
     T: SharingHandler<Cx>
@@ -218,7 +218,7 @@ where
 {
     Router::new()
         .nest(DELTA_SHARING_PREFIX, get_router::<T, Cx>(state.clone()))
-        .nest(OPEN_SHARING_PREFIX, open_sharing_router::<T, Cx>(state))
+        .nest(OPENSHARING_PREFIX, opensharing_router::<T, Cx>(state))
 }
 
 // ---------------------------------------------------------------------------
@@ -282,7 +282,7 @@ where
         .map_err(|e| Error::generic(e.to_string()))
 }
 
-/// Open Sharing temporary table credentials. The spec allows an optional request
+/// OpenSharing temporary table credentials. The spec allows an optional request
 /// body; nothing in it changes what is vended (always read-only), so it is not read.
 async fn generate_temporary_table_credentials<T, Cx>(
     State(handler): State<T>,

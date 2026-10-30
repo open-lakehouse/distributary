@@ -8,8 +8,8 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::get;
-use open_sharing_api::auth::{Recipient, require_recipient};
-use open_sharing_api::{SharingService, sharing_router};
+use opensharing_api::auth::{Recipient, require_recipient};
+use opensharing_api::{SharingService, sharing_router};
 
 use crate::Result;
 use crate::access::{SourceStorageAccess, open_credential};

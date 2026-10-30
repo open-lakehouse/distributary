@@ -9,9 +9,9 @@ set dotenv-load
 # The provider admin API packages. They have their own codegen pipeline
 # (buf.gen.admin.yaml + trestle.admin.yaml -> crates/admin), so the protocol
 # pipeline excludes them.
-ADMIN_PROTOS := "proto/open_sharing/shares proto/open_sharing/recipients proto/open_sharing/providers"
+ADMIN_PROTOS := "proto/opensharing/shares proto/opensharing/recipients proto/opensharing/providers"
 
-# the Open Sharing server as a Neon Function
+# the OpenSharing server as a Neon Function
 mod neon 'crates/neon/justfile'
 
 # show the available recipes
@@ -82,4 +82,4 @@ fix:
 # apply the sharing-server migrations to DATABASE_URL
 [group('dev')]
 migrate:
-    cargo run -p olai-sharing-server --features bin -- migrate
+    cargo run -p opensharing-server --features bin -- migrate

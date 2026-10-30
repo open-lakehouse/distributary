@@ -13,16 +13,16 @@ use axum::Router;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use olai_storage_credentials::{AccessLevel, StorageCredentials, VendedCredential};
-use open_sharing_server::Result;
-use open_sharing_server::config::{ConfigValue, EncryptionConfig, KeyConfig, KeyProviderKind};
-use open_sharing_server::embed::{self, Settings};
-use open_sharing_server::secrets::Secrets;
-use open_sharing_server::source::fixed::{StaticSource, StaticTable};
-use open_sharing_server::source::{
+use opensharing_server::Result;
+use opensharing_server::config::{ConfigValue, EncryptionConfig, KeyConfig, KeyProviderKind};
+use opensharing_server::embed::{self, Settings};
+use opensharing_server::secrets::Secrets;
+use opensharing_server::source::fixed::{StaticSource, StaticTable};
+use opensharing_server::source::{
     AccessMode, CatalogSource, RegisteredSource, SourceRegistry, SourceTable, SourceVolume,
 };
-use open_sharing_server::store::ShareStore;
-use open_sharing_server::store::memory::InMemoryStore;
+use opensharing_server::store::ShareStore;
+use opensharing_server::store::memory::InMemoryStore;
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
@@ -283,7 +283,7 @@ async fn provider_shares_a_table_with_a_recipient() {
         .await;
     assert_eq!(files(&lines).len(), 3);
 
-    // Temporary table credentials (Open Sharing).
+    // Temporary table credentials (OpenSharing).
     let (status, credentials) = client
         .call(
             "POST",
@@ -415,7 +415,7 @@ impl CatalogSource for VendingCatalog {
             name: full_name.rsplit('.').next().unwrap().to_string(),
             id: Some("11111111-1111-1111-1111-111111111111".to_string()),
             location: self.location.clone(),
-            format: open_sharing_api::catalog::DataFormat::Delta,
+            format: opensharing_api::catalog::DataFormat::Delta,
         })
     }
 
@@ -424,7 +424,7 @@ impl CatalogSource for VendingCatalog {
     }
 
     async fn get_volume(&self, _full_name: &str) -> Result<SourceVolume> {
-        Err(open_sharing_server::Error::NotFound)
+        Err(opensharing_server::Error::NotFound)
     }
 
     async fn vend_table(&self, table: &SourceTable) -> Result<VendedCredential> {

@@ -2320,120 +2320,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "olai-sharing-admin"
-version = "0.0.1"
-dependencies = [
- "axum",
- "axum-extra",
- "buffa",
- "buffa-types",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "olai-sharing-api"
-version = "0.0.1"
-dependencies = [
- "async-trait",
- "axum",
- "axum-extra",
- "buoyant_kernel",
- "buoyant_kernel_engine",
- "bytes",
- "chrono",
- "object_store",
- "olai-sharing-common",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror",
- "tokio",
- "tower",
- "tracing",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "olai-sharing-client"
-version = "0.0.1"
-dependencies = [
- "chrono",
- "futures",
- "itertools",
- "olai-http",
- "olai-sharing-common",
- "reqwest 0.13.4",
- "serde_json",
- "thiserror",
- "url",
-]
-
-[[package]]
-name = "olai-sharing-common"
-version = "0.0.1"
-dependencies = [
- "axum",
- "axum-extra",
- "buffa",
- "buoyant_kernel",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "olai-sharing-neon"
-version = "0.0.0"
-dependencies = [
- "axum",
- "http-body-util",
- "napi",
- "napi-build",
- "napi-derive",
- "olai-sharing-server",
- "tower",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "olai-sharing-server"
-version = "0.0.1"
-dependencies = [
- "async-trait",
- "axum",
- "base64 0.22.1",
- "chrono",
- "clap",
- "futures",
- "object_store",
- "olai-credential-vending",
- "olai-sharing-admin",
- "olai-sharing-api",
- "olai-sharing-common",
- "olai-storage-credentials",
- "olai-store",
- "olai-uc-client",
- "olai-uc-common",
- "olai-vended-store",
- "serde",
- "serde_json",
- "serde_yml",
- "sha2",
- "sqlx",
- "tempfile",
- "thiserror",
- "tokio",
- "tower",
- "tracing",
- "tracing-subscriber",
- "url",
- "uuid",
-]
-
-[[package]]
 name = "olai-storage-credentials"
 version = "0.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2580,6 +2466,120 @@ name = "opaque-debug"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
+
+[[package]]
+name = "opensharing-admin"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "axum-extra",
+ "buffa",
+ "buffa-types",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "opensharing-api"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "axum",
+ "axum-extra",
+ "buoyant_kernel",
+ "buoyant_kernel_engine",
+ "bytes",
+ "chrono",
+ "object_store",
+ "opensharing-common",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "opensharing-client"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "futures",
+ "itertools",
+ "olai-http",
+ "opensharing-common",
+ "reqwest 0.13.4",
+ "serde_json",
+ "thiserror",
+ "url",
+]
+
+[[package]]
+name = "opensharing-common"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "axum-extra",
+ "buffa",
+ "buoyant_kernel",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "opensharing-neon"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "http-body-util",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "opensharing-server",
+ "tower",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "opensharing-server"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "clap",
+ "futures",
+ "object_store",
+ "olai-credential-vending",
+ "olai-storage-credentials",
+ "olai-store",
+ "olai-uc-client",
+ "olai-uc-common",
+ "olai-vended-store",
+ "opensharing-admin",
+ "opensharing-api",
+ "opensharing-common",
+ "serde",
+ "serde_json",
+ "serde_yml",
+ "sha2",
+ "sqlx",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "uuid",
+]
 
 [[package]]
 name = "openssl-probe"

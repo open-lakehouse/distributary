@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package open_sharing.v1;
+package opensharing.v1;
 
 import "buf/validate/validate.proto";
 

@@ -6,9 +6,9 @@
 #![allow(clippy::derivable_impls)]
 use std::collections::HashMap;
 pub type PropertyMap = HashMap<String, serde_json::Value>;
-pub mod open_sharing {
+pub mod opensharing {
     pub mod v1 {
-        include!("./open_sharing.v1.rs");
+        include!("./opensharing.v1.rs");
     }
 }
 #[cfg(feature = "axum")]

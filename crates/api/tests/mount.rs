@@ -10,10 +10,10 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use tower::ServiceExt;
 
-use open_sharing_api::auth::{Recipient, RecipientAuthenticator, require_recipient};
-use open_sharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
-use open_sharing_api::{Error, Result, SharingService, sharing_router};
-use open_sharing_common::models::open_sharing::v1::SharingTemporaryCredentials;
+use opensharing_api::auth::{Recipient, RecipientAuthenticator, require_recipient};
+use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
+use opensharing_api::{Error, Result, SharingService, sharing_router};
+use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
 
 const TOKEN: &str = "recipient-token";
 
@@ -115,7 +115,7 @@ async fn negotiates_the_response_format() {
 }
 
 #[tokio::test]
-async fn vends_table_credentials_on_the_open_sharing_surface() {
+async fn vends_table_credentials_on_the_opensharing_surface() {
     let path = "/shares/share1/schemas/schema1/tables/letters/temporary-table-credentials";
     let resp = app()
         .oneshot(
@@ -133,7 +133,7 @@ async fn vends_table_credentials_on_the_open_sharing_surface() {
     assert!(credentials.credentials.is_some());
     assert!(credentials.url.unwrap().ends_with("basic_partitioned/"));
 
-    // Credential vending is an Open Sharing extension, absent from Delta Sharing.
+    // Credential vending is an OpenSharing extension, absent from Delta Sharing.
     assert_eq!(
         status(
             request("POST", &format!("/api/v1/delta-sharing{path}"), Some(TOKEN))

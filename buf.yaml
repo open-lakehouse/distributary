@@ -1,7 +1,7 @@
 version: v2
 modules:
   - path: proto
-    name: buf.build/open-lakehouse/open_sharing
+    name: buf.build/open-lakehouse/opensharing
 deps:
   - buf.build/bufbuild/protovalidate
   - buf.build/gnostic/gnostic

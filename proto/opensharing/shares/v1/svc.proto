@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package open_sharing.shares.v1;
+package opensharing.shares.v1;
 
 import "buf/validate/validate.proto";
 import "gnostic/openapi/v3/annotations.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
-import "open_sharing/shares/v1/models.proto";
+import "opensharing/shares/v1/models.proto";
 
 // Request to list shares.
 message ListSharesRequest {

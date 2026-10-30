@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Merge the hand-maintained NDJSON query fragment into the generated sharing spec.
 
-The Open Sharing OpenAPI document is generated from `proto/open_sharing` by the
+The OpenSharing OpenAPI document is generated from `proto/opensharing` by the
 `google-gnostic-openapi` buf plugin (it covers the discovery + volume + skill
 surfaces). The Delta Sharing **query** path (table version / metadata / query /
 change-data-feed) is not part of the proto service — those endpoints return
@@ -50,7 +50,7 @@ def main() -> None:
     merged = merge(base, fragment)
 
     header = (
-        "# Generated from `proto/open_sharing` (google-gnostic-openapi) and merged with\n"
+        "# Generated from `proto/opensharing` (google-gnostic-openapi) and merged with\n"
         "# openapi/sharing-query-paths.yaml via dev/scripts/merge_sharing_openapi.py.\n"
         "# Do not edit by hand — see `just generate-openapi`.\n"
     )

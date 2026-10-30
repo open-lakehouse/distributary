@@ -1,7 +1,7 @@
-# olai-sharing-server
+# opensharing-server
 
-A composable Open Sharing / Delta Sharing server, built on the protocol
-implementation in [`olai-sharing-api`](../api). See
+A composable OpenSharing / Delta Sharing server, built on the protocol
+implementation in [`opensharing-api`](../api). See
 [`ARCHITECTURE.md`](../../ARCHITECTURE.md) for the design.
 
 - **Shares map onto a source catalog.** A share is a list of share objects
@@ -15,7 +15,7 @@ implementation in [`olai-sharing-api`](../api). See
   A *local* source uses credentials stored in the server, sealed, and minted by
   the same `olai-credential-vending` minters the UC server uses. Either way, query
   responses carry presigned URLs that never outlive the credential, and the
-  Open Sharing `temporary-*-credentials` endpoints hand the credential on.
+  OpenSharing `temporary-*-credentials` endpoints hand the credential on.
 - **Recipients use bearer tokens.** Creating a recipient issues a token with a
   one-time activation link. Opening the link returns the `.share` profile, and
   from then on the server keeps only the token's sha256 digest.
@@ -27,7 +27,7 @@ implementation in [`olai-sharing-api`](../api). See
 | Path | What |
 |---|---|
 | `/api/v1/delta-sharing/…` | Delta Sharing protocol (recipient token) |
-| `/api/1.0/opensharing/…` | Open Sharing protocol: adds volumes, agent skills, temporary credentials (recipient token) |
+| `/api/1.0/opensharing/…` | OpenSharing protocol: adds volumes, agent skills, temporary credentials (recipient token) |
 | `/api/1.0/opensharing/activations/{code}` | One-time activation link, returns the sharing profile |
 | `/api/2.1/unity-catalog/…` | Provider admin API, in the Databricks Delta Sharing REST shape: `shares`, `shares/{name}/permissions`, `recipients`, `recipients/{name}/rotate-token`; with feature `unity` also `credentials`, `external-locations` (provider token) |
 | `/health` | Liveness |
@@ -44,11 +44,11 @@ implementation in [`olai-sharing-api`](../api). See
 
 With `default-features = false` (optionally plus `postgres`) the crate uses no
 catalog's models: the store, the share / recipient admin API
-([`olai-sharing-admin`](../admin) models), recipient tokens and activation,
+([`opensharing-admin`](../admin) models), recipient tokens and activation,
 sealed secrets, the static source and storage access remain. Credential minting, object stores
 and presigning come from the catalog-independent trestle crates
 (`olai-credential-vending`, `olai-vended-store`, `olai-storage-credentials`). A catalog that already has discovery and an admin surface
-implements `CatalogSource` (or the `olai-sharing-api` ports directly),
+implements `CatalogSource` (or the `opensharing-api` ports directly),
 provisions shares and recipients through the `ShareStore`
 (`recipients::issue_token` issues tokens), and serves `embed::router`. See
 `tests/custom_mount.rs`.
@@ -56,8 +56,8 @@ provisions shares and recipients through the `ShareStore`
 ## Running
 
 ```sh
-cargo run -p olai-sharing-server --features bin -- -c config.yaml migrate
-cargo run -p olai-sharing-server --features bin -- -c config.yaml serve
+cargo run -p opensharing-server --features bin -- -c config.yaml migrate
+cargo run -p opensharing-server --features bin -- -c config.yaml serve
 ```
 
 Without a config file the server runs on an in-memory store with an insecure
@@ -101,7 +101,7 @@ that the `delta-sharing` clients read directly.
 
 ## Testing
 
-`cargo test -p olai-sharing-server` runs the end-to-end suite on the
+`cargo test -p opensharing-server` runs the end-to-end suite on the
 in-memory store; `--no-default-features` runs the catalog-free host test
 (`tests/custom_mount.rs`). The Postgres store test runs when
 `SHARING_SERVER_TEST_DATABASE_URL` points at a disposable database (see

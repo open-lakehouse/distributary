@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package open_sharing.v1;
+package opensharing.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
-import "open_sharing/v1/protocol.proto";
+import "opensharing/v1/protocol.proto";
 
 // Get the version of a table.
 message GetTableVersionRequest {

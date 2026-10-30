@@ -7,7 +7,7 @@
 //!   [`ObjectStore`](object_store::ObjectStore);
 //! - **recipient** access, either as presigned file URLs ([`FileSigner`], used by
 //!   the Delta Sharing `query` response) or as temporary storage credentials
-//!   ([`StorageAccess::vend_read_credential`], used by the Open Sharing
+//!   ([`StorageAccess::vend_read_credential`], used by the OpenSharing
 //!   `temporary-*-credentials` endpoints).
 //!
 //! An implementation typically either *delegates* — asks the source catalog for a
@@ -20,7 +20,7 @@ use async_trait::async_trait;
 use object_store::DynObjectStore;
 use url::Url;
 
-use open_sharing_common::models::open_sharing::v1::SharingTemporaryCredentials;
+use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
 
 use crate::catalog::SharedAsset;
 use crate::error::Result;
@@ -73,7 +73,7 @@ pub trait StorageAccess<Cx = crate::DefaultContext>: Send + Sync + 'static {
     async fn table_storage(&self, asset: &SharedAsset, cx: &Cx) -> Result<TableStorage>;
 
     /// Read-only temporary credentials for a shared asset's location, in the Open
-    /// Sharing credential envelope. Open Sharing only grants read access.
+    /// Sharing credential envelope. OpenSharing only grants read access.
     async fn vend_read_credential(
         &self,
         asset: &SharedAsset,

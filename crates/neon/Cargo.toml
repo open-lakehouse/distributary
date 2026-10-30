@@ -1,7 +1,7 @@
 [package]
-name = "olai-sharing-neon"
+name = "opensharing-neon"
 version = "0.0.0"
-description = "The Open Sharing server as a Node-API addon, for deployment as a Neon Function"
+description = "The OpenSharing server as a Node-API addon, for deployment as a Neon Function"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -20,7 +20,7 @@ doctest = false
 
 [dependencies]
 # The Unity Catalog source and admin API are part of the deployed function.
-open-sharing-server = { package = "olai-sharing-server", path = "../server", features = [
+opensharing-server = { path = "../server", features = [
   "unity",
 ] }
 

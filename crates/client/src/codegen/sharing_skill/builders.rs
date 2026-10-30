@@ -4,7 +4,7 @@
 type BoxFut<'a, T> = ::futures::future::BoxFuture<'a, T>;
 use super::client::*;
 use crate::Result;
-use open_sharing_common::models::open_sharing::v1::*;
+use opensharing_common::models::opensharing::v1::*;
 use std::future::IntoFuture;
 /// Builder for skills
 pub struct ListSkillsBuilder {

@@ -1,11 +1,7 @@
 [package]
-# Open Sharing is its own project, not part of Unity Catalog: published to
-# crates.io under the `olai-sharing-*` prefix, while the in-workspace dependency
-# key + crate identifier use the expanded `open(_)sharing_api` name via each
-# dependent's `package =` alias. See release-plz.toml / CONTRIBUTING.md.
-name = "olai-sharing-api"
+name = "opensharing-api"
 version = "0.0.1"
-description = "Portable Open Sharing / Delta Sharing REST API: pluggable share-catalog, storage-access and table-format ports, the discovery + asset handlers, and a delta_kernel-backed Delta query path."
+description = "Portable OpenSharing / Delta Sharing REST API: pluggable share-catalog, storage-access and table-format ports, the discovery + asset handlers, and a delta_kernel-backed Delta query path."
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true
@@ -16,15 +12,9 @@ repository.workspace = true
 readme = "README.md"
 rust-version.workspace = true
 
-[lib]
-# Keep the Rust crate identifier (`open_sharing_api`) independent of the
-# `olai-sharing-*` package name, so source `use` paths, sibling crates, and this
-# crate's own tests/examples need no churn from a later rename.
-name = "open_sharing_api"
-
 [dependencies]
 # local dependencies in alphabetical order
-open-sharing-common = { package = "olai-sharing-common", path = "../common", version = "0.0.1" }
+opensharing-common = { path = "../common", version = "0.0.1" }
 
 # workspace dependencies in alphabetical order
 async-trait = { workspace = true }
@@ -77,7 +67,7 @@ default = ["axum", "delta"]
 axum = [
   "dep:axum",
   "dep:axum-extra",
-  "open-sharing-common/axum",
+  "opensharing-common/axum",
 ]
 # The kernel-backed Delta table format (`format::delta`).
 delta = ["dep:delta_kernel_default_engine", "dep:uuid"]

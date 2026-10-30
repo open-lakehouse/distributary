@@ -118,10 +118,10 @@ pub struct ErrorResponse {
 }
 
 /// Bridge from the shared wire-model error (produced by the protocol
-/// conversions + capability parsing in `open_sharing_common`).
-impl From<open_sharing_common::Error> for Error {
-    fn from(err: open_sharing_common::Error) -> Self {
-        use open_sharing_common::Error as Sc;
+/// conversions + capability parsing in `opensharing_common`).
+impl From<opensharing_common::Error> for Error {
+    fn from(err: opensharing_common::Error) -> Self {
+        use opensharing_common::Error as Sc;
         match err {
             Sc::MalformedResponse { source } => Error::MalformedResponse { source },
             Sc::InvalidArgument(m) => Error::InvalidArgument(m),

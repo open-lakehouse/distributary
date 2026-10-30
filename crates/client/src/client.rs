@@ -7,7 +7,7 @@ use olai_http::CloudClient;
 use super::utils::stream_paginated;
 use crate::codegen::sharing::SharingClient;
 use crate::codegen::sharing::builders::GetShareBuilder;
-use crate::models::open_sharing::v1::*;
+use crate::models::opensharing::v1::*;
 use crate::models::{MetadataResponse, MetadataResponseData, ProtocolResponseData};
 use crate::{Error, Result};
 
