@@ -1,5 +1,7 @@
-//! Recipient authentication: the [`RecipientAuthenticator`] port and the bearer
-//! token layer that runs it in front of the sharing routes.
+//! Bearer-token authentication for both sides of a sharing server: the
+//! [`RecipientAuthenticator`] port and the layer that runs it in front of the
+//! sharing routes, and the [`ProviderAuthenticator`] port and the layer that runs
+//! it in front of the admin routes.
 //!
 //! Delta Sharing / OpenSharing recipients authenticate with a bearer token from
 //! their sharing profile. [`require_recipient`] wraps a router so every request
@@ -52,12 +54,7 @@ async fn authenticate(
     mut request: Request,
     next: Next,
 ) -> Response {
-    let token = request
-        .headers()
-        .get(AUTHORIZATION)
-        .and_then(|value| value.to_str().ok())
-        .and_then(bearer_token);
-    let Some(token) = token else {
+    let Some(token) = request_token(&request) else {
         return Error::Unauthenticated.into_response();
     };
     match authenticator.authenticate(token).await {
@@ -67,6 +64,59 @@ async fn authenticate(
         }
         Err(err) => err.into_response(),
     }
+}
+
+/// An authenticated provider: the operator of a sharing server, allowed on the
+/// admin API.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Provider {
+    /// The provider's name.
+    pub name: String,
+}
+
+/// Resolves a bearer token to the [`Provider`] it belongs to.
+#[async_trait]
+pub trait ProviderAuthenticator: Send + Sync + 'static {
+    /// The provider `token` belongs to. An unknown token →
+    /// [`Error::Unauthenticated`].
+    async fn authenticate(&self, token: &str) -> Result<Provider>;
+}
+
+/// Require a valid provider bearer token on every route of `router`.
+pub fn require_provider(
+    router: axum::Router,
+    authenticator: Arc<dyn ProviderAuthenticator>,
+) -> axum::Router {
+    router.layer(axum::middleware::from_fn_with_state(
+        authenticator,
+        authenticate_provider,
+    ))
+}
+
+async fn authenticate_provider(
+    State(authenticator): State<Arc<dyn ProviderAuthenticator>>,
+    mut request: Request,
+    next: Next,
+) -> Response {
+    let Some(token) = request_token(&request) else {
+        return Error::Unauthenticated.into_response();
+    };
+    match authenticator.authenticate(token).await {
+        Ok(provider) => {
+            request.extensions_mut().insert(provider);
+            next.run(request).await
+        }
+        Err(err) => err.into_response(),
+    }
+}
+
+/// The bearer token of a request, if it carries one.
+fn request_token(request: &Request) -> Option<&str> {
+    request
+        .headers()
+        .get(AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
+        .and_then(bearer_token)
 }
 
 /// The token of an `Authorization: Bearer <token>` header value.
@@ -83,6 +133,18 @@ impl<S: Send + Sync> FromRequestParts<S> for Recipient {
         parts
             .extensions
             .get::<Recipient>()
+            .cloned()
+            .ok_or(Error::Unauthenticated)
+    }
+}
+
+impl<S: Send + Sync> FromRequestParts<S> for Provider {
+    type Rejection = Error;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self> {
+        parts
+            .extensions
+            .get::<Provider>()
             .cloned()
             .ok_or(Error::Unauthenticated)
     }
