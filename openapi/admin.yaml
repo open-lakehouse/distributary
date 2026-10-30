@@ -1,0 +1,1179 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /providers:
+        get:
+            tags:
+                - ProvidersService
+            description: List providers.
+            operationId: ListProviders
+            parameters:
+                - name: maxResults
+                  in: query
+                  description: |-
+                    The maximum number of results per page that should be returned.
+
+                     If unset or 0, the server's default page size is used. Negative values are rejected.
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  description: Opaque pagination token to go to next page based on previous query.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListProvidersResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - ProvidersService
+            description: Create a new provider.
+            operationId: CreateProvider
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateProviderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Provider'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /providers/{name}:
+        get:
+            tags:
+                - ProvidersService
+            description: Get a provider by name.
+            operationId: GetProvider
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the provider.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Provider'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - ProvidersService
+            description: Delete a provider.
+            operationId: DeleteProvider
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the provider.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        patch:
+            tags:
+                - ProvidersService
+            description: Update a provider.
+            operationId: UpdateProvider
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the provider.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateProviderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Provider'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /recipients:
+        get:
+            tags:
+                - RecipientsService
+            description: List recipients.
+            operationId: ListRecipients
+            parameters:
+                - name: maxResults
+                  in: query
+                  description: |-
+                    The maximum number of results per page that should be returned.
+
+                     If unset or 0, the server's default page size is used. Negative values are rejected.
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  description: Opaque pagination token to go to next page based on previous query.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListRecipientsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - RecipientsService
+            description: Create a new recipient.
+            operationId: CreateRecipient
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateRecipientRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Recipient'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /recipients/{name}:
+        get:
+            tags:
+                - RecipientsService
+            description: Get a recipient by name.
+            operationId: GetRecipient
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the recipient.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Recipient'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - RecipientsService
+            description: Delete a recipient.
+            operationId: DeleteRecipient
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the recipient.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        patch:
+            tags:
+                - RecipientsService
+            description: Update a recipient.
+            operationId: UpdateRecipient
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the recipient.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateRecipientRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Recipient'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /recipients/{name}/rotate-token:
+        post:
+            tags:
+                - RecipientsService
+            description: |-
+                Rotate a recipient's token: issue a new token (and activation link) and
+                 retire the existing one.
+            operationId: RotateRecipientToken
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the recipient.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RotateRecipientTokenRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Recipient'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /shares:
+        get:
+            tags:
+                - SharesService
+            description: List shares.
+            operationId: ListShares
+            parameters:
+                - name: maxResults
+                  in: query
+                  description: |-
+                    The maximum number of results per page that should be returned.
+
+                     If unset or 0, the server's default page size is used. Negative values are rejected.
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  description: Opaque pagination token to go to next page based on previous query.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListSharesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - SharesService
+            description: Create a new share.
+            operationId: CreateShare
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateShareRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Share'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /shares/{name}:
+        get:
+            tags:
+                - SharesService
+            description: Get a share by name.
+            operationId: GetShare
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the share.
+                  required: true
+                  schema:
+                    type: string
+                - name: includeSharedData
+                  in: query
+                  description: Query for data to include in the share.
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Share'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - SharesService
+            description: Deletes a share.
+            operationId: DeleteShare
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the share.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        patch:
+            tags:
+                - SharesService
+            description: Update a share.
+            operationId: UpdateShare
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the share.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateShareRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Share'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /shares/{name}/permissions:
+        get:
+            tags:
+                - SharesService
+            description: Gets the permissions for a data share from the metastore.
+            operationId: GetPermissions
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the share.
+                  required: true
+                  schema:
+                    type: string
+                - name: maxResults
+                  in: query
+                  description: |-
+                    The maximum number of results per page that should be returned.
+
+                     If unset or 0, the server's default page size is used. Negative values are rejected.
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  description: Opaque pagination token to go to next page based on previous query.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetPermissionsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        patch:
+            tags:
+                - SharesService
+            description: Updates the permissions for a data share in the metastore.
+            operationId: UpdatePermissions
+            parameters:
+                - name: name
+                  in: path
+                  description: Name of the share.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdatePermissionsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdatePermissionsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        CreateProviderRequest:
+            required:
+                - name
+                - authenticationType
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the provider.
+                authenticationType:
+                    type: integer
+                    description: The delta sharing authentication type.
+                    format: enum
+                owner:
+                    type: string
+                    description: Username of the provider owner.
+                comment:
+                    type: string
+                    description: Description about the provider.
+                recipientProfileStr:
+                    type: string
+                    description: |-
+                        The recipient profile (credential file contents) used to connect to the
+                         sharing server. Required when authentication_type is TOKEN or
+                         OAUTH_CLIENT_CREDENTIALS.
+                properties:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: Provider properties as map of string key-value pairs.
+            description: Creates a new provider
+        CreateRecipientRequest:
+            required:
+                - name
+                - authenticationType
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the recipient.
+                authenticationType:
+                    type: integer
+                    description: The delta sharing authentication type.
+                    format: enum
+                owner:
+                    type: string
+                    description: Username of the recipient owner.
+                comment:
+                    type: string
+                    description: Description about the recipient.
+                propertiesKvpairs:
+                    allOf:
+                        - $ref: '#/components/schemas/SecurablePropertiesKvPairs'
+                    description: |-
+                        Recipient properties as map of string key-value pairs.
+
+                         When provided in update request, the specified properties will override the existing properties.
+                         To add and remove properties, one would need to perform a read-modify-write.
+                expirationTime:
+                    type: string
+                    description: Expiration timestamp of the token, in epoch milliseconds.
+            description: Creates a new recipient
+        CreateShareRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the share.
+                comment:
+                    type: string
+                    description: User-provided free-form text description.
+                storageRoot:
+                    type: string
+                    description: Storage root URL for the share.
+            description: |-
+                Creates a new share for data objects.
+
+                 Data objects can be added after creation with update.
+                 The caller must be a metastore admin or have the CREATE_SHARE privilege on the metastore.
+        DataObject:
+            required:
+                - name
+                - dataObjectType
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: |-
+                        A fully qualified name that uniquely identifies a data object.
+
+                         For example, a table's fully qualified name is in the format of <catalog>.<schema>.<table>,
+                dataObjectType:
+                    type: integer
+                    description: Type of the data object.
+                    format: enum
+                addedAt:
+                    readOnly: true
+                    type: string
+                    description: The time when this data object is added to the share, in epoch milliseconds.
+                addedBy:
+                    readOnly: true
+                    type: string
+                    description: Username of the sharer.
+                comment:
+                    type: string
+                    description: A user-provided comment when adding the data object to the share.
+                sharedAs:
+                    type: string
+                    description: |-
+                        A user-provided new name for the data object within the share.
+
+                         If this new name is not provided, the object's original name will be used as the shared_as name.
+                         The shared_as name must be unique within a share.
+                         For tables, the new name must follow the format of <schema>.<table>: two parts, each
+                         consisting only of alphanumeric characters and underscores, without the catalog part.
+                         Do not set it for non-table data objects; use string_shared_as instead.
+                partitions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Partition'
+                    description: Array of partitions for the shared data.
+                cdfEnabled:
+                    type: boolean
+                    description: Whether to enable cdf or indicate if cdf is enabled on the shared object.
+                historyDataSharingStatus:
+                    type: integer
+                    description: Whether to enable or disable sharing of data history. If not specified, the default is DISABLED.
+                    format: enum
+                startVersion:
+                    type: string
+                    description: |-
+                        The start version associated with the object.
+
+                         This allows data providers to control the lowest object version that is accessible by clients.
+                         If specified, clients can query snapshots or changes for versions >= start_version.
+                         If not specified, clients can only query starting from the version of the object at the time it was added to the share.
+
+                         NOTE: The start_version should be <= the current version of the object.
+                stringSharedAs:
+                    type: string
+                    description: |-
+                        A user-provided alias for a non-table data object (e.g. a volume) within the share.
+
+                         For volumes, functions and models it is a two-part name <schema>.<name>, each part
+                         consisting only of alphanumeric characters and underscores. If not provided, the
+                         object's original name minus its catalog is used. It must be unique among objects of
+                         the same type within the share. Do not set it for table-like data objects; use
+                         shared_as instead.
+                status:
+                    readOnly: true
+                    type: integer
+                    description: Whether the data object is still accessible to the share.
+                    format: enum
+        DataObjectUpdate:
+            required:
+                - action
+                - dataObject
+            type: object
+            properties:
+                action:
+                    type: integer
+                    description: The action to perform on the data object.
+                    format: enum
+                dataObject:
+                    allOf:
+                        - $ref: '#/components/schemas/DataObject'
+                    description: The data object that is being added, removed, or updated.
+            description: Data object update.
+        GetPermissionsResponse:
+            type: object
+            properties:
+                privilegeAssignments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PrivilegeAssignment'
+                    description: The privileges assigned to each principal
+                nextPageToken:
+                    type: string
+                    description: Opaque pagination token to go to next page based on previous query.
+            description: Response to list shares.
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ListProvidersResponse:
+            type: object
+            properties:
+                providers:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Provider'
+                    description: List of providers.
+                nextPageToken:
+                    type: string
+                    description: Opaque pagination token to go to next page based on previous query.
+            description: Response to list providers.
+        ListRecipientsResponse:
+            type: object
+            properties:
+                recipients:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Recipient'
+                    description: List of recipients.
+                nextPageToken:
+                    type: string
+                    description: Opaque pagination token to go to next page based on previous query.
+            description: Response to list recipients.
+        ListSharesResponse:
+            type: object
+            properties:
+                shares:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Share'
+                    description: List of shares.
+                nextPageToken:
+                    type: string
+                    description: Opaque pagination token to go to next page based on previous query.
+            description: Response to list shares.
+        Partition:
+            type: object
+            properties:
+                values:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PartitionValue'
+                    description: An array of partition values.
+            description: 'A partition specification: the conjunction of its partition values.'
+        PartitionValue:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: The name of the partition column.
+                value:
+                    type: string
+                    description: |-
+                        The value of the partition column; unset means a `null` value.
+
+                         Mutually exclusive with recipient_property_key.
+                recipientPropertyKey:
+                    type: string
+                    description: |-
+                        The key of a Delta Sharing recipient property whose value the partition column is
+                         matched against, e.g. "databricks-account-id".
+
+                         Mutually exclusive with value.
+                op:
+                    type: integer
+                    description: The operator to apply for the value.
+                    format: enum
+            description: A partition column value a shared table is restricted to.
+        PermissionsChange:
+            type: object
+            properties:
+                principal:
+                    type: string
+                    description: The principal (user email address or group name).
+                add:
+                    type: array
+                    items:
+                        type: string
+                    description: The set of privileges to add.
+                remove:
+                    type: array
+                    items:
+                        type: string
+                    description: The set of privileges to remove.
+        PrivilegeAssignment:
+            type: object
+            properties:
+                principal:
+                    type: string
+                    description: |-
+                        The principal (user email address or group name).
+
+                         For deleted principals, principal is empty while principal_id is populated.
+                privileges:
+                    type: array
+                    items:
+                        type: string
+                    description: The privileges assigned to the principal.
+        Provider:
+            required:
+                - name
+                - authenticationType
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: Unique ID of the provider.
+                name:
+                    type: string
+                    description: The name of the provider.
+                authenticationType:
+                    type: integer
+                    description: The delta sharing authentication type.
+                    format: enum
+                owner:
+                    type: string
+                    description: Username of the provider owner.
+                comment:
+                    type: string
+                    description: Description about the provider.
+                recipientProfileStr:
+                    type: string
+                    description: |-
+                        The recipient profile (credential file contents) used to connect to the
+                         sharing server. Present for TOKEN and OAUTH_CLIENT_CREDENTIALS authentication.
+                properties:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: A map of key-value properties attached to the provider.
+                createdAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this provider was created, in epoch milliseconds.
+                createdBy:
+                    readOnly: true
+                    type: string
+                    description: Username of the creator of the provider.
+                updatedAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this provider was updated, in epoch milliseconds.
+                updatedBy:
+                    readOnly: true
+                    type: string
+                    description: Username of the provider updater.
+            description: |-
+                A provider represents an organization sharing data with this metastore.
+
+                 A provider is the inbound counterpart of a recipient: it is registered from a
+                 share activation/credential file and is used to access shares offered by an
+                 upstream Delta Sharing server.
+        Recipient:
+            required:
+                - name
+                - authenticationType
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: Unique ID of the recipient.
+                name:
+                    type: string
+                    description: The name of the recipient.
+                authenticationType:
+                    type: integer
+                    description: The delta sharing authentication type.
+                    format: enum
+                owner:
+                    type: string
+                    description: Username of the recipient owner.
+                comment:
+                    type: string
+                    description: Description about the recipient.
+                propertiesKvpairs:
+                    allOf:
+                        - $ref: '#/components/schemas/SecurablePropertiesKvPairs'
+                    description: Recipient properties as map of string key-value pairs.
+                createdAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this recipient was created, in epoch milliseconds.
+                createdBy:
+                    readOnly: true
+                    type: string
+                    description: Username of recipient creator.
+                tokens:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecipientToken'
+                    description: This field is only present when the authentication_type is TOKEN.
+                updatedAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this recipient was updated, in epoch milliseconds.
+                updatedBy:
+                    readOnly: true
+                    type: string
+                    description: Username of recipient updater.
+        RecipientToken:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: Unique ID of the recipient token.
+                createdAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this recipient token was created, in epoch milliseconds.
+                createdBy:
+                    readOnly: true
+                    type: string
+                    description: Username of recipient token creator.
+                activationUrl:
+                    readOnly: true
+                    type: string
+                    description: Full activation URL to retrieve the access token. It will be empty if the token is already retrieved.
+                expirationTime:
+                    readOnly: true
+                    type: string
+                    description: Expiration timestamp of the token in epoch milliseconds.
+                updatedAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this recipient token was updated, in epoch milliseconds.
+                updatedBy:
+                    readOnly: true
+                    type: string
+                    description: Username of recipient token updater.
+        RotateRecipientTokenRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the recipient.
+                existingTokenExpireInSeconds:
+                    type: string
+                    description: |-
+                        Seconds until the existing token expires. It can only shorten the
+                         existing token's lifetime, never extend it; 0 expires it immediately.
+            description: Rotate a recipient's bearer token.
+        SecurablePropertiesKvPairs:
+            required:
+                - properties
+            type: object
+            properties:
+                properties:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: A map of key-value properties attached to the securable.
+            description: An object with the properties of a securable as key-value pairs.
+        Share:
+            required:
+                - name
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: Unique ID of the share.
+                name:
+                    type: string
+                    description: Name of the share.
+                objects:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DataObject'
+                    description: A list of shared data objects within the share.
+                owner:
+                    type: string
+                    description: Username of current owner of share.
+                comment:
+                    type: string
+                    description: User-provided free-form text description.
+                storageLocation:
+                    readOnly: true
+                    type: string
+                    description: Storage Location URL (full path) for the share.
+                storageRoot:
+                    type: string
+                    description: Storage root URL for the share.
+                createdAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this share was created, in epoch milliseconds.
+                createdBy:
+                    readOnly: true
+                    type: string
+                    description: Username of the creator of the share.
+                updatedAt:
+                    readOnly: true
+                    type: string
+                    description: Time at which this share was updated, in epoch milliseconds.
+                updatedBy:
+                    readOnly: true
+                    type: string
+                    description: Username of share updater.
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        UpdatePermissionsRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the share.
+                changes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PermissionsChange'
+                    description: Array of permissions change objects.
+                omitPermissionsList:
+                    type: boolean
+                    description: Whether to return the latest permissions list of the share in the response.
+        UpdatePermissionsResponse:
+            type: object
+            properties:
+                privilegeAssignments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PrivilegeAssignment'
+                    description: The privileges assigned to each principal
+        UpdateProviderRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the provider.
+                newName:
+                    type: string
+                    description: New name for the provider.
+                owner:
+                    type: string
+                    description: Username of the provider owner.
+                comment:
+                    type: string
+                    description: Description about the provider.
+                recipientProfileStr:
+                    type: string
+                    description: |-
+                        The recipient profile (credential file contents) used to connect to the
+                         sharing server. Required when authentication_type is TOKEN or
+                         OAUTH_CLIENT_CREDENTIALS.
+                properties:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: |-
+                        Provider properties as map of string key-value pairs.
+
+                         When provided in update request, the specified properties will override the existing properties.
+                         To add and remove properties, one would need to perform a read-modify-write.
+            description: Update a provider
+        UpdateRecipientRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the recipient.
+                newName:
+                    type: string
+                    description: New name for the recipient
+                owner:
+                    type: string
+                    description: Username of the recipient owner.
+                comment:
+                    type: string
+                    description: Description about the recipient.
+                propertiesKvpairs:
+                    allOf:
+                        - $ref: '#/components/schemas/SecurablePropertiesKvPairs'
+                    description: |-
+                        Recipient properties as map of string key-value pairs.
+
+                         When provided in update request, the specified properties will override the existing properties.
+                         To add and remove properties, one would need to perform a read-modify-write.
+                expirationTime:
+                    type: string
+                    description: Expiration timestamp of the token, in epoch milliseconds.
+            description: Update a recipient
+        UpdateShareRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the share.
+                updates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DataObjectUpdate'
+                    description: |-
+                        Array of shared data object updates.
+
+                         At most 100 data objects may be updated per request.
+                newName:
+                    type: string
+                    description: A new name for the share.
+                owner:
+                    type: string
+                    description: Owner of the share.
+                comment:
+                    type: string
+                    description: User-provided free-form text description.
+            description: |-
+                Update a share.
+
+                 The caller must be a metastore admin or have the UPDATE_SHARE privilege on the metastore.
+tags:
+    - name: ProvidersService
+      description: |-
+        Providers
+
+         A provider represents an organization that shares data with this metastore.
+         It is the inbound counterpart of a recipient: registered from a share
+         activation/credential file and used to access shares offered by an upstream
+         Delta Sharing server.
+    - name: RecipientsService
+      description: |-
+        Recipients
+
+         A recipient is an object you create using recipients/create to represent an organization which
+         you want to allow access shares. when you create a recipient object, Unity Catalog generates an
+         activation link you can send to the recipient. The recipient follows the activation link to download
+         the credential file, and then uses the credential file to establish a secure connection to receive
+         the shared data. This sharing mode is called open sharing.
+    - name: SharesService
+      description: Service for managing shares

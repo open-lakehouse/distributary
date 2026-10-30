@@ -12,10 +12,10 @@ for the design.
   or `crates/**/codegen/**`, or any file marked `@generated`. Change `proto/` and
   run `just generate`, then commit the output in the same commit as the source
   change.
-- **Keep the catalog boundary.** `olai-sharing-common`, `olai-sharing-client` and
-  `olai-sharing-api` never depend on a catalog crate. `olai-sharing-server` may
-  depend on `olai-uc-*` only behind its `unity` feature. CI's
-  `catalog-independence` job guards this.
+- **Keep the catalog boundary.** `olai-sharing-common`, `olai-sharing-admin`,
+  `olai-sharing-client` and `olai-sharing-api` never depend on a catalog crate.
+  `olai-sharing-server` may depend on `olai-uc-*` only behind its `unity`
+  feature. CI's `catalog-independence` job guards this.
 - **Cargo.lock and trestle.** CI resolves the `olai-*` trestle crates from
   crates.io. A lock resolved under the local `just configure-trestle-deps` patch
   must not be committed. Check with `dev/scripts/check-cargo-lock-trestle.sh`,
@@ -34,6 +34,6 @@ cargo fmt --all --check \
 
 ## Commits and pull requests
 
-Conventional commits, scoped by crate directory (`common`, `client`, `api`,
-`server`, `neon`): release-plz derives each crate's version bump and changelog
-from them. PR titles follow the same format.
+Conventional commits, scoped by crate directory (`common`, `admin`, `client`,
+`api`, `server`, `neon`): release-plz derives each crate's version bump and
+changelog from them. PR titles follow the same format.

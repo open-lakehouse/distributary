@@ -2,8 +2,8 @@ name: PR Title
 
 # Enforce conventional-commit PR titles so the squash-merge commit (and the
 # per-crate changelog release-plz derives from it) stays machine-parseable.
-# Use a `(scope)` matching the affected crate's directory name (common, client,
-# api, server, neon) so the bump and changelog land on the right crate.
+# Use a `(scope)` matching the affected crate's directory name (common, admin,
+# client, api, server, neon) so the bump and changelog land on the right crate.
 
 on:
   pull_request:

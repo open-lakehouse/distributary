@@ -2320,6 +2320,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "olai-sharing-admin"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "axum-extra",
+ "buffa",
+ "buffa-types",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "olai-sharing-api"
 version = "0.0.1"
 dependencies = [
