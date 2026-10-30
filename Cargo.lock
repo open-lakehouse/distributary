@@ -2480,6 +2480,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "opensharing-admin-api"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "axum",
+ "opensharing-admin",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tracing",
+]
+
+[[package]]
 name = "opensharing-api"
 version = "0.0.1"
 dependencies = [
