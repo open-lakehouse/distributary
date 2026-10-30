@@ -29,7 +29,7 @@ implementation in [`opensharing-api`](../api). See
 | `/api/v1/delta-sharing/…` | Delta Sharing protocol (recipient token) |
 | `/api/1.0/opensharing/…` | OpenSharing protocol: adds volumes, agent skills, temporary credentials (recipient token) |
 | `/api/1.0/opensharing/activations/{code}` | One-time activation link, returns the sharing profile |
-| `/api/2.1/unity-catalog/…` | Provider admin API, in the Databricks Delta Sharing REST shape: `shares`, `shares/{name}/permissions`, `recipients`, `recipients/{name}/rotate-token`; with feature `unity` also `credentials`, `external-locations` (provider token) |
+| `/api/2.1/unity-catalog/…` | Provider admin API (feature `admin`; mounted when `provider_tokens` are configured), in the Databricks Delta Sharing REST shape: `shares`, `shares/{name}/permissions`, `recipients`, `recipients/{name}/rotate-token`; with feature `unity` also `credentials`, `external-locations` (provider token) |
 | `/health` | Liveness |
 
 ## Features
@@ -37,21 +37,24 @@ implementation in [`opensharing-api`](../api). See
 | Feature | Default | What |
 |---|---|---|
 | `postgres` | ✓ | The Postgres `ShareStore` (sqlx, embedded migrations) |
-| `unity` | ✓ | Unity Catalog integration: the UC REST catalog source and the UC-shaped `credentials` / `external-locations` admin routes |
-| `bin` | | The `sharing-server` binary (implies `postgres` and `unity`) |
+| `unity` | ✓ | Unity Catalog integration: the UC REST catalog source and (with `admin`) the UC-shaped `credentials` / `external-locations` admin routes |
+| `admin` | ✓ | The provider admin API: `ProviderService` implements `opensharing-api`'s generated `ShareHandler` / `RecipientHandler`, authorized by an `AdminPolicy` |
+| `bin` | | The `sharing-server` binary (implies `postgres`, `unity` and `admin`) |
 
 ### Without Unity Catalog
 
 With `default-features = false` (optionally plus `postgres`) the crate uses no
-catalog's models: the store, the share / recipient admin API
-([`opensharing-admin`](../admin) models), recipient tokens and activation,
-sealed secrets, the static source and storage access remain. Credential minting, object stores
+catalog's models: the store, recipient tokens and activation, sealed secrets,
+the static source and storage access remain, and `admin` adds the share /
+recipient admin API ([`opensharing-admin`](../admin) models). Credential minting, object stores
 and presigning come from the catalog-independent trestle crates
 (`olai-credential-vending`, `olai-vended-store`, `olai-storage-credentials`). A catalog that already has discovery and an admin surface
 implements `CatalogSource` (or the `opensharing-api` ports directly),
 provisions shares and recipients through the `ShareStore`
 (`recipients::issue_token` issues tokens), and serves `embed::router`. See
-`tests/custom_mount.rs`.
+`tests/custom_mount.rs`. To serve the admin API over its own request context
+instead, it mounts `opensharing_api::admin::admin_router` with a
+`ProviderService` and its own `AdminPolicy`.
 
 ## Running
 

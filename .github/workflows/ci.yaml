@@ -116,17 +116,23 @@ jobs:
           deny "opensharing-admin must not depend on olai-uc-* crates" \
             '^olai-uc-' -p opensharing-admin --all-features
           deny "opensharing-server (no unity) must not depend on olai-uc-* crates" \
-            '^olai-uc-' -p opensharing-server --no-default-features --features postgres
+            '^olai-uc-' -p opensharing-server --no-default-features --features postgres,admin
+          deny "opensharing-server (no admin) must not depend on opensharing-admin" \
+            '^opensharing-admin' -p opensharing-server --no-default-features --features postgres
 
       - name: Build without Unity Catalog
         run: |
           cargo check --locked --all-targets -p opensharing-api --no-default-features
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres
+          cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres,admin
 
-      # The share / recipient admin API and the store-provisioned host must work
-      # end to end without `unity` (tests/e2e.rs, tests/custom_mount.rs).
+      # The share / recipient admin API must work end to end without `unity`
+      # (tests/e2e.rs), and the store-provisioned host without `admin` either
+      # (tests/custom_mount.rs).
       - name: Test without Unity Catalog
-        run: cargo test --locked -p opensharing-server --no-default-features --features postgres
+        run: |
+          cargo test --locked -p opensharing-server --no-default-features --features postgres,admin
+          cargo test --locked -p opensharing-server --no-default-features --features postgres
 
   test:
     name: test

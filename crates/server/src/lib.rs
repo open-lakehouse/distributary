@@ -15,8 +15,9 @@
 //!   or *local* (sealed credentials, minted by `olai-credential-vending`);
 //! - [`secrets`]: envelope encryption with lazy key rotation;
 //! - [`recipients`]: recipient tokens with activation links;
-//! - [`admin`]: the provider admin API (shares, permissions, recipients), in the
-//!   Databricks Delta Sharing REST shape;
+//! - `admin` (feature `admin`): the provider admin API (shares, permissions,
+//!   recipients), in the Databricks Delta Sharing REST shape, implementing the
+//!   handler traits `opensharing-api` generates;
 //! - [`embed`]: the socket-less [`Router`](axum::Router) any host can serve;
 //! - `unity` (feature `unity`): the Unity Catalog source and the UC-shaped
 //!   storage credential / external location admin routes.
@@ -24,16 +25,18 @@
 //! # Without Unity Catalog
 //!
 //! With `default-features = false` the crate depends on no catalog's models:
-//! the host core, the admin API, the static source and storage access (over the
-//! catalog-independent trestle credential vending crates) remain. A host with its own
-//! catalog implements [`CatalogSource`](source::CatalogSource) and manages
-//! shares and recipients through the admin API, the
-//! [`ShareStore`](store::ShareStore), or its own admin surface, then serves
+//! the host core, the static source and storage access (over the
+//! catalog-independent trestle credential vending crates) remain; the `admin`
+//! feature adds the admin API back. A host with its own catalog implements
+//! [`CatalogSource`](source::CatalogSource) and manages shares and recipients
+//! through the [`ShareStore`](store::ShareStore), its own admin surface, or
+//! the admin API mounted over its own request context, then serves
 //! [`embed::router`].
 //!
 //! See `ARCHITECTURE.md` for the design.
 
 pub mod access;
+#[cfg(feature = "admin")]
 pub mod admin;
 pub mod catalog;
 pub mod config;
