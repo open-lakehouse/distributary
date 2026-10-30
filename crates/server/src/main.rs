@@ -11,7 +11,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 #[command(
     name = "sharing-server",
     version,
-    about = "An Open Sharing / Delta Sharing server"
+    about = "An OpenSharing / Delta Sharing server"
 )]
 struct Cli {
     /// Path to the YAML configuration file.

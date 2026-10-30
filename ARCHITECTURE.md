@@ -1,4 +1,4 @@
-# Open Sharing server architecture
+# OpenSharing server architecture
 
 Status: accepted (2026-10-29). Delivered as one stacked PR series. The
 layers are listed under [Delivery](#delivery).
@@ -10,7 +10,7 @@ numbers below refer to mangrove at that time.
 
 ## Context
 
-This crate already has the beginnings of an Open Sharing / Delta Sharing
+This crate already has the beginnings of an OpenSharing / Delta Sharing
 surface: a `SharingBackend` port, blanket discovery and query handlers, and an
 axum router. Nothing mounts or implements it, though. The only backend is the
 in-memory `testing` one, and the query path has gaps:

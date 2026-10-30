@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-client"
 version = "0.0.1"
-description = "Open Sharing / Delta Sharing protocol client."
+description = "OpenSharing / Delta Sharing protocol client."
 edition.workspace = true
 license.workspace = true
 repository.workspace = true

@@ -1,5 +1,5 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
-//! Portable **Open Sharing** / **Delta Sharing** REST API.
+//! Portable **OpenSharing** / **Delta Sharing** REST API.
 //!
 //! This crate owns the sharing *semantics* — share / schema / asset discovery,
 //! the table query path (version / metadata / query) and the storage-backed asset
@@ -30,7 +30,7 @@
 //!   and predicate-hint translation.
 //! - [`service`] — [`SharingService`], the composition root.
 //! - [`handler`] — the handler traits, implemented by [`SharingService`].
-//! - [`router`] — the axum routers for the Delta Sharing + Open Sharing surfaces.
+//! - [`router`] — the axum routers for the Delta Sharing + OpenSharing surfaces.
 //! - [`auth`] — the [`RecipientAuthenticator`](auth::RecipientAuthenticator) port
 //!   and the bearer-token layer.
 //! - [`error`] — the error contract.

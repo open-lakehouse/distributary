@@ -11,7 +11,7 @@ set dotenv-load
 # pipeline excludes them.
 ADMIN_PROTOS := "proto/opensharing/shares proto/opensharing/recipients proto/opensharing/providers"
 
-# the Open Sharing server as a Neon Function
+# the OpenSharing server as a Neon Function
 mod neon 'crates/neon/justfile'
 
 # show the available recipes

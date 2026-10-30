@@ -1,4 +1,4 @@
-//! The Open Sharing server as a Node-API addon.
+//! The OpenSharing server as a Node-API addon.
 //!
 //! The Neon Function's handler (`function/index.ts`) calls [`start`] once,
 //! forwards every fetch `Request` through [`handle`], and calls [`shutdown`] on

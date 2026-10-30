@@ -243,7 +243,7 @@ impl FileSigner for VendedSigner {
     }
 }
 
-/// Map a vended credential into the Open Sharing credential envelope.
+/// Map a vended credential into the OpenSharing credential envelope.
 pub(crate) fn to_sharing_credentials(
     credential: &VendedCredential,
 ) -> Result<SharingTemporaryCredentials> {

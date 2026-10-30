@@ -1,6 +1,6 @@
 # opensharing-server
 
-A composable Open Sharing / Delta Sharing server, built on the protocol
+A composable OpenSharing / Delta Sharing server, built on the protocol
 implementation in [`opensharing-api`](../api). See
 [`ARCHITECTURE.md`](../../ARCHITECTURE.md) for the design.
 
@@ -15,7 +15,7 @@ implementation in [`opensharing-api`](../api). See
   A *local* source uses credentials stored in the server, sealed, and minted by
   the same `olai-credential-vending` minters the UC server uses. Either way, query
   responses carry presigned URLs that never outlive the credential, and the
-  Open Sharing `temporary-*-credentials` endpoints hand the credential on.
+  OpenSharing `temporary-*-credentials` endpoints hand the credential on.
 - **Recipients use bearer tokens.** Creating a recipient issues a token with a
   one-time activation link. Opening the link returns the `.share` profile, and
   from then on the server keeps only the token's sha256 digest.
@@ -27,7 +27,7 @@ implementation in [`opensharing-api`](../api). See
 | Path | What |
 |---|---|
 | `/api/v1/delta-sharing/…` | Delta Sharing protocol (recipient token) |
-| `/api/1.0/opensharing/…` | Open Sharing protocol: adds volumes, agent skills, temporary credentials (recipient token) |
+| `/api/1.0/opensharing/…` | OpenSharing protocol: adds volumes, agent skills, temporary credentials (recipient token) |
 | `/api/1.0/opensharing/activations/{code}` | One-time activation link, returns the sharing profile |
 | `/api/2.1/unity-catalog/…` | Provider admin API, in the Databricks Delta Sharing REST shape: `shares`, `shares/{name}/permissions`, `recipients`, `recipients/{name}/rotate-token`; with feature `unity` also `credentials`, `external-locations` (provider token) |
 | `/health` | Liveness |

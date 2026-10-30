@@ -15,10 +15,10 @@ pub enum DataObjectType {
     FUNCTION = 8i32,
     /// FEATURE_SPEC = 9;
     ///
-    /// A Unity Catalog volume shared as a storage-backed asset (Open Sharing).
+    /// A Unity Catalog volume shared as a storage-backed asset (OpenSharing).
     VOLUME = 10i32,
     /// An agent skill (a directory of SKILL.md + scripts/assets) shared as a
-    /// storage-backed asset on top of a volume (Open Sharing).
+    /// storage-backed asset on top of a volume (OpenSharing).
     AGENT_SKILL = 11i32,
 }
 impl DataObjectType {

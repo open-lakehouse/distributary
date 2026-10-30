@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-neon"
 version = "0.0.0"
-description = "The Open Sharing server as a Node-API addon, for deployment as a Neon Function"
+description = "The OpenSharing server as a Node-API addon, for deployment as a Neon Function"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true

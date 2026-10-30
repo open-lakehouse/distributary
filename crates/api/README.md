@@ -1,6 +1,6 @@
 # opensharing-api
 
-Portable **Open Sharing** / **Delta Sharing** REST API.
+Portable **OpenSharing** / **Delta Sharing** REST API.
 
 This crate owns the sharing *semantics* — share / schema / asset discovery,
 the table query path (version / metadata / query) and the storage-backed asset
@@ -16,7 +16,7 @@ surface (volumes, agent skills) — and expresses them over three narrow ports:
 
 `SharingService` composes one implementation of each port and implements every
 handler. `sharing_router` serves it under `/api/v1/delta-sharing` (Delta
-Sharing) and `/api/1.0/opensharing` (Open Sharing, adding volumes, agent skills
+Sharing) and `/api/1.0/opensharing` (OpenSharing, adding volumes, agent skills
 and temporary credentials), and `auth::require_recipient` puts a bearer-token
 `RecipientAuthenticator` in front. The wire types come from
 [`opensharing-common`](https://crates.io/crates/opensharing-common), which
@@ -40,7 +40,7 @@ this way.
   response format, with version / timestamp time travel, predicate-hint file
   skipping and limit hints. Tables that need reader features (column mapping,
   deletion vectors, …) require `responseformat=delta` and are rejected for now.
-- **Credentials**: `temporary-table-credentials` (Open Sharing) and the volume /
+- **Credentials**: `temporary-table-credentials` (OpenSharing) and the volume /
   skill credential endpoints vend read-only credentials through `StorageAccess`.
 - **Not implemented** (`501`): change data feed (`/changes`), asynchronous
   queries (`POST /queries/{id}`) and `responseformat=delta` serving.

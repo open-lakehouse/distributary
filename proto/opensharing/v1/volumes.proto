@@ -121,7 +121,7 @@ message GenerateTemporaryVolumeCredentialsRequest {
   ];
 }
 
-// Open Sharing volume APIs: discovery and credential vending for shared
+// OpenSharing volume APIs: discovery and credential vending for shared
 // storage-backed volumes.
 service SharingVolumeService {
   // List the volumes in a given share's schema.

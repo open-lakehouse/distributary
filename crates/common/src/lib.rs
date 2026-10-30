@@ -1,4 +1,4 @@
-//! Open Sharing / Delta Sharing wire models shared by client and server.
+//! OpenSharing / Delta Sharing wire models shared by client and server.
 //!
 //! The [`models`] describe the protocol on the wire: the generated
 //! request/response types of the discovery services, the hand-written

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Merge the hand-maintained NDJSON query fragment into the generated sharing spec.
 
-The Open Sharing OpenAPI document is generated from `proto/opensharing` by the
+The OpenSharing OpenAPI document is generated from `proto/opensharing` by the
 `google-gnostic-openapi` buf plugin (it covers the discovery + volume + skill
 surfaces). The Delta Sharing **query** path (table version / metadata / query /
 change-data-feed) is not part of the proto service — those endpoints return

@@ -1,4 +1,4 @@
--- The Open Sharing server's state. Secrets are stored sealed (envelope
+-- The OpenSharing server's state. Secrets are stored sealed (envelope
 -- encryption); recipient tokens only as sha256 digests.
 
 CREATE TABLE sharing_shares (

@@ -283,7 +283,7 @@ async fn provider_shares_a_table_with_a_recipient() {
         .await;
     assert_eq!(files(&lines).len(), 3);
 
-    // Temporary table credentials (Open Sharing).
+    // Temporary table credentials (OpenSharing).
     let (status, credentials) = client
         .call(
             "POST",

@@ -1,6 +1,6 @@
 # distributary
 
-An [Open Sharing](https://github.com/OpenSharing-IO/OpenSharing) /
+An [OpenSharing](https://github.com/OpenSharing-IO/OpenSharing) /
 [Delta Sharing](https://github.com/delta-io/delta-sharing) implementation in
 Rust: the protocol models, a client, a portable server-side protocol layer, and a
 composable sharing server that maps shares onto any catalog.

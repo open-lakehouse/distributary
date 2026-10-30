@@ -1,6 +1,6 @@
 # opensharing-common
 
-**Open Sharing** / **Delta Sharing** wire models, shared by client and server.
+**OpenSharing** / **Delta Sharing** wire models, shared by client and server.
 
 - The generated request/response types of the discovery services
   (`models::opensharing::v1`), with snake_case JSON on the wire and camelCase

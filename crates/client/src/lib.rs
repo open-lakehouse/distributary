@@ -1,4 +1,4 @@
-//! Open Sharing / Delta Sharing protocol client.
+//! OpenSharing / Delta Sharing protocol client.
 //!
 //! This crate provides a [`DeltaSharingClient`](client::DeltaSharingClient) for
 //! consuming the Delta Sharing REST API — discovering shares, schemas, and

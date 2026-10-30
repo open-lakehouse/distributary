@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-api"
 version = "0.0.1"
-description = "Portable Open Sharing / Delta Sharing REST API: pluggable share-catalog, storage-access and table-format ports, the discovery + asset handlers, and a delta_kernel-backed Delta query path."
+description = "Portable OpenSharing / Delta Sharing REST API: pluggable share-catalog, storage-access and table-format ports, the discovery + asset handlers, and a delta_kernel-backed Delta query path."
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true

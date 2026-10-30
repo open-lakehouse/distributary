@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-admin"
 version = "0.0.1"
-description = "Open Sharing provider admin API models: shares, share permissions, recipients and providers, wire-compatible with the Databricks Delta Sharing REST API."
+description = "OpenSharing provider admin API models: shares, share permissions, recipients and providers, wire-compatible with the Databricks Delta Sharing REST API."
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true

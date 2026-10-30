@@ -1,4 +1,4 @@
-//! A composable Open Sharing / Delta Sharing server.
+//! A composable OpenSharing / Delta Sharing server.
 //!
 //! The protocol itself — discovery, the table query path, credential endpoints,
 //! recipient auth — comes from `opensharing-api`. This crate supplies a

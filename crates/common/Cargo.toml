@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-common"
 version = "0.0.1"
-description = "Open Sharing / Delta Sharing wire models shared by the client and server: generated request/response types, the NDJSON query-response lines, capability-header parsing, and optional axum request extractors."
+description = "OpenSharing / Delta Sharing wire models shared by the client and server: generated request/response types, the NDJSON query-response lines, capability-header parsing, and optional axum request extractors."
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true

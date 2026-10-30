@@ -1,4 +1,4 @@
-//! Axum routers for the Delta Sharing and Open Sharing REST surfaces.
+//! Axum routers for the Delta Sharing and OpenSharing REST surfaces.
 //!
 //! [`get_router`] serves the Delta Sharing tabular surface (shares / schemas /
 //! tables / version / metadata / query); [`opensharing_router`] adds the Open
@@ -52,7 +52,7 @@ const DELTA_TABLE_VERSION: &str = "delta-table-version";
 
 /// Where the Delta Sharing surface is mounted by [`sharing_router`].
 pub const DELTA_SHARING_PREFIX: &str = "/api/v1/delta-sharing";
-/// Where the Open Sharing surface is mounted by [`sharing_router`].
+/// Where the OpenSharing surface is mounted by [`sharing_router`].
 pub const OPENSHARING_PREFIX: &str = "/api/1.0/opensharing";
 
 /// Reject a client whose `delta-sharing-capabilities` rule out the `parquet`
@@ -76,7 +76,7 @@ fn check_response_format(headers: &HeaderMap) -> Result<()> {
 /// The tabular Delta Sharing routes (shares / schemas / tables / version /
 /// metadata / query).
 ///
-/// Shared verbatim between the Delta Sharing and Open Sharing mounts. The
+/// Shared verbatim between the Delta Sharing and OpenSharing mounts. The
 /// discovery routes bind to the generated [`SharingHandler`] route functions; the
 /// three NDJSON query routes bind to the hand-written functions below.
 fn tabular_routes<T, Cx>() -> Router<T>
@@ -121,7 +121,7 @@ where
         .route("/queries/{query_id}", post(poll_query::<T, Cx>))
 }
 
-/// The Open-Sharing-only asset routes (volumes, agent skills) bound to the
+/// The OpenSharing-only asset routes (volumes, agent skills) bound to the
 /// generated per-asset route functions, plus temporary table credentials.
 fn asset_routes<T, Cx>() -> Router<T>
 where
@@ -183,7 +183,7 @@ where
     tabular_routes::<T, Cx>().with_state(state)
 }
 
-/// Create a [`Router`] for the **Open Sharing** REST API: the tabular surface
+/// Create a [`Router`] for the **OpenSharing** REST API: the tabular surface
 /// plus the storage-backed asset routes (volumes, agent skills).
 pub fn opensharing_router<T, Cx>(state: T) -> Router
 where
@@ -282,7 +282,7 @@ where
         .map_err(|e| Error::generic(e.to_string()))
 }
 
-/// Open Sharing temporary table credentials. The spec allows an optional request
+/// OpenSharing temporary table credentials. The spec allows an optional request
 /// body; nothing in it changes what is vended (always read-only), so it is not read.
 async fn generate_temporary_table_credentials<T, Cx>(
     State(handler): State<T>,

@@ -1,4 +1,4 @@
-//! Open Sharing provider admin API models.
+//! OpenSharing provider admin API models.
 //!
 //! The control plane of a sharing server: [shares](models::shares) and their
 //! permissions, [recipients](models::recipients), and

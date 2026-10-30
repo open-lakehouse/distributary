@@ -121,7 +121,7 @@ message GenerateTemporarySkillCredentialsRequest {
   ];
 }
 
-// Open Sharing agent-skill APIs: discovery and credential vending for shared
+// OpenSharing agent-skill APIs: discovery and credential vending for shared
 // storage-backed agent skills.
 service SharingSkillService {
   // List the agent skills in a given share's schema.

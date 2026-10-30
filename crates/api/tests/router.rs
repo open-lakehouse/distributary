@@ -1,4 +1,4 @@
-//! Router integration tests: serve the Open Sharing router over the in-memory
+//! Router integration tests: serve the OpenSharing router over the in-memory
 //! service and check discovery JSON + that the gap routes return 501.
 
 use axum::body::Body;

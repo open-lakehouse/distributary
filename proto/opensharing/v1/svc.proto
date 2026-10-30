@@ -14,7 +14,7 @@ import "opensharing/v1/query.proto";
 
 option (gnostic.openapi.v3.document) = {
   info: {
-    title: "Open Sharing API"
+    title: "OpenSharing API"
     version: "1.0.0"
     description: "An Open Protocol for Secure Data Sharing. Extends the Delta Sharing protocol; the tabular surface remains wire-compatible with Delta Sharing clients."
     license: {

@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-server"
 version = "0.0.1"
-description = "A composable Open Sharing / Delta Sharing server: shares mapped onto assets in pluggable source catalogs (static, Unity Catalog behind a feature), recipient tokens, delegated or local storage access, sealed secrets, and a provider admin API."
+description = "A composable OpenSharing / Delta Sharing server: shares mapped onto assets in pluggable source catalogs (static, Unity Catalog behind a feature), recipient tokens, delegated or local storage access, sealed secrets, and a provider admin API."
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true

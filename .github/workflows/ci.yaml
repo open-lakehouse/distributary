@@ -73,7 +73,7 @@ jobs:
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
-  # Open Sharing must stay mountable without Unity Catalog. Guard the boundaries:
+  # OpenSharing must stay mountable without Unity Catalog. Guard the boundaries:
   # - opensharing-api (protocol) and opensharing-admin (admin API models)
   #   depend on no olai-uc-* crate at all;
   # - opensharing-server without `unity` depends on no olai-uc-* crate either:

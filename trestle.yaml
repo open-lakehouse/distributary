@@ -1,4 +1,4 @@
-# Trestle codegen config for the Open Sharing protos.
+# Trestle codegen config for the OpenSharing protos.
 #
 # The protocol is split across three crates: `opensharing-common` (wire models
 # + co-located axum extractors, shared by client and server),

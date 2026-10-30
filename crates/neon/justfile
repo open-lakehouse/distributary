@@ -1,4 +1,4 @@
-# The Open Sharing server as a Neon Function (crates/neon).
+# The OpenSharing server as a Neon Function (crates/neon).
 # Recipes run from the repository root: `just neon <recipe>`.
 
 set working-directory := '../..'
@@ -67,5 +67,5 @@ migrate:
     cargo run -p opensharing-server --features bin -- migrate
 
 # deploy the built bundle as a Neon Function (needs the `neon` CLI, logged in)
-deploy slug="open-sharing": build
+deploy slug="opensharing": build
     neon functions deploy {{ slug }} --src {{ FN }}/dist --no-bundle --wait

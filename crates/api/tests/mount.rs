@@ -133,7 +133,7 @@ async fn vends_table_credentials_on_the_opensharing_surface() {
     assert!(credentials.credentials.is_some());
     assert!(credentials.url.unwrap().ends_with("basic_partitioned/"));
 
-    // Credential vending is an Open Sharing extension, absent from Delta Sharing.
+    // Credential vending is an OpenSharing extension, absent from Delta Sharing.
     assert_eq!(
         status(
             request("POST", &format!("/api/v1/delta-sharing{path}"), Some(TOKEN))

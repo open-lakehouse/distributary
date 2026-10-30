@@ -1,7 +1,7 @@
 //! Recipient authentication: the [`RecipientAuthenticator`] port and the bearer
 //! token layer that runs it in front of the sharing routes.
 //!
-//! Delta Sharing / Open Sharing recipients authenticate with a bearer token from
+//! Delta Sharing / OpenSharing recipients authenticate with a bearer token from
 //! their sharing profile. [`require_recipient`] wraps a router so every request
 //! must carry `Authorization: Bearer <token>`; the token is resolved to a
 //! [`Recipient`] by the host's authenticator and stored in the request
