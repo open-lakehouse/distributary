@@ -135,6 +135,17 @@ impl ShareStore for InMemoryStore {
         Ok(self.state().recipients.values().cloned().collect())
     }
 
+    async fn update_recipient(
+        &self,
+        name: &str,
+        comment: Option<String>,
+    ) -> Result<RecipientRecord> {
+        let mut state = self.state();
+        let recipient = state.recipients.get_mut(name).ok_or(Error::NotFound)?;
+        recipient.comment = comment;
+        Ok(recipient.clone())
+    }
+
     async fn delete_recipient(&self, name: &str) -> Result<()> {
         let mut state = self.state();
         let recipient = state.recipients.remove(name).ok_or(Error::NotFound)?;

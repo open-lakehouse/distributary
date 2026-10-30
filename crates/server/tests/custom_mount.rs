@@ -1,7 +1,7 @@
 //! A host without Unity Catalog: it provisions shares and recipients straight
 //! through the store (as a catalog with its own admin surface would) and serves
-//! the protocol router, with no provider token configured (so the admin API
-//! rejects every request). Runs without the `unity` feature.
+//! the protocol router, which mounts no admin API. Runs without the `unity` and
+//! `admin` features.
 
 use std::path::Path;
 use std::sync::Arc;
@@ -131,20 +131,14 @@ async fn serves_shares_provisioned_through_the_store() {
         .count();
     assert!(files > 0, "expected file lines: {lines}");
 
-    // The admin API is mounted, but with no provider token configured it
-    // rejects every request, so a store-provisioned host exposes no admin
-    // surface by default.
-    assert_eq!(
-        call(&app, "GET", "/api/2.1/unity-catalog/shares", None)
-            .await
-            .0,
-        StatusCode::UNAUTHORIZED
-    );
-    assert_eq!(
-        call(&app, "GET", "/api/2.1/unity-catalog/shares", Some(bearer))
-            .await
-            .0,
-        StatusCode::UNAUTHORIZED,
-        "a recipient token is not a provider token"
-    );
+    // `embed::router` serves only the protocol: a store-provisioned host
+    // exposes no admin surface, whatever features are compiled in.
+    for token in [None, Some(bearer)] {
+        assert_eq!(
+            call(&app, "GET", "/api/2.1/unity-catalog/shares", token)
+                .await
+                .0,
+            StatusCode::NOT_FOUND
+        );
+    }
 }

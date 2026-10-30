@@ -193,10 +193,35 @@ service crate:
 - **Schema.** sqlx migrations are embedded in the binary. They run only via
   `migrate`, against the unpooled URL, and `serve` refuses to start on schema
   drift.
-- **Admin API.** It reuses the UC `shares`, `recipients` and `credentials`
-  protos under `/api/2.1/unity-catalog/…`, gated by a provider token.
-  Recipient creation issues a token and an activation URL, and
-  `GET /api/1.0/opensharing/activations/{code}` returns the profile.
+- **Admin API** (feature `admin`, on by default). It reuses the UC `shares`,
+  `recipients` and `credentials` protos under `/api/2.1/unity-catalog/…`,
+  gated by a provider token. It is mounted only when provider tokens are
+  configured. Recipient creation issues a token and an activation URL, and
+  `GET /api/1.0/opensharing/activations/{code}` returns the profile. The
+  activation route belongs to the protocol router, so tokens provisioned
+  straight through the `ShareStore` activate too.
+
+The admin API is built the same way as the protocol. Trestle generates the
+`ShareHandler<Cx>`, `RecipientHandler<Cx>` and `ProviderHandler<Cx>` traits and
+their route functions into `opensharing-api` (feature `admin`, from
+`trestle.admin.yaml`). The hand-written routers there (`shares_router`,
+`recipients_router`, `providers_router`, `admin_router`) bind them, and the
+request context `Cx` is extracted per request. `opensharing-server`
+implements the share and recipient traits in a custom `ProviderService<Cx>`,
+not on a generic resource store, because issuing tokens, activation links and
+sealing need more than CRUD. Each handler first calls the service's
+`AdminPolicy<Cx>` with an `AdminAction`, the admin counterpart of
+`ShareCatalog::authorize`. The standalone server uses `Provider` (from
+`require_provider` over the provider tokens) as the context and allows every
+authenticated caller.
+
+A Unity Catalog server can therefore mount the admin API into its own router
+in either of two ways:
+
+- Nest `admin_router::<ProviderService<Cx>, Cx>` under its
+  `/api/2.1/unity-catalog` with its own request context as `Cx`, and plug its
+  permission model in as the `AdminPolicy`.
+- Implement the generated traits on its own store.
 
 `opensharing-neon` hosts the same router as a Neon Function. It mirrors
 Headwaters (`headwaters-neon`): a napi `cdylib`, a thin dependency-free
@@ -240,8 +265,9 @@ to host them. The layering:
   `CatalogSource`, storage access) uses catalog-independent types:
   `ShareObject` for share entries and the trestle crates'
   `RegisteredCredential` / `VendedCredential` for vending.
-- The provider admin API for shares, permissions and recipients is core. Its
-  models come from `opensharing-admin` (`proto/opensharing/{shares,recipients,providers}`,
+- The provider admin API for shares, permissions and recipients needs no
+  catalog, and it is optional (feature `admin`). Its traits and routers are
+  generated into `opensharing-api` (feature `admin`). Its models come from `opensharing-admin` (`proto/opensharing/{shares,recipients,providers}`,
   moved from mangrove's `unitycatalog.*` packages with an unchanged wire format,
   2026-10-30).
 - Unity Catalog comes in only through the `unity` feature (`src/unity/`): the UC

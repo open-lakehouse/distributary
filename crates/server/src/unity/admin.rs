@@ -3,10 +3,14 @@
 //! access vends from (credentials are sealed and never returned).
 //!
 //! [`routes`] is merged into the [admin router](crate::admin::router), behind
-//! the same provider-token check.
+//! the same provider-token check. Unlike the share and recipient routes these
+//! are hand-written (the UC credential handler traits are not part of the UC
+//! models crate), but they take the same request context `Cx` and check the
+//! same [`AdminPolicy`](crate::admin::AdminPolicy), with
+//! [`AdminAction::ManageStorage`].
 
 use axum::Json;
-use axum::extract::{Path, State};
+use axum::extract::{FromRequestParts, Path, State};
 use axum::http::StatusCode;
 use axum::routing::get;
 use olai_credential_vending::RegisteredCredential;
@@ -16,38 +20,45 @@ use unitycatalog_common::models::credentials::v1::Credential;
 use unitycatalog_common::models::external_locations::v1::CreateExternalLocationRequest;
 
 use crate::access::credential_aad;
-use crate::admin::{ProviderState, identifier};
+use crate::admin::{AdminAction, ProviderService, identifier};
 use crate::store::{ExternalLocationRecord, SealedCredential};
 use crate::{Error, Result};
 
 /// The credential and external-location routes, to merge into
 /// [`admin::router`](crate::admin::router).
-pub fn routes() -> axum::Router<ProviderState> {
+pub fn routes<Cx>() -> axum::Router<ProviderService<Cx>>
+where
+    Cx: FromRequestParts<ProviderService<Cx>> + Send + Sync + 'static,
+{
     axum::Router::new()
         .route(
             "/credentials",
-            get(list_credentials).post(create_credential),
+            get(list_credentials::<Cx>).post(create_credential::<Cx>),
         )
         .route(
             "/credentials/{name}",
-            axum::routing::delete(delete_credential),
+            axum::routing::delete(delete_credential::<Cx>),
         )
         .route(
             "/external-locations",
-            get(list_external_locations).post(create_external_location),
+            get(list_external_locations::<Cx>).post(create_external_location::<Cx>),
         )
         .route(
             "/external-locations/{name}",
-            axum::routing::delete(delete_external_location),
+            axum::routing::delete(delete_external_location::<Cx>),
         )
 }
 
 // -- storage credentials ------------------------------------------------------
 
-async fn create_credential(
-    State(state): State<ProviderState>,
+async fn create_credential<Cx: Send + Sync + 'static>(
+    State(state): State<ProviderService<Cx>>,
+    context: Cx,
     Json(credential): Json<Credential>,
 ) -> Result<Json<serde_json::Value>> {
+    state
+        .authorize(AdminAction::ManageStorage, &context)
+        .await?;
     identifier(&credential.name)?;
     // Only the storage credential itself is kept; the catalog metadata is not.
     let storage = RegisteredCredential::try_from(&credential).map_err(|_| {
@@ -73,7 +84,13 @@ async fn create_credential(
     Ok(Json(json!({ "name": credential.name })))
 }
 
-async fn list_credentials(State(state): State<ProviderState>) -> Result<Json<serde_json::Value>> {
+async fn list_credentials<Cx: Send + Sync + 'static>(
+    State(state): State<ProviderService<Cx>>,
+    context: Cx,
+) -> Result<Json<serde_json::Value>> {
+    state
+        .authorize(AdminAction::ManageStorage, &context)
+        .await?;
     let names: Vec<_> = state
         .store
         .list_credentials()
@@ -84,18 +101,26 @@ async fn list_credentials(State(state): State<ProviderState>) -> Result<Json<ser
     Ok(Json(json!({ "credentials": names })))
 }
 
-async fn delete_credential(
-    State(state): State<ProviderState>,
+async fn delete_credential<Cx: Send + Sync + 'static>(
+    State(state): State<ProviderService<Cx>>,
+    context: Cx,
     Path(name): Path<String>,
 ) -> Result<StatusCode> {
+    state
+        .authorize(AdminAction::ManageStorage, &context)
+        .await?;
     state.store.delete_credential(&name).await?;
     Ok(StatusCode::OK)
 }
 
-async fn create_external_location(
-    State(state): State<ProviderState>,
+async fn create_external_location<Cx: Send + Sync + 'static>(
+    State(state): State<ProviderService<Cx>>,
+    context: Cx,
     Json(request): Json<CreateExternalLocationRequest>,
 ) -> Result<Json<serde_json::Value>> {
+    state
+        .authorize(AdminAction::ManageStorage, &context)
+        .await?;
     identifier(&request.name)?;
     request
         .url
@@ -119,9 +144,13 @@ fn location_json(location: &ExternalLocationRecord) -> serde_json::Value {
     })
 }
 
-async fn list_external_locations(
-    State(state): State<ProviderState>,
+async fn list_external_locations<Cx: Send + Sync + 'static>(
+    State(state): State<ProviderService<Cx>>,
+    context: Cx,
 ) -> Result<Json<serde_json::Value>> {
+    state
+        .authorize(AdminAction::ManageStorage, &context)
+        .await?;
     let locations: Vec<_> = state
         .store
         .list_external_locations()
@@ -132,10 +161,14 @@ async fn list_external_locations(
     Ok(Json(json!({ "external_locations": locations })))
 }
 
-async fn delete_external_location(
-    State(state): State<ProviderState>,
+async fn delete_external_location<Cx: Send + Sync + 'static>(
+    State(state): State<ProviderService<Cx>>,
+    context: Cx,
     Path(name): Path<String>,
 ) -> Result<StatusCode> {
+    state
+        .authorize(AdminAction::ManageStorage, &context)
+        .await?;
     state.store.delete_external_location(&name).await?;
     Ok(StatusCode::OK)
 }

@@ -8,6 +8,9 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use axum::extract::{Path, State};
+use axum::routing::get;
+use axum::{Json, Router};
 use opensharing_api::auth::{Recipient, RecipientAuthenticator};
 use serde::Serialize;
 
@@ -120,6 +123,46 @@ pub async fn activate(
             .and_then(chrono::DateTime::from_timestamp_millis)
             .map(|at| at.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)),
     })
+}
+
+/// What the activation route needs.
+#[derive(Clone)]
+struct Activation {
+    store: Arc<dyn ShareStore>,
+    secrets: Secrets,
+    public_url: String,
+}
+
+/// `GET /api/1.0/opensharing/activations/{code}`: consume an activation link and
+/// return the recipient's sharing profile. Needs no credential; the code is the
+/// secret. `public_url` is the base URL the profile's endpoint points at.
+pub fn activation_router(
+    store: Arc<dyn ShareStore>,
+    secrets: Secrets,
+    public_url: impl Into<String>,
+) -> Router {
+    Router::new()
+        .route(&format!("{ACTIVATION_PATH}/{{code}}"), get(activation))
+        .with_state(Activation {
+            store,
+            secrets,
+            public_url: public_url.into(),
+        })
+}
+
+async fn activation(
+    State(state): State<Activation>,
+    Path(code): Path<String>,
+) -> Result<Json<SharingProfile>> {
+    Ok(Json(
+        activate(
+            state.store.as_ref(),
+            &state.secrets,
+            &state.public_url,
+            &code,
+        )
+        .await?,
+    ))
 }
 
 /// Re-wrap every token awaiting activation under the active key.

@@ -4,8 +4,9 @@
 # Kept apart from trestle.yaml: the admin and protocol packages define messages
 # with the same names (`Share`, `ListSharesRequest`, …), and one trestle run
 # over both cross-wires the generated protocol client builders. Each config gets
-# its own descriptor set (see `just generate-code`), and the admin config emits
-# models only (`opensharing-admin`).
+# its own descriptor set (see `just generate-code`). This config emits the
+# models (`opensharing-admin`) and the handler traits + route functions
+# (`opensharing-api`'s `admin` feature, under `src/admin/codegen`).
 version: 1
 project:
   name: opensharing-admin
@@ -15,6 +16,20 @@ generate:
   json_field_names: proto
   descriptors: admin-descriptors.bin
 
+  servers:
+    rest: true
+
   models:
     dir: crates/admin/src/models
     crate_name: opensharing_admin
+
+  server:
+    output: crates/api/src/admin
+    # Generic over the context `Cx`, like the protocol traits: the default is
+    # the crate-neutral `DefaultContext`; a host plugs in its own context.
+    context_type: crate::DefaultContext
+    error_type_path: crate::error::Error
+    resource_enum: false
+    store_integration: false
+    object_conversions: false
+    resource_clients: false

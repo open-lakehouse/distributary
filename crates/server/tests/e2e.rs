@@ -13,7 +13,9 @@ use axum::Router;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use olai_storage_credentials::{AccessLevel, StorageCredentials, VendedCredential};
+use opensharing_api::auth::Provider;
 use opensharing_server::Result;
+use opensharing_server::admin::{self, AdminAction, AdminPolicy, ProviderService, ProviderTokens};
 use opensharing_server::config::{ConfigValue, EncryptionConfig, KeyConfig, KeyProviderKind};
 use opensharing_server::embed::{self, Settings};
 use opensharing_server::secrets::Secrets;
@@ -217,7 +219,8 @@ fn files(lines: &[Value]) -> Vec<&Value> {
 
 fn app(store: Arc<dyn ShareStore>, secrets: Secrets, sources: SourceRegistry) -> Client {
     Client {
-        app: embed::router(store, secrets, sources, settings()),
+        app: embed::router(store.clone(), secrets.clone(), sources, settings())
+            .merge(embed::admin_router(store, secrets, &settings())),
     }
 }
 
@@ -385,7 +388,7 @@ async fn rotating_a_token_invalidates_the_old_one() {
         )
         .await;
     let rotated = client
-        .admin("POST", "/recipients/acme/rotate-token", None)
+        .admin("POST", "/recipients/acme/rotate-token", Some(json!({})))
         .await;
     let new = client.activate(&rotated).await;
     let shares = |token: String| {
@@ -516,4 +519,57 @@ async fn rotating_keys_rewraps_stored_secrets() {
     let v2 = app(store, secrets(key("v2", 2), vec![]), static_sources());
     let token = v2.activate(&recipient).await;
     assert!(!token.is_empty());
+}
+
+/// Allows everything but deleting shares and managing storage.
+struct NoDeletes;
+
+#[async_trait]
+impl AdminPolicy<Provider> for NoDeletes {
+    async fn authorize(&self, action: AdminAction<'_>, _context: &Provider) -> Result<()> {
+        match action {
+            AdminAction::DeleteShare { .. } | AdminAction::ManageStorage => {
+                Err(opensharing_server::Error::NotAllowed)
+            }
+            _ => Ok(()),
+        }
+    }
+}
+
+#[tokio::test]
+async fn the_admin_policy_authorizes_every_action() {
+    let store: Arc<dyn ShareStore> = Arc::new(InMemoryStore::new());
+    let service =
+        ProviderService::new(store, secrets(key("v1", 1), vec![]), PUBLIC_URL.to_string())
+            .with_policy(Arc::new(NoDeletes));
+    let client = Client {
+        app: admin::router(service, Arc::new(ProviderTokens::new([ADMIN]))),
+    };
+
+    client
+        .admin("POST", "/shares", Some(json!({"name": "sales"})))
+        .await;
+    let (status, body) = client
+        .call(
+            "DELETE",
+            "/api/2.1/unity-catalog/shares/sales",
+            Some(ADMIN),
+            None,
+        )
+        .await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "{body}");
+    client.admin("GET", "/shares/sales", None).await;
+
+    #[cfg(feature = "unity")]
+    {
+        let (status, _) = client
+            .call(
+                "GET",
+                "/api/2.1/unity-catalog/credentials",
+                Some(ADMIN),
+                None,
+            )
+            .await;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+    }
 }

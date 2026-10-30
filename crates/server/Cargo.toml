@@ -18,7 +18,8 @@ required-features = ["bin"]
 
 [dependencies]
 # local dependencies in alphabetical order
-opensharing-admin = { path = "../admin", version = "0.0.1" }
+# The provider admin API models (feature `admin`).
+opensharing-admin = { path = "../admin", version = "0.0.1", optional = true }
 opensharing-api = { path = "../api", version = "0.0.1" }
 opensharing-common = { path = "../common", version = "0.0.1" }
 # The Unity Catalog source and the UC-shaped credential admin routes (feature `unity`).
@@ -64,17 +65,27 @@ uuid = { workspace = true, features = ["v4"] }
 clap = { version = "4.5", features = ["derive", "env"], optional = true }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"], optional = true }
 
+[[test]]
+# Drives the admin API.
+name = "e2e"
+required-features = ["admin"]
+
 [dev-dependencies]
 tempfile = "3"
 tower = { workspace = true }
 
 [features]
-default = ["postgres", "unity"]
+default = ["postgres", "unity", "admin"]
 # The Postgres `ShareStore` (sqlx, with embedded migrations).
 postgres = ["dep:sqlx"]
 # Unity Catalog integration: the UC REST catalog source and the UC-shaped
 # credential / external-location admin routes. Without it the crate depends on
-# no catalog's models (the share and recipient admin API remains).
+# no catalog's models (the share and recipient admin API remains, with `admin`).
 unity = ["dep:futures", "dep:unitycatalog-client", "dep:unitycatalog-common"]
+# The provider admin API (shares, permissions, recipients, activation links;
+# with `unity` also credentials and external locations), on the handler traits
+# `opensharing-api` generates. Without it the server serves only the protocol,
+# and shares and recipients are provisioned through the `ShareStore`.
+admin = ["dep:opensharing-admin", "opensharing-api/admin"]
 # The `sharing-server` binary.
-bin = ["postgres", "unity", "dep:clap", "dep:tracing-subscriber"]
+bin = ["postgres", "unity", "admin", "dep:clap", "dep:tracing-subscriber"]

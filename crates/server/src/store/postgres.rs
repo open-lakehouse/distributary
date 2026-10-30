@@ -277,6 +277,23 @@ impl ShareStore for PostgresStore {
             .collect()
     }
 
+    async fn update_recipient(
+        &self,
+        name: &str,
+        comment: Option<String>,
+    ) -> Result<RecipientRecord> {
+        let row = sqlx::query(
+            "UPDATE sharing_recipients SET comment = $2 WHERE name = $1 \
+             RETURNING id, name, comment, created_at",
+        )
+        .bind(name)
+        .bind(comment)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(db)?;
+        recipient(&row)
+    }
+
     async fn delete_recipient(&self, name: &str) -> Result<()> {
         // Tokens and grants cascade.
         let done = sqlx::query("DELETE FROM sharing_recipients WHERE name = $1")

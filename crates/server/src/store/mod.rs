@@ -195,6 +195,12 @@ pub trait ShareStore: Send + Sync + 'static {
     async fn get_recipient(&self, name: &str) -> Result<RecipientRecord>;
     /// All recipients, ordered by name.
     async fn list_recipients(&self) -> Result<Vec<RecipientRecord>>;
+    /// Replace a recipient's comment.
+    async fn update_recipient(
+        &self,
+        name: &str,
+        comment: Option<String>,
+    ) -> Result<RecipientRecord>;
     /// Delete a recipient with its tokens and grants.
     async fn delete_recipient(&self, name: &str) -> Result<()>;
 

@@ -4,33 +4,28 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use axum::Json;
 use axum::Router;
-use axum::extract::{Path, State};
 use axum::routing::get;
 use opensharing_api::auth::{Recipient, require_recipient};
 use opensharing_api::{SharingService, sharing_router};
 
 use crate::Result;
 use crate::access::{SourceStorageAccess, open_credential};
-use crate::admin::{self, ADMIN_PREFIX, ProviderState};
 use crate::catalog::StoreCatalog;
 use crate::config::{Config, DatabaseConfig, EncryptionConfig};
-use crate::recipients::{
-    ACTIVATION_PATH, SharingProfile, StoreAuthenticator, activate, rewrap_tokens,
-};
+use crate::recipients::{StoreAuthenticator, activation_router, rewrap_tokens};
 use crate::secrets::Secrets;
 use crate::source::SourceRegistry;
 use crate::store::ShareStore;
 use crate::store::memory::InMemoryStore;
-use crate::tokens::token_hash;
 
 /// Everything the routes need, besides the store.
 #[derive(Clone)]
 pub struct Settings {
     /// The externally reachable base URL, without a trailing slash.
     pub public_url: String,
-    /// Accepted provider (admin) tokens, for the admin API.
+    /// Accepted provider (admin) tokens. With none, [`start`] does not mount
+    /// the admin API.
     pub provider_tokens: Vec<String>,
     /// The longest a presigned URL stays valid.
     pub presign_ttl: Duration,
@@ -45,18 +40,18 @@ pub struct Service {
     pub secrets: Secrets,
 }
 
-/// The router over an existing store, secrets and sources:
+/// The recipient-facing router over an existing store, secrets and sources:
 ///
 /// - the sharing protocols under `/api/v1/delta-sharing` and
 ///   `/api/1.0/opensharing`, behind recipient tokens;
 /// - activation links under `/api/1.0/opensharing/activations/{code}`;
-/// - the provider admin API under `/api/2.1/unity-catalog` (shares,
-///   permissions, recipients; with the `unity` feature also credentials and
-///   external locations), behind the provider tokens;
 /// - `GET /health`.
 ///
-/// A host can also manage shares, recipients and grants through the
-/// [`ShareStore`] directly (see [`issue_token`](crate::recipients::issue_token)).
+/// The provider side is separate ([`admin_router`], feature `admin`). A host
+/// with its own admin surface manages shares, recipients and grants through the
+/// [`ShareStore`] directly (see [`issue_token`](crate::recipients::issue_token)),
+/// or mounts the generated admin routers over its own context (see
+/// [`crate::admin`]).
 pub fn router(
     store: Arc<dyn ShareStore>,
     secrets: Secrets,
@@ -69,66 +64,30 @@ pub fn router(
         store.clone(),
         secrets.clone(),
         settings.presign_ttl,
-        settings.aws_region.clone(),
+        settings.aws_region,
     ));
     let service = SharingService::<Recipient>::new(catalog, access);
     let sharing = require_recipient(
         sharing_router::<SharingService<Recipient>, Recipient>(service),
         Arc::new(StoreAuthenticator::new(store.clone())),
     );
-
-    let activation = Router::new()
-        .route(&format!("{ACTIVATION_PATH}/{{code}}"), get(activation))
-        .with_state(ActivationState {
-            store: store.clone(),
-            secrets: secrets.clone(),
-            public_url: settings.public_url.clone(),
-        });
-
-    let router = Router::new()
+    Router::new()
         .merge(sharing)
-        .merge(activation)
-        .route("/health", get(|| async { "ok" }));
-
-    let provider = ProviderState {
-        store,
-        secrets,
-        public_url: settings.public_url,
-        provider_tokens: Arc::new(
-            settings
-                .provider_tokens
-                .iter()
-                .map(|t| token_hash(t))
-                .collect(),
-        ),
-    };
-    let extra = Router::new();
-    #[cfg(feature = "unity")]
-    let extra = extra.merge(crate::unity::admin::routes());
-    router.nest(ADMIN_PREFIX, admin::router(provider, extra))
+        .merge(activation_router(store, secrets, settings.public_url))
+        .route("/health", get(|| async { "ok" }))
 }
 
-/// What the activation route needs.
-#[derive(Clone)]
-struct ActivationState {
-    store: Arc<dyn ShareStore>,
-    secrets: Secrets,
-    public_url: String,
-}
+/// The provider admin API under `/api/2.1/unity-catalog` (shares, permissions,
+/// recipients; with the `unity` feature also credentials and external
+/// locations), behind the provider tokens. Merge it into [`router`].
+#[cfg(feature = "admin")]
+pub fn admin_router(store: Arc<dyn ShareStore>, secrets: Secrets, settings: &Settings) -> Router {
+    use crate::admin::{self, ProviderService, ProviderTokens};
 
-async fn activation(
-    State(state): State<ActivationState>,
-    Path(code): Path<String>,
-) -> Result<Json<SharingProfile>> {
-    Ok(Json(
-        activate(
-            state.store.as_ref(),
-            &state.secrets,
-            &state.public_url,
-            &code,
-        )
-        .await?,
-    ))
+    admin::router(
+        ProviderService::new(store, secrets, settings.public_url.clone()),
+        Arc::new(ProviderTokens::new(&settings.provider_tokens)),
+    )
 }
 
 impl Config {
@@ -198,12 +157,20 @@ impl Config {
 pub async fn start(config: &Config) -> std::result::Result<Service, String> {
     let store = config.store().await?;
     let secrets = config.secrets()?;
+    let settings = config.settings()?;
     let router = router(
         store.clone(),
         secrets.clone(),
         config.sources()?,
-        config.settings()?,
+        settings.clone(),
     );
+    #[cfg(feature = "admin")]
+    let router = if settings.provider_tokens.is_empty() {
+        tracing::info!("no `provider_tokens` configured; the admin API is not mounted");
+        router
+    } else {
+        router.merge(admin_router(store.clone(), secrets.clone(), &settings))
+    };
     Ok(Service {
         router,
         store,
