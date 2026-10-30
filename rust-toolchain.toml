@@ -1,0 +1,6 @@
+# Matches the CI toolchain pin (.github/workflows/ci.yaml). Newer stable toolchains
+# report clippy false positives on thiserror derives, which `just fix` would
+# otherwise try (and fail) to apply.
+[toolchain]
+channel = "1.97"
+components = ["rustfmt", "clippy"]

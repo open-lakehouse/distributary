@@ -7,6 +7,10 @@ The commit message contract and the signing flow are machine-wide (see
 
 ## Codegen gotchas
 
+- The admin protos (`proto/open_sharing/{shares,recipients,providers}`) have their
+  own pipeline (`buf.gen.admin.yaml`, `trestle.admin.yaml`, `crates/admin`). They
+  share message names with the protocol (`Share`, `ListSharesRequest`, …), and a
+  single trestle run over both cross-wires the generated protocol client.
 - Run `buf generate` **before** `trestle generate`. Raw buffa output carries
   camelCase JSON names, and trestle rewrites them to the snake_case wire names.
   `just generate` runs both, in order.

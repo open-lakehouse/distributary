@@ -23,9 +23,10 @@ required-features = ["bin"]
 
 [dependencies]
 # local dependencies in alphabetical order
+open-sharing-admin = { package = "olai-sharing-admin", path = "../admin", version = "0.0.1" }
 open-sharing-api = { package = "olai-sharing-api", path = "../api", version = "0.0.1" }
 open-sharing-common = { package = "olai-sharing-common", path = "../common", version = "0.0.1" }
-# The Unity Catalog source and admin API (feature `unity`).
+# The Unity Catalog source and the UC-shaped credential admin routes (feature `unity`).
 unitycatalog-client = { workspace = true, optional = true }
 unitycatalog-common = { workspace = true, optional = true, features = [
   "axum",
@@ -72,17 +73,13 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"], option
 tempfile = "3"
 tower = { workspace = true }
 
-# The end-to-end tests drive the UC-shaped admin API.
-[[test]]
-name = "e2e"
-required-features = ["unity"]
-
 [features]
 default = ["postgres", "unity"]
 # The Postgres `ShareStore` (sqlx, with embedded migrations).
 postgres = ["dep:sqlx"]
-# Unity Catalog integration: the UC REST catalog source and the provider admin
-# API in the UC REST shape. Without it the crate depends on no catalog's models.
+# Unity Catalog integration: the UC REST catalog source and the UC-shaped
+# credential / external-location admin routes. Without it the crate depends on
+# no catalog's models (the share and recipient admin API remains).
 unity = ["dep:futures", "dep:unitycatalog-client", "dep:unitycatalog-common"]
 # The `sharing-server` binary.
 bin = ["postgres", "unity", "dep:clap", "dep:tracing-subscriber"]

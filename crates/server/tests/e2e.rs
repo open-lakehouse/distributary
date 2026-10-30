@@ -471,6 +471,8 @@ async fn delegated_access_uses_catalog_vended_credentials() {
     assert_eq!(catalog.vends.load(Ordering::SeqCst), 1);
 }
 
+// Stores a credential through the UC-shaped `credentials` route.
+#[cfg(feature = "unity")]
 #[tokio::test]
 async fn rotating_keys_rewraps_stored_secrets() {
     let store: Arc<dyn ShareStore> = Arc::new(InMemoryStore::new());

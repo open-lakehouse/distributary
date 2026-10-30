@@ -1,0 +1,33 @@
+[package]
+# Published to crates.io under the `olai-sharing-*` prefix; the in-workspace
+# dependency key + crate identifier use `open(_)sharing_admin` via each
+# dependent's `package =` alias (as for the other sharing crates).
+name = "olai-sharing-admin"
+version = "0.0.1"
+description = "Open Sharing provider admin API models: shares, share permissions, recipients and providers, wire-compatible with the Databricks Delta Sharing REST API."
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+rust-version.workspace = true
+
+[lib]
+name = "open_sharing_admin"
+
+[dependencies]
+# workspace dependencies in alphabetical order
+axum = { workspace = true, optional = true }
+axum-extra = { workspace = true, optional = true }
+buffa = { workspace = true }
+buffa-types = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[features]
+default = []
+# `axum` compiles the generated request extractors for a server built on these
+# types. The feature name must be `axum` because the generated extractors
+# hard-code `#[cfg(feature = "axum")]`.
+axum = ["dep:axum", "dep:axum-extra"]

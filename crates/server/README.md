@@ -29,7 +29,7 @@ implementation in [`olai-sharing-api`](../api). See
 | `/api/v1/delta-sharing/…` | Delta Sharing protocol (recipient token) |
 | `/api/1.0/opensharing/…` | Open Sharing protocol: adds volumes, agent skills, temporary credentials (recipient token) |
 | `/api/1.0/opensharing/activations/{code}` | One-time activation link, returns the sharing profile |
-| `/api/2.1/unity-catalog/…` | Provider admin API (feature `unity`): `shares`, `shares/{name}/permissions`, `recipients`, `recipients/{name}/rotate-token`, `credentials`, `external-locations` (provider token) |
+| `/api/2.1/unity-catalog/…` | Provider admin API, in the Databricks Delta Sharing REST shape: `shares`, `shares/{name}/permissions`, `recipients`, `recipients/{name}/rotate-token`; with feature `unity` also `credentials`, `external-locations` (provider token) |
 | `/health` | Liveness |
 
 ## Features
@@ -37,14 +37,15 @@ implementation in [`olai-sharing-api`](../api). See
 | Feature | Default | What |
 |---|---|---|
 | `postgres` | ✓ | The Postgres `ShareStore` (sqlx, embedded migrations) |
-| `unity` | ✓ | Unity Catalog integration: the UC REST catalog source and the UC-shaped provider admin API |
+| `unity` | ✓ | Unity Catalog integration: the UC REST catalog source and the UC-shaped `credentials` / `external-locations` admin routes |
 | `bin` | | The `sharing-server` binary (implies `postgres` and `unity`) |
 
 ### Without Unity Catalog
 
 With `default-features = false` (optionally plus `postgres`) the crate uses no
-catalog's models: the store, recipient tokens and activation, sealed secrets,
-the static source and storage access remain. Credential minting, object stores
+catalog's models: the store, the share / recipient admin API
+([`olai-sharing-admin`](../admin) models), recipient tokens and activation,
+sealed secrets, the static source and storage access remain. Credential minting, object stores
 and presigning come from the catalog-independent trestle crates
 (`olai-credential-vending`, `olai-vended-store`, `olai-storage-credentials`). A catalog that already has discovery and an admin surface
 implements `CatalogSource` (or the `olai-sharing-api` ports directly),
