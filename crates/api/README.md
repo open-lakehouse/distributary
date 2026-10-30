@@ -34,15 +34,10 @@ this way.
 
 ## Admin API
 
-With the `admin` feature, the crate also carries the provider admin API surface
-(models from [`opensharing-admin`](../admin)). Trestle generates the
-`ShareHandler`, `RecipientHandler` and `ProviderHandler` traits from the admin
-protos, generic over the request context `Cx` like the protocol traits.
-`admin::{shares_router, recipients_router, providers_router, admin_router}`
-serve them under `admin::ADMIN_PREFIX` (`/api/2.1/unity-catalog`).
-`auth::require_provider` puts a bearer-token `ProviderAuthenticator` in front.
-A catalog uses its own context type instead. `opensharing-server` implements
-the share and recipient traits.
+This crate carries only the recipient-facing protocol. The provider admin API
+(shares, permissions, recipients) is a separate crate,
+[`opensharing-admin-api`](../admin-api). It is built the same way, but has its
+own authentication and error contract and shares no code with this crate.
 
 ## Status
 

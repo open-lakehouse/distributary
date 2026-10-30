@@ -14,8 +14,6 @@ rust-version.workspace = true
 
 [dependencies]
 # local dependencies in alphabetical order
-# The provider admin API models (feature `admin`).
-opensharing-admin = { path = "../admin", version = "0.0.1", optional = true }
 opensharing-common = { path = "../common", version = "0.0.1" }
 
 # workspace dependencies in alphabetical order
@@ -59,10 +57,6 @@ required-features = ["testing"]
 name = "mount"
 required-features = ["testing"]
 
-[[test]]
-name = "admin"
-required-features = ["admin"]
-
 [features]
 # `axum` gates the generated axum route functions, the hand-written router, and
 # the error `IntoResponse`. On by default: this crate exists to serve an axum
@@ -75,10 +69,6 @@ axum = [
   "dep:axum-extra",
   "opensharing-common/axum",
 ]
-# The provider admin API surface: the generated `ShareHandler` /
-# `RecipientHandler` / `ProviderHandler` traits and their router (`admin`).
-# Off by default, so a protocol-only host never compiles the admin models.
-admin = ["axum", "dep:opensharing-admin", "opensharing-admin/axum"]
 # The kernel-backed Delta table format (`format::delta`).
 delta = ["dep:delta_kernel_default_engine", "dep:uuid"]
 # Exposes `InMemorySharingBackend`, an in-memory `SharingBackend` implementation

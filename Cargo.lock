@@ -2506,7 +2506,6 @@ dependencies = [
  "bytes",
  "chrono",
  "object_store",
- "opensharing-admin",
  "opensharing-common",
  "serde",
  "serde_json",
