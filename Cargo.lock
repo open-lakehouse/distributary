@@ -2580,6 +2580,7 @@ dependencies = [
  "olai-uc-common",
  "olai-vended-store",
  "opensharing-admin",
+ "opensharing-admin-api",
  "opensharing-api",
  "opensharing-common",
  "serde",

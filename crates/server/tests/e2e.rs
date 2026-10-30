@@ -13,7 +13,7 @@ use axum::Router;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use olai_storage_credentials::{AccessLevel, StorageCredentials, VendedCredential};
-use opensharing_api::auth::Provider;
+use opensharing_admin_api::auth::Provider;
 use opensharing_server::Result;
 use opensharing_server::admin::{self, AdminAction, AdminPolicy, ProviderService, ProviderTokens};
 use opensharing_server::config::{ConfigValue, EncryptionConfig, KeyConfig, KeyProviderKind};

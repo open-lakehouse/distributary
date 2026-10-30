@@ -32,6 +32,7 @@ use opensharing_api::service::paginate;
 use crate::source::{SourceRegistry, split_name};
 use crate::store::{ShareObject, ShareObjectKind, ShareRecord, ShareStore};
 use crate::{Error, Result};
+use opensharing_api::{Error as ApiError, Result as ApiResult};
 
 /// A shared object, with the source-catalog name it resolves through.
 #[derive(Debug, Clone)]
@@ -126,7 +127,7 @@ fn info(share: &ShareRecord) -> ShareInfo {
 
 #[async_trait]
 impl ShareCatalog<Recipient> for StoreCatalog {
-    async fn authorize(&self, action: SharingAction<'_>, cx: &Recipient) -> Result<()> {
+    async fn authorize(&self, action: SharingAction<'_>, cx: &Recipient) -> ApiResult<()> {
         match action {
             SharingAction::ListShares => Ok(()),
             SharingAction::ReadShare { share } => {
@@ -134,13 +135,13 @@ impl ShareCatalog<Recipient> for StoreCatalog {
                     Ok(())
                 } else {
                     // Do not reveal whether an ungranted share exists.
-                    Err(Error::NotFound)
+                    Err(ApiError::NotFound)
                 }
             }
         }
     }
 
-    async fn list_shares(&self, page: PageRequest, cx: &Recipient) -> Result<Page<ShareInfo>> {
+    async fn list_shares(&self, page: PageRequest, cx: &Recipient) -> ApiResult<Page<ShareInfo>> {
         let shares = self.store.shares_of(&cx.id).await?;
         paginate(
             shares.iter().map(info).collect(),
@@ -149,11 +150,11 @@ impl ShareCatalog<Recipient> for StoreCatalog {
         )
     }
 
-    async fn get_share(&self, share: &str, _cx: &Recipient) -> Result<ShareInfo> {
+    async fn get_share(&self, share: &str, _cx: &Recipient) -> ApiResult<ShareInfo> {
         Ok(info(&self.store.get_share(share).await?))
     }
 
-    async fn list_objects(&self, share: &str, _cx: &Recipient) -> Result<Vec<SharedObject>> {
+    async fn list_objects(&self, share: &str, _cx: &Recipient) -> ApiResult<Vec<SharedObject>> {
         let share = self.store.get_share(share).await?;
         Ok(self
             .expose(&share)
@@ -163,7 +164,7 @@ impl ShareCatalog<Recipient> for StoreCatalog {
             .collect())
     }
 
-    async fn resolve(&self, asset: &AssetRef, _cx: &Recipient) -> Result<SharedAsset> {
+    async fn resolve(&self, asset: &AssetRef, _cx: &Recipient) -> ApiResult<SharedAsset> {
         let share = self.store.get_share(&asset.share).await?;
         let exposed = self
             .expose(&share)

@@ -18,6 +18,7 @@ use crate::secrets::Secrets;
 use crate::store::{RecipientRecord, ShareStore, TokenRecord, now_millis};
 use crate::tokens::{random_secret, token_hash};
 use crate::{Error, Result};
+use opensharing_api::{Error as ApiError, Result as ApiResult};
 
 /// Where activation links are served, under the server's public URL.
 pub const ACTIVATION_PATH: &str = "/api/1.0/opensharing/activations";
@@ -35,14 +36,14 @@ impl StoreAuthenticator {
 
 #[async_trait]
 impl RecipientAuthenticator for StoreAuthenticator {
-    async fn authenticate(&self, token: &str) -> Result<Recipient> {
+    async fn authenticate(&self, token: &str) -> ApiResult<Recipient> {
         let (token, recipient) = match self.store.token_by_hash(&token_hash(token)).await {
             Ok(found) => found,
-            Err(Error::NotFound) => return Err(Error::Unauthenticated),
-            Err(e) => return Err(e),
+            Err(Error::NotFound) => return Err(ApiError::Unauthenticated),
+            Err(e) => return Err(e.into()),
         };
         if token.expires_at.is_some_and(|at| at <= now_millis()) {
-            return Err(Error::Unauthenticated);
+            return Err(ApiError::Unauthenticated);
         }
         Ok(Recipient {
             id: recipient.id,
@@ -153,7 +154,7 @@ pub fn activation_router(
 async fn activation(
     State(state): State<Activation>,
     Path(code): Path<String>,
-) -> Result<Json<SharingProfile>> {
+) -> ApiResult<Json<SharingProfile>> {
     Ok(Json(
         activate(
             state.store.as_ref(),

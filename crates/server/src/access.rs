@@ -44,6 +44,7 @@ use crate::secrets::Secrets;
 use crate::source::{AccessMode, SourceRegistry};
 use crate::store::ShareStore;
 use crate::{Error, Result};
+use opensharing_api::Result as ApiResult;
 
 /// Re-vend this long before a cached delegated credential expires.
 const REFRESH_MARGIN: TimeDelta = TimeDelta::seconds(60);
@@ -157,7 +158,7 @@ fn scope(asset: &SharedAsset) -> Result<StorageScope> {
 
 #[async_trait]
 impl StorageAccess<Recipient> for SourceStorageAccess {
-    async fn table_storage(&self, asset: &SharedAsset, _cx: &Recipient) -> Result<TableStorage> {
+    async fn table_storage(&self, asset: &SharedAsset, _cx: &Recipient) -> ApiResult<TableStorage> {
         let credential = self.credential(asset).await?;
         // A store serves one query, which never outlives its credential: no re-vend.
         let store = build_store(
@@ -186,7 +187,7 @@ impl StorageAccess<Recipient> for SourceStorageAccess {
         &self,
         asset: &SharedAsset,
         _cx: &Recipient,
-    ) -> Result<SharingTemporaryCredentials> {
+    ) -> ApiResult<SharingTemporaryCredentials> {
         let credential = self.credential(asset).await?;
         let mut credentials = to_sharing_credentials(&credential)?;
         // Name the location as the catalog spelled it: emulator and endpoint URLs do
@@ -216,7 +217,7 @@ struct VendedSigner {
 
 #[async_trait]
 impl FileSigner for VendedSigner {
-    async fn sign(&self, files: &[Url]) -> Result<Vec<SignedFile>> {
+    async fn sign(&self, files: &[Url]) -> ApiResult<Vec<SignedFile>> {
         let locations = files
             .iter()
             .map(StorageLocation::parse)

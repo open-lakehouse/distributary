@@ -17,7 +17,7 @@
 //! - [`recipients`]: recipient tokens with activation links;
 //! - `admin` (feature `admin`): the provider admin API (shares, permissions,
 //!   recipients), in the Databricks Delta Sharing REST shape, implementing the
-//!   handler traits `opensharing-api` generates;
+//!   handler traits `opensharing-admin-api` generates;
 //! - [`embed`]: the socket-less [`Router`](axum::Router) any host can serve;
 //! - `unity` (feature `unity`): the Unity Catalog source and the UC-shaped
 //!   storage credential / external location admin routes.
@@ -41,6 +41,7 @@ pub mod admin;
 pub mod catalog;
 pub mod config;
 pub mod embed;
+pub mod error;
 pub mod recipients;
 pub mod secrets;
 pub mod source;
@@ -50,4 +51,4 @@ mod tokens;
 pub mod unity;
 
 pub use config::Config;
-pub use opensharing_api::{Error, Result};
+pub use error::{Error, Result};

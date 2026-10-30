@@ -8,8 +8,8 @@
 //!   update / delete, and `recipients/{name}/rotate-token`.
 //!
 //! The surface itself — the [`ShareHandler`] and [`RecipientHandler`] traits and
-//! their routers — is generated in `opensharing-api` (feature `admin`), generic
-//! over the request context `Cx`. [`ProviderService`] implements both over the
+//! their routers — is generated in `opensharing-admin-api`, generic over the
+//! request context `Cx`. [`ProviderService`] implements both over the
 //! [`ShareStore`] and [`Secrets`]: token issuing, activation links and sealing
 //! need more than a plain resource store. Every handler first asks the
 //! service's [`AdminPolicy`] whether the caller in `Cx` may perform the
@@ -29,21 +29,22 @@
 //! from `DataObject`s at the API boundary.
 //!
 //! [`ShareCatalog::authorize`]: opensharing_api::ShareCatalog::authorize
-//! [`ShareHandler`]: opensharing_api::admin::ShareHandler
-//! [`RecipientHandler`]: opensharing_api::admin::RecipientHandler
-//! [`require_provider`]: opensharing_api::auth::require_provider
+//! [`ShareHandler`]: opensharing_admin_api::ShareHandler
+//! [`RecipientHandler`]: opensharing_admin_api::RecipientHandler
+//! [`require_provider`]: opensharing_admin_api::auth::require_provider
 
 use std::sync::Arc;
 
 use async_trait::async_trait;
 use axum::Router;
-use opensharing_api::admin::{ADMIN_PREFIX, admin_router};
-use opensharing_api::auth::{Provider, ProviderAuthenticator, require_provider};
+use opensharing_admin_api::auth::{Provider, ProviderAuthenticator, require_provider};
+use opensharing_admin_api::{ADMIN_PREFIX, admin_router};
 
 use crate::secrets::Secrets;
 use crate::store::ShareStore;
 use crate::tokens::token_hash;
 use crate::{Error, Result};
+use opensharing_admin_api::{Error as AdminError, Result as AdminResult};
 
 pub mod recipients;
 pub mod shares;
@@ -114,8 +115,8 @@ impl<Cx: Send + Sync + 'static> AdminPolicy<Cx> for AllowAll {
 }
 
 /// The admin API over the store. Implements the generated
-/// [`ShareHandler`](opensharing_api::admin::ShareHandler) and
-/// [`RecipientHandler`](opensharing_api::admin::RecipientHandler). Cheap to clone.
+/// [`ShareHandler`](opensharing_admin_api::ShareHandler) and
+/// [`RecipientHandler`](opensharing_admin_api::RecipientHandler). Cheap to clone.
 pub struct ProviderService<Cx = Provider> {
     pub(crate) store: Arc<dyn ShareStore>,
     pub(crate) secrets: Secrets,
@@ -177,13 +178,13 @@ impl ProviderTokens {
 
 #[async_trait]
 impl ProviderAuthenticator for ProviderTokens {
-    async fn authenticate(&self, token: &str) -> Result<Provider> {
+    async fn authenticate(&self, token: &str) -> AdminResult<Provider> {
         if self.digests.contains(&token_hash(token)) {
             Ok(Provider {
                 name: "provider".to_string(),
             })
         } else {
-            Err(Error::Unauthenticated)
+            Err(AdminError::Unauthenticated)
         }
     }
 }
@@ -223,13 +224,13 @@ mod tests {
         assert!(tokens.authenticate("two").await.is_ok());
         assert!(matches!(
             tokens.authenticate("three").await,
-            Err(Error::Unauthenticated)
+            Err(AdminError::Unauthenticated)
         ));
         assert!(matches!(
             ProviderTokens::new(Vec::<String>::new())
                 .authenticate("one")
                 .await,
-            Err(Error::Unauthenticated)
+            Err(AdminError::Unauthenticated)
         ));
     }
 }
