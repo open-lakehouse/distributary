@@ -1,0 +1,45 @@
+# Trestle codegen config for the Open Sharing protos.
+#
+# The protocol is split across three crates: `open-sharing-common` (wire models
+# + co-located axum extractors, shared by client and server),
+# `open-sharing-client` (the HTTP client), and `open-sharing-api` (handler traits
+# & axum routes). The api crate is a portable carve-out (a `SharingBackend` port +
+# blanket handler impl); a host adopts it via a thin adapter. Sharing services are
+# RPC-style (non-resource), so the resource-specific features stay off.
+#
+# Run after `buf generate` (see `just generate-code`).
+version: 1
+project:
+  name: open-sharing
+generate:
+  proto_lib: buffa
+  # snake_case JSON field names on the wire, matching the Delta Sharing
+  # protocol and the Databricks REST API.
+  # Must flip together with `proto_lib: buffa` — trestle rejects
+  # `json_field_names: proto` under prost.
+  json_field_names: proto
+  descriptors: descriptors.bin
+
+  servers:
+    rest: true
+
+  clients:
+    rust:
+      output: crates/client/src
+
+  models:
+    dir: crates/common/src/models
+    crate_name: open_sharing_common
+
+  server:
+    output: crates/api/src
+    # The handler traits/routes are generic over the context `Cx`; the crate is
+    # portable, so the default context type is the crate-neutral `DefaultContext`
+    # (an alias for `()`; the server plugs in its own `RequestContext` when it
+    # implements the port).
+    context_type: crate::DefaultContext
+    error_type_path: crate::error::Error
+    resource_enum: false
+    store_integration: false
+    object_conversions: false
+    resource_clients: false

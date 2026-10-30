@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+#
+# Repo pre-commit hook.
+#
+# 1. Delegates to any globally-configured hooks (e.g. a secret scanner). A
+#    repo-local core.hooksPath overrides the global one, so we re-invoke the
+#    global hook here to avoid disabling it for this repo.
+# 2. Verifies Cargo.lock trestle crates still list crates.io registry entries.
+#
+set -e
+
+# --- 1) Run globally-configured hooks, if any -------------------------------
+global_hooks="$(git config --global core.hooksPath 2>/dev/null || true)"
+if [ -n "$global_hooks" ]; then
+  case "$global_hooks" in
+    "~"*) global_hooks="$HOME${global_hooks#\~}" ;;
+  esac
+  if [ -x "$global_hooks/pre-commit" ]; then
+    "$global_hooks/pre-commit" "$@" || exit $?
+  fi
+fi
+
+# --- 2) Cargo.lock must list the olai-* trestle crates from crates.io --------
+if git diff --cached --name-only | grep -qx 'Cargo.lock'; then
+  if ! bash dev/scripts/check-cargo-lock-trestle.sh; then
+    exit 1
+  fi
+fi

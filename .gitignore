@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+
+# IDE
+.dir-locals.el
+.idea/
+.vscode/
+.vim
+.zed
+.isaac/
+
+# Rust
+# Local-only cargo config (e.g. the `just configure-trestle-deps` path patches).
+.cargo/
+target/
+# Cargo.lock IS committed: the workspace ships a binary (`sharing-server`) and a
+# Neon Function bundle, and pins the Unity Catalog crates by git rev.
+
+# Project
+.env
+# Transient descriptor set written by `just generate-code`.
+descriptors.bin
+# Transient gnostic output of `just generate-openapi`.
+openapi/sharing-gen/
+
+# Dependency directories
+node_modules/
+
+.claude/worktrees/

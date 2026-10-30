@@ -1,0 +1,183 @@
+name: ci
+
+on:
+  merge_group:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+# Least privilege by default; jobs opt into more if they ever need it.
+permissions: {}
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  # fmt, clippy, catalog-independence and test are independent jobs that run in
+  # parallel, so a lint failure never hides test results.
+
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: "1.97"
+          components: rustfmt
+
+      - name: Format
+        run: cargo fmt --all --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      # Pinned to a recent stable (matches local dev); stays above the
+      # workspace rust-version floor (1.95.0).
+      - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: "1.97"
+          components: clippy
+
+      # Caches ~/.cargo and ./target keyed on the lockfile. All jobs share the
+      # "ci" key; only main writes the cache. `env-vars: ImageOS` keys the cache
+      # on the runner image so build-script output never crosses images.
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          env-vars: ImageOS
+          shared-key: ci
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Clippy
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+
+  # Open Sharing must stay mountable without Unity Catalog. Guard the boundaries:
+  # - olai-sharing-api (protocol) depends on no olai-uc-* crate at all;
+  # - olai-sharing-server without `unity` depends on no olai-uc-* crate either:
+  #   its storage access comes from the catalog-independent trestle vending
+  #   crates (olai-storage-credentials, olai-vended-store, olai-credential-vending).
+  catalog-independence:
+    name: catalog-independence
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: "1.97"
+
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          env-vars: ImageOS
+          shared-key: ci
+          save-if: false
+
+      - name: Dependency boundaries
+        run: |
+          set -euo pipefail
+          deny() { # <description> <pattern> <cargo tree args...>
+            local what="$1" pattern="$2"; shift 2
+            if cargo tree --locked -e normal --prefix none "$@" | grep -E "$pattern"; then
+              echo "::error::$what"
+              exit 1
+            fi
+          }
+          deny "olai-sharing-api must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p olai-sharing-api --all-features
+          deny "olai-sharing-server (no unity) must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p olai-sharing-server --no-default-features --features postgres
+
+      - name: Build without Unity Catalog
+        run: |
+          cargo check --locked --all-targets -p olai-sharing-api --no-default-features
+          cargo check --locked --all-targets -p olai-sharing-server --no-default-features --features postgres
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      # dorny/test-reporter publishes a check run with the parsed JUnit results.
+      checks: write
+    # A disposable database for the sharing-server Postgres store test
+    # (crates/server/tests/postgres.rs), which skips when its URL is unset.
+    services:
+      postgres:
+        image: postgres:17
+        # Throwaway database reachable only from the job: no password, so the
+        # connection URL below carries no credential.
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: sharing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: "1.97"
+
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          env-vars: ImageOS
+          shared-key: ci
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      # Prebuilt binary (no compile); the ci profile emits JUnit XML.
+      - uses: taiki-e/install-action@8b3c737da4b541bf0fb5a3e0488ff20535badac9 # v2.82.1
+        with:
+          tool: cargo-nextest
+
+      - name: Test
+        env:
+          SHARING_SERVER_TEST_DATABASE_URL: postgres://postgres@localhost:5432/sharing
+        run: cargo nextest run --locked --workspace --all-features --profile ci
+
+      # nextest does not run doctests; run them here. Runs even if nextest failed.
+      - name: Doctests
+        if: ${{ !cancelled() }}
+        run: cargo test --locked --workspace --all-features --doc
+
+      - name: Publish test report
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+        if: ${{ !cancelled() }}
+        with:
+          name: nextest results
+          path: target/nextest/ci/junit.xml
+          reporter: jest-junit
