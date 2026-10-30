@@ -74,10 +74,12 @@ jobs:
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
   # Open Sharing must stay mountable without Unity Catalog. Guard the boundaries:
-  # - olai-sharing-api (protocol) depends on no olai-uc-* crate at all;
+  # - olai-sharing-api (protocol) and olai-sharing-admin (admin API models)
+  #   depend on no olai-uc-* crate at all;
   # - olai-sharing-server without `unity` depends on no olai-uc-* crate either:
   #   its storage access comes from the catalog-independent trestle vending
-  #   crates (olai-storage-credentials, olai-vended-store, olai-credential-vending).
+  #   crates (olai-storage-credentials, olai-vended-store, olai-credential-vending),
+  #   and its share / recipient admin API from olai-sharing-admin.
   catalog-independence:
     name: catalog-independence
     runs-on: ubuntu-latest
@@ -111,6 +113,8 @@ jobs:
           }
           deny "olai-sharing-api must not depend on olai-uc-* crates" \
             '^olai-uc-' -p olai-sharing-api --all-features
+          deny "olai-sharing-admin must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p olai-sharing-admin --all-features
           deny "olai-sharing-server (no unity) must not depend on olai-uc-* crates" \
             '^olai-uc-' -p olai-sharing-server --no-default-features --features postgres
 
@@ -118,6 +122,11 @@ jobs:
         run: |
           cargo check --locked --all-targets -p olai-sharing-api --no-default-features
           cargo check --locked --all-targets -p olai-sharing-server --no-default-features --features postgres
+
+      # The share / recipient admin API and the store-provisioned host must work
+      # end to end without `unity` (tests/e2e.rs, tests/custom_mount.rs).
+      - name: Test without Unity Catalog
+        run: cargo test --locked -p olai-sharing-server --no-default-features --features postgres
 
   test:
     name: test

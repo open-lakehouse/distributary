@@ -13,6 +13,7 @@ use open_sharing_api::{SharingService, sharing_router};
 
 use crate::Result;
 use crate::access::{SourceStorageAccess, open_credential};
+use crate::admin::{self, ADMIN_PREFIX, ProviderState};
 use crate::catalog::StoreCatalog;
 use crate::config::{Config, DatabaseConfig, EncryptionConfig};
 use crate::recipients::{
@@ -22,14 +23,14 @@ use crate::secrets::Secrets;
 use crate::source::SourceRegistry;
 use crate::store::ShareStore;
 use crate::store::memory::InMemoryStore;
+use crate::tokens::token_hash;
 
 /// Everything the routes need, besides the store.
 #[derive(Clone)]
 pub struct Settings {
     /// The externally reachable base URL, without a trailing slash.
     pub public_url: String,
-    /// Accepted provider (admin) tokens. Used by the admin API (feature
-    /// `unity`).
+    /// Accepted provider (admin) tokens, for the admin API.
     pub provider_tokens: Vec<String>,
     /// The longest a presigned URL stays valid.
     pub presign_ttl: Duration,
@@ -49,14 +50,13 @@ pub struct Service {
 /// - the sharing protocols under `/api/v1/delta-sharing` and
 ///   `/api/1.0/opensharing`, behind recipient tokens;
 /// - activation links under `/api/1.0/opensharing/activations/{code}`;
-/// - with the `unity` feature, the provider admin API under
-///   `/api/2.1/unity-catalog`;
+/// - the provider admin API under `/api/2.1/unity-catalog` (shares,
+///   permissions, recipients; with the `unity` feature also credentials and
+///   external locations), behind the provider tokens;
 /// - `GET /health`.
 ///
-/// Without `unity` there is no admin API: the host manages shares, recipients
-/// and grants through the [`ShareStore`] (see
-/// [`issue_token`](crate::recipients::issue_token)) and can mount its own admin
-/// routes next to this router.
+/// A host can also manage shares, recipients and grants through the
+/// [`ShareStore`] directly (see [`issue_token`](crate::recipients::issue_token)).
 pub fn router(
     store: Arc<dyn ShareStore>,
     secrets: Secrets,
@@ -90,26 +90,22 @@ pub fn router(
         .merge(activation)
         .route("/health", get(|| async { "ok" }));
 
-    #[cfg(feature = "unity")]
-    let router = {
-        use crate::tokens::token_hash;
-        use crate::unity::admin::{ADMIN_PREFIX, ProviderState};
-        let provider = ProviderState {
-            store,
-            secrets,
-            public_url: settings.public_url,
-            provider_tokens: Arc::new(
-                settings
-                    .provider_tokens
-                    .iter()
-                    .map(|t| token_hash(t))
-                    .collect(),
-            ),
-        };
-        router.nest(ADMIN_PREFIX, crate::unity::admin::router(provider))
+    let provider = ProviderState {
+        store,
+        secrets,
+        public_url: settings.public_url,
+        provider_tokens: Arc::new(
+            settings
+                .provider_tokens
+                .iter()
+                .map(|t| token_hash(t))
+                .collect(),
+        ),
     };
-
-    router
+    let extra = Router::new();
+    #[cfg(feature = "unity")]
+    let extra = extra.merge(crate::unity::admin::routes());
+    router.nest(ADMIN_PREFIX, admin::router(provider, extra))
 }
 
 /// What the activation route needs.

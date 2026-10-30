@@ -240,9 +240,14 @@ to host them. The layering:
   `CatalogSource`, storage access) uses catalog-independent types:
   `ShareObject` for share entries and the trestle crates'
   `RegisteredCredential` / `VendedCredential` for vending.
+- The provider admin API for shares, permissions and recipients is core. Its
+  models come from `olai-sharing-admin` (`proto/open_sharing/{shares,recipients,providers}`,
+  moved from mangrove's `unitycatalog.*` packages with an unchanged wire format,
+  2026-10-30).
 - Unity Catalog comes in only through the `unity` feature (`src/unity/`): the UC
-  REST `CatalogSource` and the UC-shaped admin API. It converts UC models at
-  that boundary (`olai-uc-common`'s `credential-vending` feature for credentials).
+  REST `CatalogSource` and the UC-shaped `credentials` / `external-locations`
+  admin routes. It converts UC models at that boundary (`olai-uc-common`'s
+  `credential-vending` feature for credentials).
 
 Credential vending, the object-store primitives and presigning come from the
 catalog-independent trestle crates (`olai-storage-credentials`,

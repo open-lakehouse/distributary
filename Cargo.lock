@@ -2410,6 +2410,7 @@ dependencies = [
  "futures",
  "object_store",
  "olai-credential-vending",
+ "olai-sharing-admin",
  "olai-sharing-api",
  "olai-sharing-common",
  "olai-storage-credentials",
