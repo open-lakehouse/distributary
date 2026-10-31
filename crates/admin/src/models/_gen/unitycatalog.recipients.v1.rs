@@ -186,7 +186,7 @@ impl SecurablePropertiesKvPairs {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.SecurablePropertiesKvPairs";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.SecurablePropertiesKvPairs";
 }
 impl ::buffa::DefaultInstance for SecurablePropertiesKvPairs {
     fn default_instance() -> &'static Self {
@@ -195,10 +195,10 @@ impl ::buffa::DefaultInstance for SecurablePropertiesKvPairs {
     }
 }
 impl ::buffa::MessageName for SecurablePropertiesKvPairs {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "SecurablePropertiesKvPairs";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.SecurablePropertiesKvPairs";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.SecurablePropertiesKvPairs";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.SecurablePropertiesKvPairs";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.SecurablePropertiesKvPairs";
 }
 impl ::buffa::Message for SecurablePropertiesKvPairs {
     /// Returns the total encoded size in bytes.
@@ -340,7 +340,7 @@ impl ::buffa::Message for SecurablePropertiesKvPairs {
     }
 }
 impl ::buffa::ExtensionSet for SecurablePropertiesKvPairs {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.SecurablePropertiesKvPairs";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.SecurablePropertiesKvPairs";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -363,7 +363,7 @@ impl ::buffa::json_helpers::ProtoElemJson for SecurablePropertiesKvPairs {
 }
 #[doc(hidden)]
 pub const __SECURABLE_PROPERTIES_KV_PAIRS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.SecurablePropertiesKvPairs",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.SecurablePropertiesKvPairs",
     to_json: ::buffa::type_registry::any_to_json::<SecurablePropertiesKvPairs>,
     from_json: ::buffa::type_registry::any_from_json::<SecurablePropertiesKvPairs>,
     is_wkt: false,
@@ -463,7 +463,7 @@ impl RecipientToken {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.RecipientToken";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.RecipientToken";
 }
 impl ::buffa::DefaultInstance for RecipientToken {
     fn default_instance() -> &'static Self {
@@ -472,10 +472,10 @@ impl ::buffa::DefaultInstance for RecipientToken {
     }
 }
 impl ::buffa::MessageName for RecipientToken {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "RecipientToken";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.RecipientToken";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.RecipientToken";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.RecipientToken";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.RecipientToken";
 }
 impl ::buffa::Message for RecipientToken {
     /// Returns the total encoded size in bytes.
@@ -671,7 +671,7 @@ impl ::buffa::Message for RecipientToken {
     }
 }
 impl ::buffa::ExtensionSet for RecipientToken {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.RecipientToken";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.RecipientToken";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -694,7 +694,7 @@ impl ::buffa::json_helpers::ProtoElemJson for RecipientToken {
 }
 #[doc(hidden)]
 pub const __RECIPIENT_TOKEN_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.RecipientToken",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.RecipientToken",
     to_json: ::buffa::type_registry::any_to_json::<RecipientToken>,
     from_json: ::buffa::type_registry::any_from_json::<RecipientToken>,
     is_wkt: false,
@@ -819,7 +819,7 @@ impl Recipient {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.Recipient";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.Recipient";
 }
 impl Recipient {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -891,10 +891,10 @@ impl ::buffa::DefaultInstance for Recipient {
     }
 }
 impl ::buffa::MessageName for Recipient {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "Recipient";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.Recipient";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.Recipient";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.Recipient";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.Recipient";
 }
 impl ::buffa::Message for Recipient {
     /// Returns the total encoded size in bytes.
@@ -1224,7 +1224,7 @@ impl ::buffa::Message for Recipient {
     }
 }
 impl ::buffa::ExtensionSet for Recipient {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.Recipient";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.Recipient";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1247,7 +1247,7 @@ impl ::buffa::json_helpers::ProtoElemJson for Recipient {
 }
 #[doc(hidden)]
 pub const __RECIPIENT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.Recipient",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.Recipient",
     to_json: ::buffa::type_registry::any_to_json::<Recipient>,
     from_json: ::buffa::type_registry::any_from_json::<Recipient>,
     is_wkt: false,
@@ -1295,7 +1295,7 @@ impl ListRecipientsRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.ListRecipientsRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsRequest";
 }
 impl ListRecipientsRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1323,10 +1323,10 @@ impl ::buffa::DefaultInstance for ListRecipientsRequest {
     }
 }
 impl ::buffa::MessageName for ListRecipientsRequest {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "ListRecipientsRequest";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.ListRecipientsRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.ListRecipientsRequest";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.ListRecipientsRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsRequest";
 }
 impl ::buffa::Message for ListRecipientsRequest {
     /// Returns the total encoded size in bytes.
@@ -1422,7 +1422,7 @@ impl ::buffa::Message for ListRecipientsRequest {
     }
 }
 impl ::buffa::ExtensionSet for ListRecipientsRequest {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.ListRecipientsRequest";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.ListRecipientsRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1445,7 +1445,7 @@ impl ::buffa::json_helpers::ProtoElemJson for ListRecipientsRequest {
 }
 #[doc(hidden)]
 pub const __LIST_RECIPIENTS_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.ListRecipientsRequest",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsRequest",
     to_json: ::buffa::type_registry::any_to_json::<ListRecipientsRequest>,
     from_json: ::buffa::type_registry::any_from_json::<ListRecipientsRequest>,
     is_wkt: false,
@@ -1490,7 +1490,7 @@ impl ListRecipientsResponse {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.ListRecipientsResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsResponse";
 }
 impl ListRecipientsResponse {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1511,10 +1511,10 @@ impl ::buffa::DefaultInstance for ListRecipientsResponse {
     }
 }
 impl ::buffa::MessageName for ListRecipientsResponse {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "ListRecipientsResponse";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.ListRecipientsResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.ListRecipientsResponse";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.ListRecipientsResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsResponse";
 }
 impl ::buffa::Message for ListRecipientsResponse {
     /// Returns the total encoded size in bytes.
@@ -1619,7 +1619,7 @@ impl ::buffa::Message for ListRecipientsResponse {
     }
 }
 impl ::buffa::ExtensionSet for ListRecipientsResponse {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.ListRecipientsResponse";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.ListRecipientsResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1642,7 +1642,7 @@ impl ::buffa::json_helpers::ProtoElemJson for ListRecipientsResponse {
 }
 #[doc(hidden)]
 pub const __LIST_RECIPIENTS_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.ListRecipientsResponse",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsResponse",
     to_json: ::buffa::type_registry::any_to_json::<ListRecipientsResponse>,
     from_json: ::buffa::type_registry::any_from_json::<ListRecipientsResponse>,
     is_wkt: false,
@@ -1728,7 +1728,7 @@ impl CreateRecipientRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.CreateRecipientRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.CreateRecipientRequest";
 }
 impl CreateRecipientRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -1756,10 +1756,10 @@ impl ::buffa::DefaultInstance for CreateRecipientRequest {
     }
 }
 impl ::buffa::MessageName for CreateRecipientRequest {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "CreateRecipientRequest";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.CreateRecipientRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.CreateRecipientRequest";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.CreateRecipientRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.CreateRecipientRequest";
 }
 impl ::buffa::Message for CreateRecipientRequest {
     /// Returns the total encoded size in bytes.
@@ -1956,7 +1956,7 @@ impl ::buffa::Message for CreateRecipientRequest {
     }
 }
 impl ::buffa::ExtensionSet for CreateRecipientRequest {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.CreateRecipientRequest";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.CreateRecipientRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1979,7 +1979,7 @@ impl ::buffa::json_helpers::ProtoElemJson for CreateRecipientRequest {
 }
 #[doc(hidden)]
 pub const __CREATE_RECIPIENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.CreateRecipientRequest",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.CreateRecipientRequest",
     to_json: ::buffa::type_registry::any_to_json::<CreateRecipientRequest>,
     from_json: ::buffa::type_registry::any_from_json::<CreateRecipientRequest>,
     is_wkt: false,
@@ -2012,7 +2012,7 @@ impl GetRecipientRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.GetRecipientRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.GetRecipientRequest";
 }
 impl ::buffa::DefaultInstance for GetRecipientRequest {
     fn default_instance() -> &'static Self {
@@ -2021,10 +2021,10 @@ impl ::buffa::DefaultInstance for GetRecipientRequest {
     }
 }
 impl ::buffa::MessageName for GetRecipientRequest {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "GetRecipientRequest";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.GetRecipientRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.GetRecipientRequest";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.GetRecipientRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.GetRecipientRequest";
 }
 impl ::buffa::Message for GetRecipientRequest {
     /// Returns the total encoded size in bytes.
@@ -2094,7 +2094,7 @@ impl ::buffa::Message for GetRecipientRequest {
     }
 }
 impl ::buffa::ExtensionSet for GetRecipientRequest {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.GetRecipientRequest";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.GetRecipientRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2117,7 +2117,7 @@ impl ::buffa::json_helpers::ProtoElemJson for GetRecipientRequest {
 }
 #[doc(hidden)]
 pub const __GET_RECIPIENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.GetRecipientRequest",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.GetRecipientRequest",
     to_json: ::buffa::type_registry::any_to_json::<GetRecipientRequest>,
     from_json: ::buffa::type_registry::any_from_json::<GetRecipientRequest>,
     is_wkt: false,
@@ -2198,7 +2198,7 @@ impl UpdateRecipientRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.UpdateRecipientRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.UpdateRecipientRequest";
 }
 impl UpdateRecipientRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -2246,10 +2246,10 @@ impl ::buffa::DefaultInstance for UpdateRecipientRequest {
     }
 }
 impl ::buffa::MessageName for UpdateRecipientRequest {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "UpdateRecipientRequest";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.UpdateRecipientRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.UpdateRecipientRequest";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.UpdateRecipientRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.UpdateRecipientRequest";
 }
 impl ::buffa::Message for UpdateRecipientRequest {
     /// Returns the total encoded size in bytes.
@@ -2449,7 +2449,7 @@ impl ::buffa::Message for UpdateRecipientRequest {
     }
 }
 impl ::buffa::ExtensionSet for UpdateRecipientRequest {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.UpdateRecipientRequest";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.UpdateRecipientRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2472,7 +2472,7 @@ impl ::buffa::json_helpers::ProtoElemJson for UpdateRecipientRequest {
 }
 #[doc(hidden)]
 pub const __UPDATE_RECIPIENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.UpdateRecipientRequest",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.UpdateRecipientRequest",
     to_json: ::buffa::type_registry::any_to_json::<UpdateRecipientRequest>,
     from_json: ::buffa::type_registry::any_from_json::<UpdateRecipientRequest>,
     is_wkt: false,
@@ -2505,7 +2505,7 @@ impl DeleteRecipientRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.DeleteRecipientRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.DeleteRecipientRequest";
 }
 impl ::buffa::DefaultInstance for DeleteRecipientRequest {
     fn default_instance() -> &'static Self {
@@ -2514,10 +2514,10 @@ impl ::buffa::DefaultInstance for DeleteRecipientRequest {
     }
 }
 impl ::buffa::MessageName for DeleteRecipientRequest {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "DeleteRecipientRequest";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.DeleteRecipientRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.DeleteRecipientRequest";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.DeleteRecipientRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.DeleteRecipientRequest";
 }
 impl ::buffa::Message for DeleteRecipientRequest {
     /// Returns the total encoded size in bytes.
@@ -2587,7 +2587,7 @@ impl ::buffa::Message for DeleteRecipientRequest {
     }
 }
 impl ::buffa::ExtensionSet for DeleteRecipientRequest {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.DeleteRecipientRequest";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.DeleteRecipientRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2610,7 +2610,7 @@ impl ::buffa::json_helpers::ProtoElemJson for DeleteRecipientRequest {
 }
 #[doc(hidden)]
 pub const __DELETE_RECIPIENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.DeleteRecipientRequest",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.DeleteRecipientRequest",
     to_json: ::buffa::type_registry::any_to_json::<DeleteRecipientRequest>,
     from_json: ::buffa::type_registry::any_from_json::<DeleteRecipientRequest>,
     is_wkt: false,
@@ -2660,7 +2660,7 @@ impl RotateRecipientTokenRequest {
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.RotateRecipientTokenRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.RotateRecipientTokenRequest";
 }
 impl RotateRecipientTokenRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -2678,10 +2678,10 @@ impl ::buffa::DefaultInstance for RotateRecipientTokenRequest {
     }
 }
 impl ::buffa::MessageName for RotateRecipientTokenRequest {
-    const PACKAGE: &'static str = "opensharing.recipients.v1";
+    const PACKAGE: &'static str = "unitycatalog.recipients.v1";
     const NAME: &'static str = "RotateRecipientTokenRequest";
-    const FULL_NAME: &'static str = "opensharing.recipients.v1.RotateRecipientTokenRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.RotateRecipientTokenRequest";
+    const FULL_NAME: &'static str = "unitycatalog.recipients.v1.RotateRecipientTokenRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.RotateRecipientTokenRequest";
 }
 impl ::buffa::Message for RotateRecipientTokenRequest {
     /// Returns the total encoded size in bytes.
@@ -2772,7 +2772,7 @@ impl ::buffa::Message for RotateRecipientTokenRequest {
     }
 }
 impl ::buffa::ExtensionSet for RotateRecipientTokenRequest {
-    const PROTO_FQN: &'static str = "opensharing.recipients.v1.RotateRecipientTokenRequest";
+    const PROTO_FQN: &'static str = "unitycatalog.recipients.v1.RotateRecipientTokenRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2795,7 +2795,7 @@ impl ::buffa::json_helpers::ProtoElemJson for RotateRecipientTokenRequest {
 }
 #[doc(hidden)]
 pub const __ROTATE_RECIPIENT_TOKEN_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.recipients.v1.RotateRecipientTokenRequest",
+    type_url: "type.googleapis.com/unitycatalog.recipients.v1.RotateRecipientTokenRequest",
     to_json: ::buffa::type_registry::any_to_json::<RotateRecipientTokenRequest>,
     from_json: ::buffa::type_registry::any_from_json::<RotateRecipientTokenRequest>,
     is_wkt: false,
@@ -3062,10 +3062,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for SecurablePropertiesKvPairsView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "SecurablePropertiesKvPairs";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.SecurablePropertiesKvPairs";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.SecurablePropertiesKvPairs";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.SecurablePropertiesKvPairs";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.SecurablePropertiesKvPairs";
         }
         impl<'v> ::buffa::DefaultViewInstance for SecurablePropertiesKvPairsView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -3596,10 +3596,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for RecipientTokenView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "RecipientToken";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.RecipientToken";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.RecipientToken";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.RecipientToken";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.RecipientToken";
         }
         impl<'v> ::buffa::DefaultViewInstance for RecipientTokenView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -4338,10 +4338,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for RecipientView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "Recipient";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.Recipient";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.Recipient";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.Recipient";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.Recipient";
         }
         impl<'v> ::buffa::DefaultViewInstance for RecipientView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -4759,10 +4759,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ListRecipientsRequestView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "ListRecipientsRequest";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.ListRecipientsRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.ListRecipientsRequest";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.ListRecipientsRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for ListRecipientsRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -5128,10 +5128,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for ListRecipientsResponseView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "ListRecipientsResponse";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.ListRecipientsResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.ListRecipientsResponse";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.ListRecipientsResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.ListRecipientsResponse";
         }
         impl<'v> ::buffa::DefaultViewInstance for ListRecipientsResponseView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -5662,10 +5662,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for CreateRecipientRequestView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "CreateRecipientRequest";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.CreateRecipientRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.CreateRecipientRequest";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.CreateRecipientRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.CreateRecipientRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for CreateRecipientRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -6012,10 +6012,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for GetRecipientRequestView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "GetRecipientRequest";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.GetRecipientRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.GetRecipientRequest";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.GetRecipientRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.GetRecipientRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for GetRecipientRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -6515,10 +6515,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for UpdateRecipientRequestView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "UpdateRecipientRequest";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.UpdateRecipientRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.UpdateRecipientRequest";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.UpdateRecipientRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.UpdateRecipientRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for UpdateRecipientRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -6863,10 +6863,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for DeleteRecipientRequestView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "DeleteRecipientRequest";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.DeleteRecipientRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.DeleteRecipientRequest";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.DeleteRecipientRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.DeleteRecipientRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for DeleteRecipientRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self
@@ -7213,10 +7213,10 @@ pub mod __buffa {
             }
         }
         impl<'a> ::buffa::MessageName for RotateRecipientTokenRequestView<'a> {
-            const PACKAGE: &'static str = "opensharing.recipients.v1";
+            const PACKAGE: &'static str = "unitycatalog.recipients.v1";
             const NAME: &'static str = "RotateRecipientTokenRequest";
-            const FULL_NAME: &'static str = "opensharing.recipients.v1.RotateRecipientTokenRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.recipients.v1.RotateRecipientTokenRequest";
+            const FULL_NAME: &'static str = "unitycatalog.recipients.v1.RotateRecipientTokenRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/unitycatalog.recipients.v1.RotateRecipientTokenRequest";
         }
         impl<'v> ::buffa::DefaultViewInstance for RotateRecipientTokenRequestView<'v> {
             fn default_view_instance<'a>() -> &'a Self

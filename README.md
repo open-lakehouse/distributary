@@ -22,7 +22,7 @@ composable sharing server that maps shares onto any catalog.
 
 The protocol is defined in [`proto/opensharing/v1`](proto/opensharing/v1),
 and the provider admin API (wire-compatible with the Databricks Delta Sharing
-REST API) in [`proto/opensharing/{shares,recipients,providers}`](proto/opensharing).
+REST API) in [`proto/unitycatalog/{shares,recipients,providers}`](proto/unitycatalog).
 Their OpenAPI documents are [`openapi/sharing.yaml`](openapi/sharing.yaml) and
 [`openapi/admin.yaml`](openapi/admin.yaml). The design is in
 [`ARCHITECTURE.md`](ARCHITECTURE.md).

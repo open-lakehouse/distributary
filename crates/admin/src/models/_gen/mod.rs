@@ -11,17 +11,17 @@ use std::collections::HashMap;
 pub type PropertyMap = HashMap<String, serde_json::Value>;
 pub mod providers {
     pub mod v1 {
-        include!("./opensharing.providers.v1.rs");
+        include!("./unitycatalog.providers.v1.rs");
     }
 }
 pub mod recipients {
     pub mod v1 {
-        include!("./opensharing.recipients.v1.rs");
+        include!("./unitycatalog.recipients.v1.rs");
     }
 }
 pub mod shares {
     pub mod v1 {
-        include!("./opensharing.shares.v1.rs");
+        include!("./unitycatalog.shares.v1.rs");
     }
 }
 #[cfg(feature = "axum")]

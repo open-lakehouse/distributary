@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package opensharing.providers.v1;
+package unitycatalog.providers.v1;
 
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
@@ -24,7 +24,7 @@ enum ProviderAuthenticationType {
 // upstream Delta Sharing server.
 message Provider {
   option (google.api.resource) = {
-    type: "opensharing.io/Provider"
+    type: "unitycatalog.io/Provider"
     pattern: "providers/{provider}"
     plural: "providers"
     singular: "provider"

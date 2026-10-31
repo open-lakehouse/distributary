@@ -40,7 +40,7 @@ for the design.
   hide it for days. A stale CLI rejects `json_field_names`. The `../trestle`
   source checkout is only needed to patch the `olai-*` library crates
   (`just configure-trestle-deps`), not for the CLI.
-- The admin protos (`proto/opensharing/{shares,recipients,providers}`) have their
+- The admin protos (`proto/unitycatalog/{shares,recipients,providers}`) have their
   own pipeline (`buf.gen.admin.yaml`, `trestle.admin.yaml`, `crates/admin`). They
   share message names with the protocol (`Share`, `ListSharesRequest`, …), and a
   single trestle run over both cross-wires the generated protocol client.

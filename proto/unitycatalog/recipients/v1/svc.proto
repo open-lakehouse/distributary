@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package opensharing.recipients.v1;
+package unitycatalog.recipients.v1;
 
 import "buf/validate/validate.proto";
 import "gnostic/openapi/v3/annotations.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
-import "opensharing/recipients/v1/models.proto";
+import "unitycatalog/recipients/v1/models.proto";
 
 // Request to list recipients.
 message ListRecipientsRequest {

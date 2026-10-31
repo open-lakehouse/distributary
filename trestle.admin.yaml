@@ -1,5 +1,5 @@
 # Trestle codegen config for the provider admin API protos
-# (`proto/opensharing/{shares,recipients,providers}`).
+# (`proto/unitycatalog/{shares,recipients,providers}`).
 #
 # Kept apart from trestle.yaml: the admin and protocol packages define messages
 # with the same names (`Share`, `ListSharesRequest`, …), and one trestle run

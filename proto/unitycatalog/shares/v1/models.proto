@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package opensharing.shares.v1;
+package unitycatalog.shares.v1;
 
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
@@ -151,7 +151,7 @@ message DataObject {
 
 message Share {
   option (google.api.resource) = {
-    type: "opensharing.io/Share"
+    type: "unitycatalog.io/Share"
     pattern: "shares/{share}"
     plural: "shares"
     singular: "share"
