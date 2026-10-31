@@ -83,3 +83,10 @@ fix:
 [group('dev')]
 migrate:
     cargo run -p opensharing-server --features bin -- migrate
+
+# Set CRATES_PROXY (a sparse registry URL) to build without direct crates.io access.
+#
+# build the server Docker image (distributary); context = repo root
+[group('build')]
+build-docker:
+    docker build -f crates/server/Dockerfile --build-arg CRATES_PROXY -t distributary:dev .
