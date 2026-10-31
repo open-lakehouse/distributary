@@ -16,7 +16,7 @@ use crate::config::{Config, DatabaseConfig, EncryptionConfig};
 use crate::recipients::{StoreAuthenticator, activation_router, rewrap_tokens};
 use crate::secrets::Secrets;
 use crate::source::SourceRegistry;
-use crate::store::ShareStore;
+use crate::store::SharingStore;
 use crate::store::memory::InMemoryStore;
 
 /// Everything the routes need, besides the store.
@@ -36,7 +36,7 @@ pub struct Settings {
 /// An assembled server.
 pub struct Service {
     pub router: Router,
-    pub store: Arc<dyn ShareStore>,
+    pub store: Arc<dyn SharingStore>,
     pub secrets: Secrets,
 }
 
@@ -49,11 +49,11 @@ pub struct Service {
 ///
 /// The provider side is separate ([`admin_router`], feature `admin`). A host
 /// with its own admin surface manages shares, recipients and grants through the
-/// [`ShareStore`] directly (see [`issue_token`](crate::recipients::issue_token)),
+/// [`SharingStore`] directly (see [`issue_token`](crate::recipients::issue_token)),
 /// or mounts the generated admin routers over its own context (see
 /// [`crate::admin`]).
 pub fn router(
-    store: Arc<dyn ShareStore>,
+    store: Arc<dyn SharingStore>,
     secrets: Secrets,
     sources: SourceRegistry,
     settings: Settings,
@@ -81,7 +81,7 @@ pub fn router(
 /// recipients; with the `unity` feature also credentials and external
 /// locations), behind the provider tokens. Merge it into [`router`].
 #[cfg(feature = "admin")]
-pub fn admin_router(store: Arc<dyn ShareStore>, secrets: Secrets, settings: &Settings) -> Router {
+pub fn admin_router(store: Arc<dyn SharingStore>, secrets: Secrets, settings: &Settings) -> Router {
     use crate::admin::{self, ProviderService, ProviderTokens};
 
     admin::router(
@@ -118,7 +118,7 @@ impl Config {
 
     /// Connect the configured store. For Postgres this checks the schema is
     /// current (over the migration URL) but never migrates.
-    pub async fn store(&self) -> std::result::Result<Arc<dyn ShareStore>, String> {
+    pub async fn store(&self) -> std::result::Result<Arc<dyn SharingStore>, String> {
         match &self.database {
             DatabaseConfig::Memory => Ok(Arc::new(InMemoryStore::new())),
             #[cfg(feature = "postgres")]
@@ -180,7 +180,7 @@ pub async fn start(config: &Config) -> std::result::Result<Service, String> {
 
 /// Re-wrap every stored secret under the active key. Returns how many were
 /// re-wrapped (credentials, tokens awaiting activation).
-pub async fn rotate_keys(store: &dyn ShareStore, secrets: &Secrets) -> Result<(usize, usize)> {
+pub async fn rotate_keys(store: &dyn SharingStore, secrets: &Secrets) -> Result<(usize, usize)> {
     let mut credentials = 0;
     for credential in store.list_credentials().await? {
         if secrets.rewrap(&credential.sealed).await?.is_some() {

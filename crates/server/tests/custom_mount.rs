@@ -17,7 +17,7 @@ use opensharing_server::secrets::Secrets;
 use opensharing_server::source::fixed::{StaticSource, StaticTable};
 use opensharing_server::source::{AccessMode, RegisteredSource, SourceRegistry};
 use opensharing_server::store::memory::InMemoryStore;
-use opensharing_server::store::{ShareObject, ShareObjectKind, ShareStore};
+use opensharing_server::store::{ShareObject, ShareObjectKind, SharingStore};
 use serde_json::Value;
 use tower::ServiceExt;
 
@@ -71,7 +71,7 @@ async fn call(app: &Router, method: &str, uri: &str, token: Option<&str>) -> (St
 
 #[tokio::test]
 async fn serves_shares_provisioned_through_the_store() {
-    let store: Arc<dyn ShareStore> = Arc::new(InMemoryStore::new());
+    let store: Arc<dyn SharingStore> = Arc::new(InMemoryStore::new());
     let secrets = Secrets::new(EncryptionConfig::insecure_dev().build().unwrap());
     let app = embed::router(
         store.clone(),

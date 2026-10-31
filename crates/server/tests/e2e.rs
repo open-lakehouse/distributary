@@ -23,8 +23,8 @@ use opensharing_server::source::fixed::{StaticSource, StaticTable};
 use opensharing_server::source::{
     AccessMode, CatalogSource, RegisteredSource, SourceRegistry, SourceTable, SourceVolume,
 };
-use opensharing_server::store::ShareStore;
 use opensharing_server::store::memory::InMemoryStore;
+use opensharing_server::store::{CredentialStore, SharingStore};
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
@@ -217,7 +217,7 @@ fn files(lines: &[Value]) -> Vec<&Value> {
     lines.iter().filter_map(|l| l.get("file")).collect()
 }
 
-fn app(store: Arc<dyn ShareStore>, secrets: Secrets, sources: SourceRegistry) -> Client {
+fn app(store: Arc<dyn SharingStore>, secrets: Secrets, sources: SourceRegistry) -> Client {
     Client {
         app: embed::router(store.clone(), secrets.clone(), sources, settings())
             .merge(embed::admin_router(store, secrets, &settings())),
@@ -478,7 +478,7 @@ async fn delegated_access_uses_catalog_vended_credentials() {
 #[cfg(feature = "unity")]
 #[tokio::test]
 async fn rotating_keys_rewraps_stored_secrets() {
-    let store: Arc<dyn ShareStore> = Arc::new(InMemoryStore::new());
+    let store: Arc<dyn SharingStore> = Arc::new(InMemoryStore::new());
 
     // Provision under key v1: a stored credential and a pending recipient token.
     let v1 = app(
@@ -538,7 +538,7 @@ impl AdminPolicy<Provider> for NoDeletes {
 
 #[tokio::test]
 async fn the_admin_policy_authorizes_every_action() {
-    let store: Arc<dyn ShareStore> = Arc::new(InMemoryStore::new());
+    let store: Arc<dyn SharingStore> = Arc::new(InMemoryStore::new());
     let service =
         ProviderService::new(store, secrets(key("v1", 1), vec![]), PUBLIC_URL.to_string())
             .with_policy(Arc::new(NoDeletes));

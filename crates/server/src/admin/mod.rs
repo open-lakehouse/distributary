@@ -10,7 +10,7 @@
 //! The surface itself — the [`ShareHandler`] and [`RecipientHandler`] traits and
 //! their routers — is generated in `opensharing-admin-api`, generic over the
 //! request context `Cx`. [`ProviderService`] implements both over the
-//! [`ShareStore`] and [`Secrets`]: token issuing, activation links and sealing
+//! [`SharingStore`] and [`Secrets`]: token issuing, activation links and sealing
 //! need more than a plain resource store. Every handler first asks the
 //! service's [`AdminPolicy`] whether the caller in `Cx` may perform the
 //! [`AdminAction`], the same way [`ShareCatalog::authorize`] gates the protocol.
@@ -41,7 +41,7 @@ use opensharing_admin_api::auth::{Provider, ProviderAuthenticator, require_provi
 use opensharing_admin_api::{ADMIN_PREFIX, admin_router};
 
 use crate::secrets::Secrets;
-use crate::store::ShareStore;
+use crate::store::SharingStore;
 use crate::tokens::token_hash;
 use crate::{Error, Result};
 use opensharing_admin_api::{Error as AdminError, Result as AdminResult};
@@ -118,7 +118,7 @@ impl<Cx: Send + Sync + 'static> AdminPolicy<Cx> for AllowAll {
 /// [`ShareHandler`](opensharing_admin_api::ShareHandler) and
 /// [`RecipientHandler`](opensharing_admin_api::RecipientHandler). Cheap to clone.
 pub struct ProviderService<Cx = Provider> {
-    pub(crate) store: Arc<dyn ShareStore>,
+    pub(crate) store: Arc<dyn SharingStore>,
     pub(crate) secrets: Secrets,
     pub(crate) public_url: String,
     policy: Arc<dyn AdminPolicy<Cx>>,
@@ -140,7 +140,7 @@ impl<Cx: Send + Sync + 'static> ProviderService<Cx> {
     /// `public_url` is the externally reachable base URL activation links point
     /// at, without a trailing slash.
     pub fn new(
-        store: Arc<dyn ShareStore>,
+        store: Arc<dyn SharingStore>,
         secrets: Secrets,
         public_url: impl Into<String>,
     ) -> Self {

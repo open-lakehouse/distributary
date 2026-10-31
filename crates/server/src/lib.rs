@@ -5,8 +5,8 @@
 //! deployable host for it:
 //!
 //! - [`store`]: the server's own state (shares, recipients, tokens, grants,
-//!   sealed storage credentials) behind the [`ShareStore`](store::ShareStore)
-//!   port, in memory or in Postgres;
+//!   sealed storage credentials) behind targeted per-resource store traits,
+//!   in memory or in Postgres;
 //! - [`source`]: the [`CatalogSource`](source::CatalogSource) port shares are
 //!   mapped onto — a static configuration, a Unity Catalog REST server
 //!   (feature `unity`), or your own;
@@ -29,9 +29,13 @@
 //! catalog-independent trestle credential vending crates) remain; the `admin`
 //! feature adds the admin API back. A host with its own catalog implements
 //! [`CatalogSource`](source::CatalogSource) and manages shares and recipients
-//! through the [`ShareStore`](store::ShareStore), its own admin surface, or
+//! through the [`SharingStore`](store::SharingStore), its own admin surface, or
 //! the admin API mounted over its own request context, then serves
-//! [`embed::router`].
+//! [`embed::router`]. A catalog that keeps shares and recipients in its own
+//! store implements just [`ShareReader`](store::ShareReader) and
+//! [`TokenReader`](store::TokenReader) and assembles the protocol router from
+//! [`StoreCatalog`](catalog::StoreCatalog) and
+//! [`StoreAuthenticator`](recipients::StoreAuthenticator).
 //!
 //! See `ARCHITECTURE.md` for the design.
 

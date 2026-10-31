@@ -30,7 +30,7 @@ use opensharing_api::catalog::{
 use opensharing_api::service::paginate;
 
 use crate::source::{SourceRegistry, split_name};
-use crate::store::{ShareObject, ShareObjectKind, ShareRecord, ShareStore};
+use crate::store::{ShareObject, ShareObjectKind, ShareReader, ShareRecord};
 use crate::{Error, Result};
 use opensharing_api::{Error as ApiError, Result as ApiResult};
 
@@ -44,12 +44,12 @@ struct Exposed {
 
 /// The store-backed share catalog. See the module docs.
 pub struct StoreCatalog {
-    store: Arc<dyn ShareStore>,
+    store: Arc<dyn ShareReader>,
     sources: SourceRegistry,
 }
 
 impl StoreCatalog {
-    pub fn new(store: Arc<dyn ShareStore>, sources: SourceRegistry) -> Self {
+    pub fn new(store: Arc<dyn ShareReader>, sources: SourceRegistry) -> Self {
         Self { store, sources }
     }
 

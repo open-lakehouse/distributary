@@ -13,7 +13,8 @@
 use opensharing_server::Error;
 use opensharing_server::store::postgres::{PostgresStore, connect, ensure_schema_current, migrate};
 use opensharing_server::store::{
-    ExternalLocationRecord, SealedCredential, ShareObject, ShareObjectKind, ShareStore, TokenRecord,
+    CredentialStore, ExternalLocationRecord, RecipientStore, SealedCredential, ShareObject,
+    ShareObjectKind, ShareReader, ShareStore, TokenReader, TokenRecord,
 };
 
 #[tokio::test]
