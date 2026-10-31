@@ -1,7 +1,7 @@
 // @generated — do not edit by hand.
 #[cfg(feature = "axum")]
-pub mod sharing;
+pub mod shares;
 #[cfg(feature = "axum")]
-pub mod sharing_skill;
+pub mod skills;
 #[cfg(feature = "axum")]
-pub mod sharing_volume;
+pub mod volumes;

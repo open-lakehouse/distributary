@@ -1,5 +1,5 @@
 // @generated — do not edit by hand.
-pub use handler::SharingVolumeHandler;
+pub use handler::VolumeHandler;
 mod handler;
 #[cfg(feature = "axum")]
 pub mod server;

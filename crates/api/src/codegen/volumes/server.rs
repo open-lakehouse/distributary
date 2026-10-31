@@ -1,6 +1,6 @@
 // @generated — do not edit by hand.
 #![allow(unused_mut, clippy::too_many_arguments)]
-use super::handler::SharingVolumeHandler;
+use super::handler::VolumeHandler;
 use crate::Result;
 use axum::extract::State;
 use opensharing_common::models::opensharing::v1::*;
@@ -10,7 +10,7 @@ pub async fn list_volumes<T, Cx>(
     request: ListVolumesRequest,
 ) -> Result<::axum::Json<ListVolumesResponse>>
 where
-    T: SharingVolumeHandler<Cx> + Clone + Send + Sync + 'static,
+    T: VolumeHandler<Cx> + Clone + Send + Sync + 'static,
     Cx: axum::extract::FromRequestParts<T> + Send,
 {
     let result = handler.list_volumes(request, context).await?;
@@ -22,7 +22,7 @@ pub async fn list_all_volumes<T, Cx>(
     request: ListAllVolumesRequest,
 ) -> Result<::axum::Json<ListAllVolumesResponse>>
 where
-    T: SharingVolumeHandler<Cx> + Clone + Send + Sync + 'static,
+    T: VolumeHandler<Cx> + Clone + Send + Sync + 'static,
     Cx: axum::extract::FromRequestParts<T> + Send,
 {
     let result = handler.list_all_volumes(request, context).await?;
@@ -32,9 +32,9 @@ pub async fn get_volume<T, Cx>(
     State(handler): State<T>,
     context: Cx,
     request: GetVolumeRequest,
-) -> Result<::axum::Json<SharingVolume>>
+) -> Result<::axum::Json<Volume>>
 where
-    T: SharingVolumeHandler<Cx> + Clone + Send + Sync + 'static,
+    T: VolumeHandler<Cx> + Clone + Send + Sync + 'static,
     Cx: axum::extract::FromRequestParts<T> + Send,
 {
     let result = handler.get_volume(request, context).await?;
@@ -44,9 +44,9 @@ pub async fn generate_temporary_volume_credentials<T, Cx>(
     State(handler): State<T>,
     context: Cx,
     request: GenerateTemporaryVolumeCredentialsRequest,
-) -> Result<::axum::Json<SharingTemporaryCredentials>>
+) -> Result<::axum::Json<TemporaryCredentials>>
 where
-    T: SharingVolumeHandler<Cx> + Clone + Send + Sync + 'static,
+    T: VolumeHandler<Cx> + Clone + Send + Sync + 'static,
     Cx: axum::extract::FromRequestParts<T> + Send,
 {
     let result = handler

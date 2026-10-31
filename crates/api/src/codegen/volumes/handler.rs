@@ -1,5 +1,5 @@
 // @generated — do not edit by hand.
-//! Handler trait for [`SharingVolumeHandler`].
+//! Handler trait for [`VolumeHandler`].
 //!
 //! Implement this trait to provide a custom backend for this service, then mount the
 //! generated handler functions (in the sibling `server` module) onto an `axum::Router`
@@ -16,7 +16,7 @@ use crate::Result;
 use async_trait::async_trait;
 use opensharing_common::models::opensharing::v1::*;
 #[async_trait]
-pub trait SharingVolumeHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
+pub trait VolumeHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
     /// List the volumes in a given share's schema.
     async fn list_volumes(
         &self,
@@ -30,12 +30,12 @@ pub trait SharingVolumeHandler<Cx = crate::DefaultContext>: Send + Sync + 'stati
         context: Cx,
     ) -> Result<ListAllVolumesResponse>;
     /// Get the metadata for a single shared volume.
-    async fn get_volume(&self, request: GetVolumeRequest, context: Cx) -> Result<SharingVolume>;
+    async fn get_volume(&self, request: GetVolumeRequest, context: Cx) -> Result<Volume>;
     /// Generate temporary credentials scoped to a shared volume's storage
     /// location, for direct file access via the cloud storage API.
     async fn generate_temporary_volume_credentials(
         &self,
         request: GenerateTemporaryVolumeCredentialsRequest,
         context: Cx,
-    ) -> Result<SharingTemporaryCredentials>;
+    ) -> Result<TemporaryCredentials>;
 }

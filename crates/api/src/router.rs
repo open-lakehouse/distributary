@@ -36,9 +36,9 @@ use axum::routing::{Router, get, post};
 use opensharing_common::models::opensharing::v1::*;
 use opensharing_common::models::{DeltaSharingCapabilities, ResponseFormat};
 
-use crate::codegen::sharing::{self, SharingHandler};
-use crate::codegen::sharing_skill::{self, SharingSkillHandler};
-use crate::codegen::sharing_volume::{self, SharingVolumeHandler};
+use crate::codegen::shares::{self, ShareHandler};
+use crate::codegen::skills::{self, SkillHandler};
+use crate::codegen::volumes::{self, VolumeHandler};
 use crate::error::{Error, Result};
 use crate::query::SharingQueryHandler;
 
@@ -77,27 +77,27 @@ fn check_response_format(headers: &HeaderMap) -> Result<()> {
 /// metadata / query).
 ///
 /// Shared verbatim between the Delta Sharing and OpenSharing mounts. The
-/// discovery routes bind to the generated [`SharingHandler`] route functions; the
+/// discovery routes bind to the generated [`ShareHandler`] route functions; the
 /// three NDJSON query routes bind to the hand-written functions below.
 fn tabular_routes<T, Cx>() -> Router<T>
 where
-    T: SharingHandler<Cx> + SharingQueryHandler<Cx> + Clone + Send + Sync + 'static,
+    T: ShareHandler<Cx> + SharingQueryHandler<Cx> + Clone + Send + Sync + 'static,
     Cx: axum::extract::FromRequestParts<T> + Send + 'static,
 {
     Router::new()
-        .route("/shares", get(sharing::server::list_shares::<T, Cx>))
-        .route("/shares/{name}", get(sharing::server::get_share::<T, Cx>))
+        .route("/shares", get(shares::server::list_shares::<T, Cx>))
+        .route("/shares/{name}", get(shares::server::get_share::<T, Cx>))
         .route(
             "/shares/{share}/schemas",
-            get(sharing::server::list_schemas::<T, Cx>),
+            get(shares::server::list_schemas::<T, Cx>),
         )
         .route(
             "/shares/{share}/all-tables",
-            get(sharing::server::list_all_tables::<T, Cx>),
+            get(shares::server::list_all_tables::<T, Cx>),
         )
         .route(
             "/shares/{share}/schemas/{name}/tables",
-            get(sharing::server::list_tables::<T, Cx>),
+            get(shares::server::list_tables::<T, Cx>),
         )
         // Hand-written NDJSON query path (not part of the generated service).
         .route(
@@ -125,8 +125,8 @@ where
 /// generated per-asset route functions, plus temporary table credentials.
 fn asset_routes<T, Cx>() -> Router<T>
 where
-    T: SharingVolumeHandler<Cx>
-        + SharingSkillHandler<Cx>
+    T: VolumeHandler<Cx>
+        + SkillHandler<Cx>
         + SharingQueryHandler<Cx>
         + Clone
         + Send
@@ -141,35 +141,35 @@ where
         )
         .route(
             "/shares/{share}/all-volumes",
-            get(sharing_volume::server::list_all_volumes::<T, Cx>),
+            get(volumes::server::list_all_volumes::<T, Cx>),
         )
         .route(
             "/shares/{share}/schemas/{schema}/volumes",
-            get(sharing_volume::server::list_volumes::<T, Cx>),
+            get(volumes::server::list_volumes::<T, Cx>),
         )
         .route(
             "/shares/{share}/schemas/{schema}/volumes/{name}",
-            get(sharing_volume::server::get_volume::<T, Cx>),
+            get(volumes::server::get_volume::<T, Cx>),
         )
         .route(
             "/shares/{share}/schemas/{schema}/volumes/{name}/temporary-volume-credentials",
-            post(sharing_volume::server::generate_temporary_volume_credentials::<T, Cx>),
+            post(volumes::server::generate_temporary_volume_credentials::<T, Cx>),
         )
         .route(
             "/shares/{share}/all-skills",
-            get(sharing_skill::server::list_all_skills::<T, Cx>),
+            get(skills::server::list_all_skills::<T, Cx>),
         )
         .route(
             "/shares/{share}/schemas/{schema}/skills",
-            get(sharing_skill::server::list_skills::<T, Cx>),
+            get(skills::server::list_skills::<T, Cx>),
         )
         .route(
             "/shares/{share}/schemas/{schema}/skills/{name}",
-            get(sharing_skill::server::get_skill::<T, Cx>),
+            get(skills::server::get_skill::<T, Cx>),
         )
         .route(
             "/shares/{share}/schemas/{schema}/skills/{name}/temporary-skill-credentials",
-            post(sharing_skill::server::generate_temporary_skill_credentials::<T, Cx>),
+            post(skills::server::generate_temporary_skill_credentials::<T, Cx>),
         )
 }
 
@@ -177,7 +177,7 @@ where
 /// only, preserved for wire-compatibility with existing Delta Sharing clients.
 pub fn get_router<T, Cx>(state: T) -> Router
 where
-    T: SharingHandler<Cx> + SharingQueryHandler<Cx> + Clone + Send + Sync + 'static,
+    T: ShareHandler<Cx> + SharingQueryHandler<Cx> + Clone + Send + Sync + 'static,
     Cx: axum::extract::FromRequestParts<T> + Send + 'static,
 {
     tabular_routes::<T, Cx>().with_state(state)
@@ -187,10 +187,10 @@ where
 /// plus the storage-backed asset routes (volumes, agent skills).
 pub fn opensharing_router<T, Cx>(state: T) -> Router
 where
-    T: SharingHandler<Cx>
+    T: ShareHandler<Cx>
         + SharingQueryHandler<Cx>
-        + SharingVolumeHandler<Cx>
-        + SharingSkillHandler<Cx>
+        + VolumeHandler<Cx>
+        + SkillHandler<Cx>
         + Clone
         + Send
         + Sync
@@ -206,10 +206,10 @@ where
 /// Sharing surface under [`OPENSHARING_PREFIX`], both served by `state`.
 pub fn sharing_router<T, Cx>(state: T) -> Router
 where
-    T: SharingHandler<Cx>
+    T: ShareHandler<Cx>
         + SharingQueryHandler<Cx>
-        + SharingVolumeHandler<Cx>
-        + SharingSkillHandler<Cx>
+        + VolumeHandler<Cx>
+        + SkillHandler<Cx>
         + Clone
         + Send
         + Sync
@@ -288,7 +288,7 @@ async fn generate_temporary_table_credentials<T, Cx>(
     State(handler): State<T>,
     context: Cx,
     Path((share, schema, name)): Path<(String, String, String)>,
-) -> Result<axum::Json<SharingTemporaryCredentials>>
+) -> Result<axum::Json<TemporaryCredentials>>
 where
     T: SharingQueryHandler<Cx> + Clone + Send + Sync + 'static,
     Cx: axum::extract::FromRequestParts<T> + Send,

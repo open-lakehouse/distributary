@@ -9,9 +9,9 @@ use bytes::Bytes;
 
 use opensharing_common::models::opensharing::v1::*;
 
-use crate::codegen::sharing::SharingHandler;
-use crate::codegen::sharing_skill::SharingSkillHandler;
-use crate::codegen::sharing_volume::SharingVolumeHandler;
+use crate::codegen::shares::ShareHandler;
+use crate::codegen::skills::SkillHandler;
+use crate::codegen::volumes::VolumeHandler;
 use crate::error::Result;
 
 /// A table version.
@@ -58,7 +58,7 @@ pub trait SharingQueryHandler<Cx = crate::DefaultContext>: Send + Sync + 'static
         schema: String,
         name: String,
         context: Cx,
-    ) -> Result<SharingTemporaryCredentials>;
+    ) -> Result<TemporaryCredentials>;
 
     /// Change data feed for a shared table (`GET …/changes`). A host that does not
     /// serve it returns [`Error::NotImplemented`](crate::Error::NotImplemented) (501).
@@ -74,14 +74,11 @@ pub trait SharingQueryHandler<Cx = crate::DefaultContext>: Send + Sync + 'static
 /// A host that implements all four serves the whole [`sharing_router`](crate::sharing_router).
 /// Named so a host (or the router) can bound on one trait instead of four.
 pub trait SharingApiHandler<Cx = crate::DefaultContext>:
-    SharingHandler<Cx> + SharingVolumeHandler<Cx> + SharingSkillHandler<Cx> + SharingQueryHandler<Cx>
+    ShareHandler<Cx> + VolumeHandler<Cx> + SkillHandler<Cx> + SharingQueryHandler<Cx>
 {
 }
 
 impl<T, Cx> SharingApiHandler<Cx> for T where
-    T: SharingHandler<Cx>
-        + SharingVolumeHandler<Cx>
-        + SharingSkillHandler<Cx>
-        + SharingQueryHandler<Cx>
+    T: ShareHandler<Cx> + VolumeHandler<Cx> + SkillHandler<Cx> + SharingQueryHandler<Cx>
 {
 }

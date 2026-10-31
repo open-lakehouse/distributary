@@ -1,5 +1,5 @@
 // @generated — do not edit by hand.
-//! Handler trait for [`SharingSkillHandler`].
+//! Handler trait for [`SkillHandler`].
 //!
 //! Implement this trait to provide a custom backend for this service, then mount the
 //! generated handler functions (in the sibling `server` module) onto an `axum::Router`
@@ -16,7 +16,7 @@ use crate::Result;
 use async_trait::async_trait;
 use opensharing_common::models::opensharing::v1::*;
 #[async_trait]
-pub trait SharingSkillHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
+pub trait SkillHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
     /// List the agent skills in a given share's schema.
     async fn list_skills(
         &self,
@@ -30,12 +30,12 @@ pub trait SharingSkillHandler<Cx = crate::DefaultContext>: Send + Sync + 'static
         context: Cx,
     ) -> Result<ListAllSkillsResponse>;
     /// Get the metadata for a single shared agent skill.
-    async fn get_skill(&self, request: GetSkillRequest, context: Cx) -> Result<SharingSkill>;
+    async fn get_skill(&self, request: GetSkillRequest, context: Cx) -> Result<Skill>;
     /// Generate temporary credentials scoped to a shared skill's storage
     /// location, for direct file access via the cloud storage API.
     async fn generate_temporary_skill_credentials(
         &self,
         request: GenerateTemporarySkillCredentialsRequest,
         context: Cx,
-    ) -> Result<SharingTemporaryCredentials>;
+    ) -> Result<TemporaryCredentials>;
 }

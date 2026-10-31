@@ -1,5 +1,5 @@
 // @generated — do not edit by hand.
-//! Handler trait for [`SharingHandler`].
+//! Handler trait for [`ShareHandler`].
 //!
 //! Implement this trait to provide a custom backend for this service, then mount the
 //! generated handler functions (in the sibling `server` module) onto an `axum::Router`
@@ -15,7 +15,7 @@ use crate::Result;
 use async_trait::async_trait;
 use opensharing_common::models::opensharing::v1::*;
 #[async_trait]
-pub trait SharingHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
+pub trait ShareHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
     /// List shares accessible to a recipient.
     async fn list_shares(
         &self,

@@ -8,13 +8,13 @@ use opensharing_common::models::opensharing::v1::*;
 use std::future::IntoFuture;
 /// Builder for shares
 pub struct ListSharesBuilder {
-    client: SharingClient,
+    client: ShareClient,
     request: ListSharesRequest,
 }
 impl ListSharesBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingClient`.
-    pub(crate) fn new(client: SharingClient) -> Self {
+    /// Obtain via the corresponding method on `ShareClient`.
+    pub(crate) fn new(client: ShareClient) -> Self {
         let request = ListSharesRequest {
             ..Default::default()
         };
@@ -43,13 +43,13 @@ impl IntoFuture for ListSharesBuilder {
 }
 /// Builder for share
 pub struct GetShareBuilder {
-    client: SharingClient,
+    client: ShareClient,
     request: GetShareRequest,
 }
 impl GetShareBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingClient`.
-    pub(crate) fn new(client: SharingClient, name: impl Into<String>) -> Self {
+    /// Obtain via the corresponding method on `ShareClient`.
+    pub(crate) fn new(client: ShareClient, name: impl Into<String>) -> Self {
         let request = GetShareRequest {
             name: name.into(),
             ..Default::default()
@@ -68,13 +68,13 @@ impl IntoFuture for GetShareBuilder {
 }
 /// Builder for schemas
 pub struct ListSchemasBuilder {
-    client: SharingClient,
+    client: ShareClient,
     request: ListSchemasRequest,
 }
 impl ListSchemasBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingClient`.
-    pub(crate) fn new(client: SharingClient, share: impl Into<String>) -> Self {
+    /// Obtain via the corresponding method on `ShareClient`.
+    pub(crate) fn new(client: ShareClient, share: impl Into<String>) -> Self {
         let request = ListSchemasRequest {
             share: share.into(),
             ..Default::default()
@@ -104,14 +104,14 @@ impl IntoFuture for ListSchemasBuilder {
 }
 /// Builder for tables
 pub struct ListTablesBuilder {
-    client: SharingClient,
+    client: ShareClient,
     request: ListTablesRequest,
 }
 impl ListTablesBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingClient`.
+    /// Obtain via the corresponding method on `ShareClient`.
     pub(crate) fn new(
-        client: SharingClient,
+        client: ShareClient,
         share: impl Into<String>,
         name: impl Into<String>,
     ) -> Self {
@@ -145,13 +145,13 @@ impl IntoFuture for ListTablesBuilder {
 }
 /// Builder for all tables
 pub struct ListAllTablesBuilder {
-    client: SharingClient,
+    client: ShareClient,
     request: ListAllTablesRequest,
 }
 impl ListAllTablesBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingClient`.
-    pub(crate) fn new(client: SharingClient, name: impl Into<String>) -> Self {
+    /// Obtain via the corresponding method on `ShareClient`.
+    pub(crate) fn new(client: ShareClient, name: impl Into<String>) -> Self {
         let request = ListAllTablesRequest {
             name: name.into(),
             ..Default::default()

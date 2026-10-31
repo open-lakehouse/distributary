@@ -8,14 +8,14 @@ use opensharing_common::models::opensharing::v1::*;
 use std::future::IntoFuture;
 /// Builder for volumes
 pub struct ListVolumesBuilder {
-    client: SharingVolumeClient,
+    client: VolumeClient,
     request: ListVolumesRequest,
 }
 impl ListVolumesBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingVolumeClient`.
+    /// Obtain via the corresponding method on `VolumeClient`.
     pub(crate) fn new(
-        client: SharingVolumeClient,
+        client: VolumeClient,
         share: impl Into<String>,
         schema: impl Into<String>,
     ) -> Self {
@@ -48,13 +48,13 @@ impl IntoFuture for ListVolumesBuilder {
 }
 /// Builder for all volumes
 pub struct ListAllVolumesBuilder {
-    client: SharingVolumeClient,
+    client: VolumeClient,
     request: ListAllVolumesRequest,
 }
 impl ListAllVolumesBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingVolumeClient`.
-    pub(crate) fn new(client: SharingVolumeClient, share: impl Into<String>) -> Self {
+    /// Obtain via the corresponding method on `VolumeClient`.
+    pub(crate) fn new(client: VolumeClient, share: impl Into<String>) -> Self {
         let request = ListAllVolumesRequest {
             share: share.into(),
             ..Default::default()
@@ -83,14 +83,14 @@ impl IntoFuture for ListAllVolumesBuilder {
 }
 /// Builder for volume
 pub struct GetVolumeBuilder {
-    client: SharingVolumeClient,
+    client: VolumeClient,
     request: GetVolumeRequest,
 }
 impl GetVolumeBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingVolumeClient`.
+    /// Obtain via the corresponding method on `VolumeClient`.
     pub(crate) fn new(
-        client: SharingVolumeClient,
+        client: VolumeClient,
         share: impl Into<String>,
         schema: impl Into<String>,
         name: impl Into<String>,
@@ -105,7 +105,7 @@ impl GetVolumeBuilder {
     }
 }
 impl IntoFuture for GetVolumeBuilder {
-    type Output = Result<SharingVolume>;
+    type Output = Result<Volume>;
     type IntoFuture = BoxFut<'static, Self::Output>;
     fn into_future(self) -> Self::IntoFuture {
         let client = self.client;
@@ -115,14 +115,14 @@ impl IntoFuture for GetVolumeBuilder {
 }
 /// Builder for temporary volume credentials
 pub struct GenerateTemporaryVolumeCredentialsBuilder {
-    client: SharingVolumeClient,
+    client: VolumeClient,
     request: GenerateTemporaryVolumeCredentialsRequest,
 }
 impl GenerateTemporaryVolumeCredentialsBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingVolumeClient`.
+    /// Obtain via the corresponding method on `VolumeClient`.
     pub(crate) fn new(
-        client: SharingVolumeClient,
+        client: VolumeClient,
         share: impl Into<String>,
         schema: impl Into<String>,
         name: impl Into<String>,
@@ -137,7 +137,7 @@ impl GenerateTemporaryVolumeCredentialsBuilder {
     }
 }
 impl IntoFuture for GenerateTemporaryVolumeCredentialsBuilder {
-    type Output = Result<SharingTemporaryCredentials>;
+    type Output = Result<TemporaryCredentials>;
     type IntoFuture = BoxFut<'static, Self::Output>;
     fn into_future(self) -> Self::IntoFuture {
         let client = self.client;

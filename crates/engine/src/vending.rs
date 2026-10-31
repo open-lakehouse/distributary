@@ -32,9 +32,8 @@ use olai_storage_credentials::{
 };
 use olai_vended_store::{CredentialSource, StoreOptions, build_store, presign};
 use opensharing_common::models::opensharing::v1::{
-    SharingAwsCredentials, SharingAzureUserDelegationSas, SharingGcpOauthToken,
-    SharingR2Credentials, SharingTemporaryCredentials,
-    sharing_temporary_credentials::Credentials as SharingCredentials,
+    AwsCredentials, AzureUserDelegationSas, GcpOauthToken, R2Credentials, TemporaryCredentials,
+    temporary_credentials::Credentials,
 };
 use url::Url;
 
@@ -189,9 +188,9 @@ where
         &self,
         asset: &SharedAsset,
         _cx: &Cx,
-    ) -> Result<SharingTemporaryCredentials> {
+    ) -> Result<TemporaryCredentials> {
         let credential = self.credential(asset).await?;
-        let mut credentials = to_sharing_credentials(&credential)?;
+        let mut credentials = to_temporary_credentials(&credential)?;
         // Name the location as the catalog spelled it: emulator and endpoint URLs do
         // not survive the canonical form.
         credentials.url = Some(asset.location.raw.clone());
@@ -247,36 +246,32 @@ impl FileSigner for VendedSigner {
 }
 
 /// Map a vended credential into the OpenSharing credential envelope.
-fn to_sharing_credentials(credential: &VendedCredential) -> Result<SharingTemporaryCredentials> {
+fn to_temporary_credentials(credential: &VendedCredential) -> Result<TemporaryCredentials> {
     let wire = wire::SharingTemporaryCredentials::try_from(credential).map_err(|_| {
         Error::invalid_argument("the storage credential type cannot be handed to recipients")
     })?;
     let credentials = if let Some(aws) = wire.aws_temp_credentials {
-        Some(SharingCredentials::AwsTempCredentials(Box::new(
-            SharingAwsCredentials {
-                access_key_id: aws.access_key_id,
-                secret_access_key: aws.secret_access_key,
-                session_token: aws.session_token,
-                ..Default::default()
-            },
-        )))
+        Some(Credentials::AwsTempCredentials(Box::new(AwsCredentials {
+            access_key_id: aws.access_key_id,
+            secret_access_key: aws.secret_access_key,
+            session_token: aws.session_token,
+            ..Default::default()
+        })))
     } else if let Some(sas) = wire.azure_user_delegation_sas {
-        Some(SharingCredentials::AzureUserDelegationSas(Box::new(
-            SharingAzureUserDelegationSas {
+        Some(Credentials::AzureUserDelegationSas(Box::new(
+            AzureUserDelegationSas {
                 sas_token: sas.sas_token,
                 ..Default::default()
             },
         )))
     } else if let Some(gcp) = wire.gcp_oauth_token {
-        Some(SharingCredentials::GcpOauthToken(Box::new(
-            SharingGcpOauthToken {
-                oauth_token: gcp.oauth_token,
-                ..Default::default()
-            },
-        )))
+        Some(Credentials::GcpOauthToken(Box::new(GcpOauthToken {
+            oauth_token: gcp.oauth_token,
+            ..Default::default()
+        })))
     } else {
         wire.r2_credentials.map(|r2| {
-            SharingCredentials::R2Credentials(Box::new(SharingR2Credentials {
+            Credentials::R2Credentials(Box::new(R2Credentials {
                 access_key_id: r2.access_key_id,
                 secret_access_key: r2.secret_access_key,
                 session_token: r2.session_token,
@@ -284,7 +279,7 @@ fn to_sharing_credentials(credential: &VendedCredential) -> Result<SharingTempor
             }))
         })
     };
-    Ok(SharingTemporaryCredentials {
+    Ok(TemporaryCredentials {
         expiration_time: wire.expiration_time.unwrap_or_default(),
         url: wire.url,
         credentials,

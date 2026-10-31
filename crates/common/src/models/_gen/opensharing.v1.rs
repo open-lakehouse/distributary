@@ -6,13 +6,10 @@
 /// skills, and other storage-backed assets. Exactly one credential variant is
 /// populated; the recipient uses it to read files directly via the cloud storage
 /// API. Clients should cache the credential until `expiration_time`.
-///
-/// Names are prefixed with `Sharing` to avoid colliding with the Unity Catalog
-/// `TemporaryCredential` schema in the shared OpenAPI document.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize)]
 #[serde(default)]
-pub struct SharingTemporaryCredentials {
+pub struct TemporaryCredentials {
     /// Server time when the credential expires, in epoch milliseconds.
     ///
     /// Field 1: `expiration_time`
@@ -30,29 +27,29 @@ pub struct SharingTemporaryCredentials {
     pub url: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(flatten)]
     pub credentials: ::core::option::Option<
-        __buffa::oneof::sharing_temporary_credentials::Credentials,
+        __buffa::oneof::temporary_credentials::Credentials,
     >,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for SharingTemporaryCredentials {
+impl ::core::fmt::Debug for TemporaryCredentials {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("SharingTemporaryCredentials")
+        f.debug_struct("TemporaryCredentials")
             .field("expiration_time", &self.expiration_time)
             .field("url", &self.url)
             .field("credentials", &self.credentials)
             .finish()
     }
 }
-impl SharingTemporaryCredentials {
+impl TemporaryCredentials {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingTemporaryCredentials";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.TemporaryCredentials";
 }
-impl SharingTemporaryCredentials {
+impl TemporaryCredentials {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
     ///Sets [`Self::url`] to `Some(value)`, consuming and returning `self`.
@@ -61,19 +58,19 @@ impl SharingTemporaryCredentials {
         self
     }
 }
-impl ::buffa::DefaultInstance for SharingTemporaryCredentials {
+impl ::buffa::DefaultInstance for TemporaryCredentials {
     fn default_instance() -> &'static Self {
-        static VALUE: ::buffa::__private::OnceBox<SharingTemporaryCredentials> = ::buffa::__private::OnceBox::new();
+        static VALUE: ::buffa::__private::OnceBox<TemporaryCredentials> = ::buffa::__private::OnceBox::new();
         VALUE.get_or_init(|| ::buffa::alloc::boxed::Box::new(Self::default()))
     }
 }
-impl ::buffa::MessageName for SharingTemporaryCredentials {
+impl ::buffa::MessageName for TemporaryCredentials {
     const PACKAGE: &'static str = "opensharing.v1";
-    const NAME: &'static str = "SharingTemporaryCredentials";
-    const FULL_NAME: &'static str = "opensharing.v1.SharingTemporaryCredentials";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingTemporaryCredentials";
+    const NAME: &'static str = "TemporaryCredentials";
+    const FULL_NAME: &'static str = "opensharing.v1.TemporaryCredentials";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.TemporaryCredentials";
 }
-impl ::buffa::Message for SharingTemporaryCredentials {
+impl ::buffa::Message for TemporaryCredentials {
     /// Returns the total encoded size in bytes.
     ///
     /// The result is a `u32`; the protobuf specification requires all
@@ -93,7 +90,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
         }
         if let ::core::option::Option::Some(ref v) = self.credentials {
             match v {
-                __buffa::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                __buffa::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -103,7 +100,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                         += 2u32 + ::buffa::encoding::varint_len(inner as u64) as u32
                             + inner;
                 }
-                __buffa::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                __buffa::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -113,9 +110,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                         += 2u32 + ::buffa::encoding::varint_len(inner as u64) as u32
                             + inner;
                 }
-                __buffa::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
-                    x,
-                ) => {
+                __buffa::oneof::temporary_credentials::Credentials::GcpOauthToken(x) => {
                     let __slot = __cache.reserve();
                     let inner = x.compute_size(__cache);
                     __cache.set(__slot, inner);
@@ -123,9 +118,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                         += 2u32 + ::buffa::encoding::varint_len(inner as u64) as u32
                             + inner;
                 }
-                __buffa::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
-                    x,
-                ) => {
+                __buffa::oneof::temporary_credentials::Credentials::R2Credentials(x) => {
                     let __slot = __cache.reserve();
                     let inner = x.compute_size(__cache);
                     __cache.set(__slot, inner);
@@ -160,7 +153,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
         }
         if let ::core::option::Option::Some(ref v) = self.credentials {
             match v {
-                __buffa::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                __buffa::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                     x,
                 ) => {
                     ::buffa::encoding::Tag::new(
@@ -171,7 +164,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     ::buffa::encoding::encode_varint(__cache.consume_next() as u64, buf);
                     x.write_to(__cache, buf);
                 }
-                __buffa::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                __buffa::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                     x,
                 ) => {
                     ::buffa::encoding::Tag::new(
@@ -182,9 +175,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     ::buffa::encoding::encode_varint(__cache.consume_next() as u64, buf);
                     x.write_to(__cache, buf);
                 }
-                __buffa::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
-                    x,
-                ) => {
+                __buffa::oneof::temporary_credentials::Credentials::GcpOauthToken(x) => {
                     ::buffa::encoding::Tag::new(
                             102u32,
                             ::buffa::encoding::WireType::LengthDelimited,
@@ -193,9 +184,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     ::buffa::encoding::encode_varint(__cache.consume_next() as u64, buf);
                     x.write_to(__cache, buf);
                 }
-                __buffa::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
-                    x,
-                ) => {
+                __buffa::oneof::temporary_credentials::Credentials::R2Credentials(x) => {
                     ::buffa::encoding::Tag::new(
                             103u32,
                             ::buffa::encoding::WireType::LengthDelimited,
@@ -251,7 +240,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     });
                 }
                 if let ::core::option::Option::Some(
-                    __buffa::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                    __buffa::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                         ref mut existing,
                     ),
                 ) = self.credentials
@@ -265,7 +254,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     let mut val = ::core::default::Default::default();
                     ::buffa::Message::merge_length_delimited(&mut val, buf, depth)?;
                     self.credentials = ::core::option::Option::Some(
-                        __buffa::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                        __buffa::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -280,7 +269,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     });
                 }
                 if let ::core::option::Option::Some(
-                    __buffa::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                    __buffa::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                         ref mut existing,
                     ),
                 ) = self.credentials
@@ -294,7 +283,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     let mut val = ::core::default::Default::default();
                     ::buffa::Message::merge_length_delimited(&mut val, buf, depth)?;
                     self.credentials = ::core::option::Option::Some(
-                        __buffa::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                        __buffa::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -309,7 +298,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     });
                 }
                 if let ::core::option::Option::Some(
-                    __buffa::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                    __buffa::oneof::temporary_credentials::Credentials::GcpOauthToken(
                         ref mut existing,
                     ),
                 ) = self.credentials
@@ -323,7 +312,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     let mut val = ::core::default::Default::default();
                     ::buffa::Message::merge_length_delimited(&mut val, buf, depth)?;
                     self.credentials = ::core::option::Option::Some(
-                        __buffa::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                        __buffa::oneof::temporary_credentials::Credentials::GcpOauthToken(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -338,7 +327,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     });
                 }
                 if let ::core::option::Option::Some(
-                    __buffa::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                    __buffa::oneof::temporary_credentials::Credentials::R2Credentials(
                         ref mut existing,
                     ),
                 ) = self.credentials
@@ -352,7 +341,7 @@ impl ::buffa::Message for SharingTemporaryCredentials {
                     let mut val = ::core::default::Default::default();
                     ::buffa::Message::merge_length_delimited(&mut val, buf, depth)?;
                     self.credentials = ::core::option::Option::Some(
-                        __buffa::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                        __buffa::oneof::temporary_credentials::Credentials::R2Credentials(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -372,8 +361,8 @@ impl ::buffa::Message for SharingTemporaryCredentials {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for SharingTemporaryCredentials {
-    const PROTO_FQN: &'static str = "opensharing.v1.SharingTemporaryCredentials";
+impl ::buffa::ExtensionSet for TemporaryCredentials {
+    const PROTO_FQN: &'static str = "opensharing.v1.TemporaryCredentials";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -381,27 +370,27 @@ impl ::buffa::ExtensionSet for SharingTemporaryCredentials {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
+impl<'de> serde::Deserialize<'de> for TemporaryCredentials {
     fn deserialize<D: serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
         impl<'de> serde::de::Visitor<'de> for _V {
-            type Value = SharingTemporaryCredentials;
+            type Value = TemporaryCredentials;
             fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                f.write_str("struct SharingTemporaryCredentials")
+                f.write_str("struct TemporaryCredentials")
             }
             #[allow(clippy::field_reassign_with_default)]
             fn visit_map<A: serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
-            ) -> ::core::result::Result<SharingTemporaryCredentials, A::Error> {
+            ) -> ::core::result::Result<TemporaryCredentials, A::Error> {
                 let mut __f_expiration_time: ::core::option::Option<i64> = None;
                 let mut __f_url: ::core::option::Option<
                     ::core::option::Option<::buffa::alloc::string::String>,
                 > = None;
                 let mut __oneof_credentials: ::core::option::Option<
-                    __buffa::oneof::sharing_temporary_credentials::Credentials,
+                    __buffa::oneof::temporary_credentials::Credentials,
                 > = None;
                 while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
                     match key.as_str() {
@@ -429,11 +418,11 @@ impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
                             );
                         }
                         "awsTempCredentials" | "aws_temp_credentials" => {
-                            let v: ::core::option::Option<SharingAwsCredentials> = map
+                            let v: ::core::option::Option<AwsCredentials> = map
                                 .next_value_seed(
                                     ::buffa::json_helpers::NullableDeserializeSeed(
                                         ::buffa::json_helpers::DefaultDeserializeSeed::<
-                                            SharingAwsCredentials,
+                                            AwsCredentials,
                                         >::new(),
                                     ),
                                 )?;
@@ -446,20 +435,18 @@ impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
                                     );
                                 }
                                 __oneof_credentials = Some(
-                                    __buffa::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                                    __buffa::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                                         ::buffa::alloc::boxed::Box::new(v),
                                     ),
                                 );
                             }
                         }
                         "azureUserDelegationSas" | "azure_user_delegation_sas" => {
-                            let v: ::core::option::Option<
-                                SharingAzureUserDelegationSas,
-                            > = map
+                            let v: ::core::option::Option<AzureUserDelegationSas> = map
                                 .next_value_seed(
                                     ::buffa::json_helpers::NullableDeserializeSeed(
                                         ::buffa::json_helpers::DefaultDeserializeSeed::<
-                                            SharingAzureUserDelegationSas,
+                                            AzureUserDelegationSas,
                                         >::new(),
                                     ),
                                 )?;
@@ -472,18 +459,18 @@ impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
                                     );
                                 }
                                 __oneof_credentials = Some(
-                                    __buffa::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                                    __buffa::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                                         ::buffa::alloc::boxed::Box::new(v),
                                     ),
                                 );
                             }
                         }
                         "gcpOauthToken" | "gcp_oauth_token" => {
-                            let v: ::core::option::Option<SharingGcpOauthToken> = map
+                            let v: ::core::option::Option<GcpOauthToken> = map
                                 .next_value_seed(
                                     ::buffa::json_helpers::NullableDeserializeSeed(
                                         ::buffa::json_helpers::DefaultDeserializeSeed::<
-                                            SharingGcpOauthToken,
+                                            GcpOauthToken,
                                         >::new(),
                                     ),
                                 )?;
@@ -496,18 +483,18 @@ impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
                                     );
                                 }
                                 __oneof_credentials = Some(
-                                    __buffa::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                                    __buffa::oneof::temporary_credentials::Credentials::GcpOauthToken(
                                         ::buffa::alloc::boxed::Box::new(v),
                                     ),
                                 );
                             }
                         }
                         "r2Credentials" | "r2_credentials" => {
-                            let v: ::core::option::Option<SharingR2Credentials> = map
+                            let v: ::core::option::Option<R2Credentials> = map
                                 .next_value_seed(
                                     ::buffa::json_helpers::NullableDeserializeSeed(
                                         ::buffa::json_helpers::DefaultDeserializeSeed::<
-                                            SharingR2Credentials,
+                                            R2Credentials,
                                         >::new(),
                                     ),
                                 )?;
@@ -520,7 +507,7 @@ impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
                                     );
                                 }
                                 __oneof_credentials = Some(
-                                    __buffa::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                                    __buffa::oneof::temporary_credentials::Credentials::R2Credentials(
                                         ::buffa::alloc::boxed::Box::new(v),
                                     ),
                                 );
@@ -531,7 +518,7 @@ impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
                         }
                     }
                 }
-                let mut __r = <SharingTemporaryCredentials as ::core::default::Default>::default();
+                let mut __r = <TemporaryCredentials as ::core::default::Default>::default();
                 if let ::core::option::Option::Some(v) = __f_expiration_time {
                     __r.expiration_time = v;
                 }
@@ -545,7 +532,7 @@ impl<'de> serde::Deserialize<'de> for SharingTemporaryCredentials {
         d.deserialize_map(_V)
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for SharingTemporaryCredentials {
+impl ::buffa::json_helpers::ProtoElemJson for TemporaryCredentials {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -559,25 +546,25 @@ impl ::buffa::json_helpers::ProtoElemJson for SharingTemporaryCredentials {
     }
 }
 #[doc(hidden)]
-pub const __SHARING_TEMPORARY_CREDENTIALS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.v1.SharingTemporaryCredentials",
-    to_json: ::buffa::type_registry::any_to_json::<SharingTemporaryCredentials>,
-    from_json: ::buffa::type_registry::any_from_json::<SharingTemporaryCredentials>,
+pub const __TEMPORARY_CREDENTIALS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/opensharing.v1.TemporaryCredentials",
+    to_json: ::buffa::type_registry::any_to_json::<TemporaryCredentials>,
+    from_json: ::buffa::type_registry::any_from_json::<TemporaryCredentials>,
     is_wkt: false,
 };
-pub mod sharing_temporary_credentials {
+pub mod temporary_credentials {
     #[allow(unused_imports)]
     use super::*;
     #[doc(inline)]
-    pub use super::__buffa::oneof::sharing_temporary_credentials::Credentials;
+    pub use super::__buffa::oneof::temporary_credentials::Credentials;
     #[doc(inline)]
-    pub use super::__buffa::view::oneof::sharing_temporary_credentials::Credentials as CredentialsView;
+    pub use super::__buffa::view::oneof::temporary_credentials::Credentials as CredentialsView;
 }
 /// Temporary credentials for AWS S3.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct SharingAwsCredentials {
+pub struct AwsCredentials {
     /// The access key ID that identifies the temporary credentials.
     ///
     /// Field 1: `access_key_id`
@@ -612,35 +599,35 @@ pub struct SharingAwsCredentials {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for SharingAwsCredentials {
+impl ::core::fmt::Debug for AwsCredentials {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("SharingAwsCredentials")
+        f.debug_struct("AwsCredentials")
             .field("access_key_id", &self.access_key_id)
             .field("secret_access_key", &self.secret_access_key)
             .field("session_token", &self.session_token)
             .finish()
     }
 }
-impl SharingAwsCredentials {
+impl AwsCredentials {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingAwsCredentials";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.AwsCredentials";
 }
-impl ::buffa::DefaultInstance for SharingAwsCredentials {
+impl ::buffa::DefaultInstance for AwsCredentials {
     fn default_instance() -> &'static Self {
-        static VALUE: ::buffa::__private::OnceBox<SharingAwsCredentials> = ::buffa::__private::OnceBox::new();
+        static VALUE: ::buffa::__private::OnceBox<AwsCredentials> = ::buffa::__private::OnceBox::new();
         VALUE.get_or_init(|| ::buffa::alloc::boxed::Box::new(Self::default()))
     }
 }
-impl ::buffa::MessageName for SharingAwsCredentials {
+impl ::buffa::MessageName for AwsCredentials {
     const PACKAGE: &'static str = "opensharing.v1";
-    const NAME: &'static str = "SharingAwsCredentials";
-    const FULL_NAME: &'static str = "opensharing.v1.SharingAwsCredentials";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingAwsCredentials";
+    const NAME: &'static str = "AwsCredentials";
+    const FULL_NAME: &'static str = "opensharing.v1.AwsCredentials";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.AwsCredentials";
 }
-impl ::buffa::Message for SharingAwsCredentials {
+impl ::buffa::Message for AwsCredentials {
     /// Returns the total encoded size in bytes.
     ///
     /// The result is a `u32`; the protobuf specification requires all
@@ -755,8 +742,8 @@ impl ::buffa::Message for SharingAwsCredentials {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for SharingAwsCredentials {
-    const PROTO_FQN: &'static str = "opensharing.v1.SharingAwsCredentials";
+impl ::buffa::ExtensionSet for AwsCredentials {
+    const PROTO_FQN: &'static str = "opensharing.v1.AwsCredentials";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -764,7 +751,7 @@ impl ::buffa::ExtensionSet for SharingAwsCredentials {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for SharingAwsCredentials {
+impl ::buffa::json_helpers::ProtoElemJson for AwsCredentials {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -778,17 +765,17 @@ impl ::buffa::json_helpers::ProtoElemJson for SharingAwsCredentials {
     }
 }
 #[doc(hidden)]
-pub const __SHARING_AWS_CREDENTIALS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.v1.SharingAwsCredentials",
-    to_json: ::buffa::type_registry::any_to_json::<SharingAwsCredentials>,
-    from_json: ::buffa::type_registry::any_from_json::<SharingAwsCredentials>,
+pub const __AWS_CREDENTIALS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/opensharing.v1.AwsCredentials",
+    to_json: ::buffa::type_registry::any_to_json::<AwsCredentials>,
+    from_json: ::buffa::type_registry::any_from_json::<AwsCredentials>,
     is_wkt: false,
 };
 /// User delegation SAS token for Azure Blob Storage.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct SharingAzureUserDelegationSas {
+pub struct AzureUserDelegationSas {
     /// The SAS token granting read access to the asset's storage location.
     ///
     /// Field 1: `sas_token`
@@ -803,33 +790,33 @@ pub struct SharingAzureUserDelegationSas {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for SharingAzureUserDelegationSas {
+impl ::core::fmt::Debug for AzureUserDelegationSas {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("SharingAzureUserDelegationSas")
+        f.debug_struct("AzureUserDelegationSas")
             .field("sas_token", &self.sas_token)
             .finish()
     }
 }
-impl SharingAzureUserDelegationSas {
+impl AzureUserDelegationSas {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingAzureUserDelegationSas";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.AzureUserDelegationSas";
 }
-impl ::buffa::DefaultInstance for SharingAzureUserDelegationSas {
+impl ::buffa::DefaultInstance for AzureUserDelegationSas {
     fn default_instance() -> &'static Self {
-        static VALUE: ::buffa::__private::OnceBox<SharingAzureUserDelegationSas> = ::buffa::__private::OnceBox::new();
+        static VALUE: ::buffa::__private::OnceBox<AzureUserDelegationSas> = ::buffa::__private::OnceBox::new();
         VALUE.get_or_init(|| ::buffa::alloc::boxed::Box::new(Self::default()))
     }
 }
-impl ::buffa::MessageName for SharingAzureUserDelegationSas {
+impl ::buffa::MessageName for AzureUserDelegationSas {
     const PACKAGE: &'static str = "opensharing.v1";
-    const NAME: &'static str = "SharingAzureUserDelegationSas";
-    const FULL_NAME: &'static str = "opensharing.v1.SharingAzureUserDelegationSas";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingAzureUserDelegationSas";
+    const NAME: &'static str = "AzureUserDelegationSas";
+    const FULL_NAME: &'static str = "opensharing.v1.AzureUserDelegationSas";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.AzureUserDelegationSas";
 }
-impl ::buffa::Message for SharingAzureUserDelegationSas {
+impl ::buffa::Message for AzureUserDelegationSas {
     /// Returns the total encoded size in bytes.
     ///
     /// The result is a `u32`; the protobuf specification requires all
@@ -896,8 +883,8 @@ impl ::buffa::Message for SharingAzureUserDelegationSas {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for SharingAzureUserDelegationSas {
-    const PROTO_FQN: &'static str = "opensharing.v1.SharingAzureUserDelegationSas";
+impl ::buffa::ExtensionSet for AzureUserDelegationSas {
+    const PROTO_FQN: &'static str = "opensharing.v1.AzureUserDelegationSas";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -905,7 +892,7 @@ impl ::buffa::ExtensionSet for SharingAzureUserDelegationSas {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for SharingAzureUserDelegationSas {
+impl ::buffa::json_helpers::ProtoElemJson for AzureUserDelegationSas {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -919,17 +906,17 @@ impl ::buffa::json_helpers::ProtoElemJson for SharingAzureUserDelegationSas {
     }
 }
 #[doc(hidden)]
-pub const __SHARING_AZURE_USER_DELEGATION_SAS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.v1.SharingAzureUserDelegationSas",
-    to_json: ::buffa::type_registry::any_to_json::<SharingAzureUserDelegationSas>,
-    from_json: ::buffa::type_registry::any_from_json::<SharingAzureUserDelegationSas>,
+pub const __AZURE_USER_DELEGATION_SAS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/opensharing.v1.AzureUserDelegationSas",
+    to_json: ::buffa::type_registry::any_to_json::<AzureUserDelegationSas>,
+    from_json: ::buffa::type_registry::any_from_json::<AzureUserDelegationSas>,
     is_wkt: false,
 };
 /// OAuth token for Google Cloud Storage.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct SharingGcpOauthToken {
+pub struct GcpOauthToken {
     /// The OAuth token granting read access to the asset's storage location.
     ///
     /// Field 1: `oauth_token`
@@ -944,33 +931,31 @@ pub struct SharingGcpOauthToken {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for SharingGcpOauthToken {
+impl ::core::fmt::Debug for GcpOauthToken {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("SharingGcpOauthToken")
-            .field("oauth_token", &self.oauth_token)
-            .finish()
+        f.debug_struct("GcpOauthToken").field("oauth_token", &self.oauth_token).finish()
     }
 }
-impl SharingGcpOauthToken {
+impl GcpOauthToken {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingGcpOauthToken";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.GcpOauthToken";
 }
-impl ::buffa::DefaultInstance for SharingGcpOauthToken {
+impl ::buffa::DefaultInstance for GcpOauthToken {
     fn default_instance() -> &'static Self {
-        static VALUE: ::buffa::__private::OnceBox<SharingGcpOauthToken> = ::buffa::__private::OnceBox::new();
+        static VALUE: ::buffa::__private::OnceBox<GcpOauthToken> = ::buffa::__private::OnceBox::new();
         VALUE.get_or_init(|| ::buffa::alloc::boxed::Box::new(Self::default()))
     }
 }
-impl ::buffa::MessageName for SharingGcpOauthToken {
+impl ::buffa::MessageName for GcpOauthToken {
     const PACKAGE: &'static str = "opensharing.v1";
-    const NAME: &'static str = "SharingGcpOauthToken";
-    const FULL_NAME: &'static str = "opensharing.v1.SharingGcpOauthToken";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingGcpOauthToken";
+    const NAME: &'static str = "GcpOauthToken";
+    const FULL_NAME: &'static str = "opensharing.v1.GcpOauthToken";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.GcpOauthToken";
 }
-impl ::buffa::Message for SharingGcpOauthToken {
+impl ::buffa::Message for GcpOauthToken {
     /// Returns the total encoded size in bytes.
     ///
     /// The result is a `u32`; the protobuf specification requires all
@@ -1037,8 +1022,8 @@ impl ::buffa::Message for SharingGcpOauthToken {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for SharingGcpOauthToken {
-    const PROTO_FQN: &'static str = "opensharing.v1.SharingGcpOauthToken";
+impl ::buffa::ExtensionSet for GcpOauthToken {
+    const PROTO_FQN: &'static str = "opensharing.v1.GcpOauthToken";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1046,7 +1031,7 @@ impl ::buffa::ExtensionSet for SharingGcpOauthToken {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for SharingGcpOauthToken {
+impl ::buffa::json_helpers::ProtoElemJson for GcpOauthToken {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -1060,17 +1045,17 @@ impl ::buffa::json_helpers::ProtoElemJson for SharingGcpOauthToken {
     }
 }
 #[doc(hidden)]
-pub const __SHARING_GCP_OAUTH_TOKEN_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.v1.SharingGcpOauthToken",
-    to_json: ::buffa::type_registry::any_to_json::<SharingGcpOauthToken>,
-    from_json: ::buffa::type_registry::any_from_json::<SharingGcpOauthToken>,
+pub const __GCP_OAUTH_TOKEN_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/opensharing.v1.GcpOauthToken",
+    to_json: ::buffa::type_registry::any_to_json::<GcpOauthToken>,
+    from_json: ::buffa::type_registry::any_from_json::<GcpOauthToken>,
     is_wkt: false,
 };
 /// Temporary credentials for Cloudflare R2.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct SharingR2Credentials {
+pub struct R2Credentials {
     /// The access key ID that identifies the temporary credentials.
     ///
     /// Field 1: `access_key_id`
@@ -1105,35 +1090,35 @@ pub struct SharingR2Credentials {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for SharingR2Credentials {
+impl ::core::fmt::Debug for R2Credentials {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("SharingR2Credentials")
+        f.debug_struct("R2Credentials")
             .field("access_key_id", &self.access_key_id)
             .field("secret_access_key", &self.secret_access_key)
             .field("session_token", &self.session_token)
             .finish()
     }
 }
-impl SharingR2Credentials {
+impl R2Credentials {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingR2Credentials";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.R2Credentials";
 }
-impl ::buffa::DefaultInstance for SharingR2Credentials {
+impl ::buffa::DefaultInstance for R2Credentials {
     fn default_instance() -> &'static Self {
-        static VALUE: ::buffa::__private::OnceBox<SharingR2Credentials> = ::buffa::__private::OnceBox::new();
+        static VALUE: ::buffa::__private::OnceBox<R2Credentials> = ::buffa::__private::OnceBox::new();
         VALUE.get_or_init(|| ::buffa::alloc::boxed::Box::new(Self::default()))
     }
 }
-impl ::buffa::MessageName for SharingR2Credentials {
+impl ::buffa::MessageName for R2Credentials {
     const PACKAGE: &'static str = "opensharing.v1";
-    const NAME: &'static str = "SharingR2Credentials";
-    const FULL_NAME: &'static str = "opensharing.v1.SharingR2Credentials";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingR2Credentials";
+    const NAME: &'static str = "R2Credentials";
+    const FULL_NAME: &'static str = "opensharing.v1.R2Credentials";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.R2Credentials";
 }
-impl ::buffa::Message for SharingR2Credentials {
+impl ::buffa::Message for R2Credentials {
     /// Returns the total encoded size in bytes.
     ///
     /// The result is a `u32`; the protobuf specification requires all
@@ -1248,8 +1233,8 @@ impl ::buffa::Message for SharingR2Credentials {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for SharingR2Credentials {
-    const PROTO_FQN: &'static str = "opensharing.v1.SharingR2Credentials";
+impl ::buffa::ExtensionSet for R2Credentials {
+    const PROTO_FQN: &'static str = "opensharing.v1.R2Credentials";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1257,7 +1242,7 @@ impl ::buffa::ExtensionSet for SharingR2Credentials {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for SharingR2Credentials {
+impl ::buffa::json_helpers::ProtoElemJson for R2Credentials {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -1271,10 +1256,10 @@ impl ::buffa::json_helpers::ProtoElemJson for SharingR2Credentials {
     }
 }
 #[doc(hidden)]
-pub const __SHARING_R2CREDENTIALS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.v1.SharingR2Credentials",
-    to_json: ::buffa::type_registry::any_to_json::<SharingR2Credentials>,
-    from_json: ::buffa::type_registry::any_from_json::<SharingR2Credentials>,
+pub const __R2CREDENTIALS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/opensharing.v1.R2Credentials",
+    to_json: ::buffa::type_registry::any_to_json::<R2Credentials>,
+    from_json: ::buffa::type_registry::any_from_json::<R2Credentials>,
     is_wkt: false,
 };
 /// A volume shared as a storage-backed asset.
@@ -1285,7 +1270,7 @@ pub const __SHARING_R2CREDENTIALS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct SharingVolume {
+pub struct Volume {
     /// The name of the volume. It's case-insensitive and unique within a schema.
     ///
     /// Field 1: `name`
@@ -1340,9 +1325,9 @@ pub struct SharingVolume {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for SharingVolume {
+impl ::core::fmt::Debug for Volume {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("SharingVolume")
+        f.debug_struct("Volume")
             .field("name", &self.name)
             .field("schema", &self.schema)
             .field("share", &self.share)
@@ -1352,14 +1337,14 @@ impl ::core::fmt::Debug for SharingVolume {
             .finish()
     }
 }
-impl SharingVolume {
+impl Volume {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingVolume";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.Volume";
 }
-impl SharingVolume {
+impl Volume {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
     ///Sets [`Self::id`] to `Some(value)`, consuming and returning `self`.
@@ -1388,19 +1373,19 @@ impl SharingVolume {
         self
     }
 }
-impl ::buffa::DefaultInstance for SharingVolume {
+impl ::buffa::DefaultInstance for Volume {
     fn default_instance() -> &'static Self {
-        static VALUE: ::buffa::__private::OnceBox<SharingVolume> = ::buffa::__private::OnceBox::new();
+        static VALUE: ::buffa::__private::OnceBox<Volume> = ::buffa::__private::OnceBox::new();
         VALUE.get_or_init(|| ::buffa::alloc::boxed::Box::new(Self::default()))
     }
 }
-impl ::buffa::MessageName for SharingVolume {
+impl ::buffa::MessageName for Volume {
     const PACKAGE: &'static str = "opensharing.v1";
-    const NAME: &'static str = "SharingVolume";
-    const FULL_NAME: &'static str = "opensharing.v1.SharingVolume";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingVolume";
+    const NAME: &'static str = "Volume";
+    const FULL_NAME: &'static str = "opensharing.v1.Volume";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.Volume";
 }
-impl ::buffa::Message for SharingVolume {
+impl ::buffa::Message for Volume {
     /// Returns the total encoded size in bytes.
     ///
     /// The result is a `u32`; the protobuf specification requires all
@@ -1590,8 +1575,8 @@ impl ::buffa::Message for SharingVolume {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for SharingVolume {
-    const PROTO_FQN: &'static str = "opensharing.v1.SharingVolume";
+impl ::buffa::ExtensionSet for Volume {
+    const PROTO_FQN: &'static str = "opensharing.v1.Volume";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -1599,7 +1584,7 @@ impl ::buffa::ExtensionSet for SharingVolume {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for SharingVolume {
+impl ::buffa::json_helpers::ProtoElemJson for Volume {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -1613,10 +1598,10 @@ impl ::buffa::json_helpers::ProtoElemJson for SharingVolume {
     }
 }
 #[doc(hidden)]
-pub const __SHARING_VOLUME_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.v1.SharingVolume",
-    to_json: ::buffa::type_registry::any_to_json::<SharingVolume>,
-    from_json: ::buffa::type_registry::any_from_json::<SharingVolume>,
+pub const __VOLUME_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/opensharing.v1.Volume",
+    to_json: ::buffa::type_registry::any_to_json::<Volume>,
+    from_json: ::buffa::type_registry::any_from_json::<Volume>,
     is_wkt: false,
 };
 /// An agent skill shared as a storage-backed asset.
@@ -1628,7 +1613,7 @@ pub const __SHARING_VOLUME_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::bu
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct SharingSkill {
+pub struct Skill {
     /// The name of the skill. It's case-insensitive and unique within a schema.
     ///
     /// Field 1: `name`
@@ -1718,9 +1703,9 @@ pub struct SharingSkill {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for SharingSkill {
+impl ::core::fmt::Debug for Skill {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("SharingSkill")
+        f.debug_struct("Skill")
             .field("name", &self.name)
             .field("schema", &self.schema)
             .field("share", &self.share)
@@ -1734,14 +1719,14 @@ impl ::core::fmt::Debug for SharingSkill {
             .finish()
     }
 }
-impl SharingSkill {
+impl Skill {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingSkill";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.Skill";
 }
-impl SharingSkill {
+impl Skill {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
     ///Sets [`Self::id`] to `Some(value)`, consuming and returning `self`.
@@ -1790,19 +1775,19 @@ impl SharingSkill {
         self
     }
 }
-impl ::buffa::DefaultInstance for SharingSkill {
+impl ::buffa::DefaultInstance for Skill {
     fn default_instance() -> &'static Self {
-        static VALUE: ::buffa::__private::OnceBox<SharingSkill> = ::buffa::__private::OnceBox::new();
+        static VALUE: ::buffa::__private::OnceBox<Skill> = ::buffa::__private::OnceBox::new();
         VALUE.get_or_init(|| ::buffa::alloc::boxed::Box::new(Self::default()))
     }
 }
-impl ::buffa::MessageName for SharingSkill {
+impl ::buffa::MessageName for Skill {
     const PACKAGE: &'static str = "opensharing.v1";
-    const NAME: &'static str = "SharingSkill";
-    const FULL_NAME: &'static str = "opensharing.v1.SharingSkill";
-    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingSkill";
+    const NAME: &'static str = "Skill";
+    const FULL_NAME: &'static str = "opensharing.v1.Skill";
+    const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.Skill";
 }
-impl ::buffa::Message for SharingSkill {
+impl ::buffa::Message for Skill {
     /// Returns the total encoded size in bytes.
     ///
     /// The result is a `u32`; the protobuf specification requires all
@@ -2160,8 +2145,8 @@ impl ::buffa::Message for SharingSkill {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for SharingSkill {
-    const PROTO_FQN: &'static str = "opensharing.v1.SharingSkill";
+impl ::buffa::ExtensionSet for Skill {
+    const PROTO_FQN: &'static str = "opensharing.v1.Skill";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -2169,7 +2154,7 @@ impl ::buffa::ExtensionSet for SharingSkill {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for SharingSkill {
+impl ::buffa::json_helpers::ProtoElemJson for Skill {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -2183,10 +2168,10 @@ impl ::buffa::json_helpers::ProtoElemJson for SharingSkill {
     }
 }
 #[doc(hidden)]
-pub const __SHARING_SKILL_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/opensharing.v1.SharingSkill",
-    to_json: ::buffa::type_registry::any_to_json::<SharingSkill>,
-    from_json: ::buffa::type_registry::any_from_json::<SharingSkill>,
+pub const __SKILL_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/opensharing.v1.Skill",
+    to_json: ::buffa::type_registry::any_to_json::<Skill>,
+    from_json: ::buffa::type_registry::any_from_json::<Skill>,
     is_wkt: false,
 };
 /// A share is a logical grouping to share with recipients. A share can be shared with one or multiple recipients.
@@ -7203,7 +7188,7 @@ pub struct ListSkillsResponse {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub items: ::buffa::alloc::vec::Vec<SharingSkill>,
+    pub items: ::buffa::alloc::vec::Vec<Skill>,
     /// Token that can be used to retrieve the next page of skills.
     ///
     /// Field 2: `next_page_token`
@@ -7628,7 +7613,7 @@ pub struct ListAllSkillsResponse {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub items: ::buffa::alloc::vec::Vec<SharingSkill>,
+    pub items: ::buffa::alloc::vec::Vec<Skill>,
     /// Token that can be used to retrieve the next page of skills.
     ///
     /// Field 2: `next_page_token`
@@ -10878,7 +10863,7 @@ pub struct ListVolumesResponse {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub items: ::buffa::alloc::vec::Vec<SharingVolume>,
+    pub items: ::buffa::alloc::vec::Vec<Volume>,
     /// Token that can be used to retrieve the next page of volumes.
     ///
     /// Field 2: `next_page_token`
@@ -11303,7 +11288,7 @@ pub struct ListAllVolumesResponse {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub items: ::buffa::alloc::vec::Vec<SharingVolume>,
+    pub items: ::buffa::alloc::vec::Vec<Volume>,
     /// Token that can be used to retrieve the next page of volumes.
     ///
     /// Field 2: `next_page_token`
@@ -11924,11 +11909,8 @@ pub mod __buffa {
         /// skills, and other storage-backed assets. Exactly one credential variant is
         /// populated; the recipient uses it to read files directly via the cloud storage
         /// API. Clients should cache the credential until `expiration_time`.
-        ///
-        /// Names are prefixed with `Sharing` to avoid colliding with the Unity Catalog
-        /// `TemporaryCredential` schema in the shared OpenAPI document.
         #[derive(Clone, Debug, Default)]
-        pub struct SharingTemporaryCredentialsView<'a> {
+        pub struct TemporaryCredentialsView<'a> {
             /// Server time when the credential expires, in epoch milliseconds.
             ///
             /// Field 1: `expiration_time`
@@ -11938,13 +11920,13 @@ pub mod __buffa {
             /// Field 2: `url`
             pub url: ::core::option::Option<&'a str>,
             pub credentials: ::core::option::Option<
-                super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials<
+                super::super::__buffa::view::oneof::temporary_credentials::Credentials<
                     'a,
                 >,
             >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> SharingTemporaryCredentialsView<'a> {
+        impl<'a> TemporaryCredentialsView<'a> {
             /// Decode from `buf`, enforcing a recursion depth limit for nested messages.
             ///
             /// Called by [`::buffa::MessageView::decode_view`] with [`::buffa::RECURSION_LIMIT`]
@@ -12021,7 +12003,7 @@ pub mod __buffa {
                             }
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             if let Some(
-                                super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                                super::super::__buffa::view::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                                     ref mut existing,
                                 ),
                             ) = view.credentials
@@ -12029,9 +12011,9 @@ pub mod __buffa {
                                 existing._merge_into_view(sub, depth - 1)?;
                             } else {
                                 view.credentials = Some(
-                                    super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                                    super::super::__buffa::view::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                                         ::buffa::alloc::boxed::Box::new(
-                                            super::super::__buffa::view::SharingAwsCredentialsView::_decode_depth(
+                                            super::super::__buffa::view::AwsCredentialsView::_decode_depth(
                                                 sub,
                                                 depth - 1,
                                             )?,
@@ -12055,7 +12037,7 @@ pub mod __buffa {
                             }
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             if let Some(
-                                super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                                super::super::__buffa::view::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                                     ref mut existing,
                                 ),
                             ) = view.credentials
@@ -12063,9 +12045,9 @@ pub mod __buffa {
                                 existing._merge_into_view(sub, depth - 1)?;
                             } else {
                                 view.credentials = Some(
-                                    super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                                    super::super::__buffa::view::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                                         ::buffa::alloc::boxed::Box::new(
-                                            super::super::__buffa::view::SharingAzureUserDelegationSasView::_decode_depth(
+                                            super::super::__buffa::view::AzureUserDelegationSasView::_decode_depth(
                                                 sub,
                                                 depth - 1,
                                             )?,
@@ -12089,7 +12071,7 @@ pub mod __buffa {
                             }
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             if let Some(
-                                super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                                super::super::__buffa::view::oneof::temporary_credentials::Credentials::GcpOauthToken(
                                     ref mut existing,
                                 ),
                             ) = view.credentials
@@ -12097,9 +12079,9 @@ pub mod __buffa {
                                 existing._merge_into_view(sub, depth - 1)?;
                             } else {
                                 view.credentials = Some(
-                                    super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                                    super::super::__buffa::view::oneof::temporary_credentials::Credentials::GcpOauthToken(
                                         ::buffa::alloc::boxed::Box::new(
-                                            super::super::__buffa::view::SharingGcpOauthTokenView::_decode_depth(
+                                            super::super::__buffa::view::GcpOauthTokenView::_decode_depth(
                                                 sub,
                                                 depth - 1,
                                             )?,
@@ -12123,7 +12105,7 @@ pub mod __buffa {
                             }
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             if let Some(
-                                super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                                super::super::__buffa::view::oneof::temporary_credentials::Credentials::R2Credentials(
                                     ref mut existing,
                                 ),
                             ) = view.credentials
@@ -12131,9 +12113,9 @@ pub mod __buffa {
                                 existing._merge_into_view(sub, depth - 1)?;
                             } else {
                                 view.credentials = Some(
-                                    super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                                    super::super::__buffa::view::oneof::temporary_credentials::Credentials::R2Credentials(
                                         ::buffa::alloc::boxed::Box::new(
-                                            super::super::__buffa::view::SharingR2CredentialsView::_decode_depth(
+                                            super::super::__buffa::view::R2CredentialsView::_decode_depth(
                                                 sub,
                                                 depth - 1,
                                             )?,
@@ -12153,8 +12135,8 @@ pub mod __buffa {
                 ::core::result::Result::Ok(())
             }
         }
-        impl<'a> ::buffa::MessageView<'a> for SharingTemporaryCredentialsView<'a> {
-            type Owned = super::super::SharingTemporaryCredentials;
+        impl<'a> ::buffa::MessageView<'a> for TemporaryCredentialsView<'a> {
+            type Owned = super::super::TemporaryCredentials;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -12166,55 +12148,55 @@ pub mod __buffa {
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 Self::_decode_depth(buf, depth)
             }
-            fn to_owned_message(&self) -> super::super::SharingTemporaryCredentials {
+            fn to_owned_message(&self) -> super::super::TemporaryCredentials {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> super::super::SharingTemporaryCredentials {
+            ) -> super::super::TemporaryCredentials {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                super::super::SharingTemporaryCredentials {
+                super::super::TemporaryCredentials {
                     expiration_time: self.expiration_time,
                     url: self.url.map(|s| s.to_string()),
                     credentials: self
                         .credentials
                         .as_ref()
                         .map(|v| match v {
-                            super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                            super::super::__buffa::view::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                                 v,
                             ) => {
-                                super::super::__buffa::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                                super::super::__buffa::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                                     ::buffa::alloc::boxed::Box::new(
                                         v.to_owned_from_source(__buffa_src),
                                     ),
                                 )
                             }
-                            super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                            super::super::__buffa::view::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                                 v,
                             ) => {
-                                super::super::__buffa::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                                super::super::__buffa::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                                     ::buffa::alloc::boxed::Box::new(
                                         v.to_owned_from_source(__buffa_src),
                                     ),
                                 )
                             }
-                            super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                            super::super::__buffa::view::oneof::temporary_credentials::Credentials::GcpOauthToken(
                                 v,
                             ) => {
-                                super::super::__buffa::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                                super::super::__buffa::oneof::temporary_credentials::Credentials::GcpOauthToken(
                                     ::buffa::alloc::boxed::Box::new(
                                         v.to_owned_from_source(__buffa_src),
                                     ),
                                 )
                             }
-                            super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                            super::super::__buffa::view::oneof::temporary_credentials::Credentials::R2Credentials(
                                 v,
                             ) => {
-                                super::super::__buffa::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                                super::super::__buffa::oneof::temporary_credentials::Credentials::R2Credentials(
                                     ::buffa::alloc::boxed::Box::new(
                                         v.to_owned_from_source(__buffa_src),
                                     ),
@@ -12230,7 +12212,7 @@ pub mod __buffa {
                 }
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for SharingTemporaryCredentialsView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for TemporaryCredentialsView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -12247,7 +12229,7 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(ref v) = self.credentials {
                     match v {
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                             x,
                         ) => {
                             let __slot = __cache.reserve();
@@ -12257,7 +12239,7 @@ pub mod __buffa {
                                 += 2u32 + ::buffa::encoding::varint_len(inner as u64) as u32
                                     + inner;
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                             x,
                         ) => {
                             let __slot = __cache.reserve();
@@ -12267,7 +12249,7 @@ pub mod __buffa {
                                 += 2u32 + ::buffa::encoding::varint_len(inner as u64) as u32
                                     + inner;
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::GcpOauthToken(
                             x,
                         ) => {
                             let __slot = __cache.reserve();
@@ -12277,7 +12259,7 @@ pub mod __buffa {
                                 += 2u32 + ::buffa::encoding::varint_len(inner as u64) as u32
                                     + inner;
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::R2Credentials(
                             x,
                         ) => {
                             let __slot = __cache.reserve();
@@ -12318,7 +12300,7 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(ref v) = self.credentials {
                     match v {
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                             x,
                         ) => {
                             ::buffa::encoding::Tag::new(
@@ -12332,7 +12314,7 @@ pub mod __buffa {
                             );
                             x.write_to(__cache, buf);
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                             x,
                         ) => {
                             ::buffa::encoding::Tag::new(
@@ -12346,7 +12328,7 @@ pub mod __buffa {
                             );
                             x.write_to(__cache, buf);
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::GcpOauthToken(
                             x,
                         ) => {
                             ::buffa::encoding::Tag::new(
@@ -12360,7 +12342,7 @@ pub mod __buffa {
                             );
                             x.write_to(__cache, buf);
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::R2Credentials(
                             x,
                         ) => {
                             ::buffa::encoding::Tag::new(
@@ -12390,7 +12372,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for SharingTemporaryCredentialsView<'__a> {
+        impl<'__a> ::serde::Serialize for TemporaryCredentialsView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -12414,22 +12396,22 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(ref __ov) = self.credentials {
                     match __ov {
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AwsTempCredentials(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::AwsTempCredentials(
                             v,
                         ) => {
                             __map.serialize_entry("aws_temp_credentials", v)?;
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::AzureUserDelegationSas(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::AzureUserDelegationSas(
                             v,
                         ) => {
                             __map.serialize_entry("azure_user_delegation_sas", v)?;
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::GcpOauthToken(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::GcpOauthToken(
                             v,
                         ) => {
                             __map.serialize_entry("gcp_oauth_token", v)?;
                         }
-                        super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials::R2Credentials(
+                        super::super::__buffa::view::oneof::temporary_credentials::Credentials::R2Credentials(
                             v,
                         ) => {
                             __map.serialize_entry("r2_credentials", v)?;
@@ -12439,42 +12421,42 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for SharingTemporaryCredentialsView<'a> {
+        impl<'a> ::buffa::MessageName for TemporaryCredentialsView<'a> {
             const PACKAGE: &'static str = "opensharing.v1";
-            const NAME: &'static str = "SharingTemporaryCredentials";
-            const FULL_NAME: &'static str = "opensharing.v1.SharingTemporaryCredentials";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingTemporaryCredentials";
+            const NAME: &'static str = "TemporaryCredentials";
+            const FULL_NAME: &'static str = "opensharing.v1.TemporaryCredentials";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.TemporaryCredentials";
         }
-        impl<'v> ::buffa::DefaultViewInstance for SharingTemporaryCredentialsView<'v> {
+        impl<'v> ::buffa::DefaultViewInstance for TemporaryCredentialsView<'v> {
             fn default_view_instance<'a>() -> &'a Self
             where
                 Self: 'a,
             {
                 static VALUE: ::buffa::__private::OnceBox<
-                    SharingTemporaryCredentialsView<'static>,
+                    TemporaryCredentialsView<'static>,
                 > = ::buffa::__private::OnceBox::new();
                 VALUE
                     .get_or_init(|| ::buffa::alloc::boxed::Box::new(
-                        <SharingTemporaryCredentialsView<'static>>::default(),
+                        <TemporaryCredentialsView<'static>>::default(),
                     ))
             }
         }
-        impl ::buffa::ViewReborrow for SharingTemporaryCredentialsView<'static> {
-            type Reborrowed<'b> = SharingTemporaryCredentialsView<'b>;
+        impl ::buffa::ViewReborrow for TemporaryCredentialsView<'static> {
+            type Reborrowed<'b> = TemporaryCredentialsView<'b>;
             fn reborrow<'b>(this: &'b Self) -> &'b Self::Reborrowed<'b> {
                 this
             }
         }
-        /** Self-contained, `'static` owned view of a `SharingTemporaryCredentials` message.
+        /** Self-contained, `'static` owned view of a `TemporaryCredentials` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`SharingTemporaryCredentialsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`TemporaryCredentialsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SharingTemporaryCredentialsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`TemporaryCredentialsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct SharingTemporaryCredentialsOwnedView(
-            ::buffa::OwnedView<SharingTemporaryCredentialsView<'static>>,
+        pub struct TemporaryCredentialsOwnedView(
+            ::buffa::OwnedView<TemporaryCredentialsView<'static>>,
         );
-        impl SharingTemporaryCredentialsOwnedView {
+        impl TemporaryCredentialsOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -12488,9 +12470,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingTemporaryCredentialsOwnedView(
-                        ::buffa::OwnedView::decode(bytes)?,
-                    ),
+                    TemporaryCredentialsOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -12505,7 +12485,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingTemporaryCredentialsOwnedView(
+                    TemporaryCredentialsOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -12517,22 +12497,20 @@ pub mod __buffa {
             /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::SharingTemporaryCredentials,
+                msg: &super::super::TemporaryCredentials,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingTemporaryCredentialsOwnedView(
-                        ::buffa::OwnedView::from_owned(msg)?,
-                    ),
+                    TemporaryCredentialsOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`SharingTemporaryCredentialsView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`TemporaryCredentialsView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &SharingTemporaryCredentialsView<'_> {
+            pub fn view(&self) -> &TemporaryCredentialsView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::SharingTemporaryCredentials {
+            pub fn to_owned_message(&self) -> super::super::TemporaryCredentials {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -12564,42 +12542,39 @@ pub mod __buffa {
             pub fn credentials(
                 &self,
             ) -> ::core::option::Option<
-                &super::super::__buffa::view::oneof::sharing_temporary_credentials::Credentials<
+                &super::super::__buffa::view::oneof::temporary_credentials::Credentials<
                     '_,
                 >,
             > {
                 self.0.reborrow().credentials.as_ref()
             }
         }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<SharingTemporaryCredentialsView<'static>>,
-        > for SharingTemporaryCredentialsOwnedView {
+        impl ::core::convert::From<::buffa::OwnedView<TemporaryCredentialsView<'static>>>
+        for TemporaryCredentialsOwnedView {
             fn from(
-                inner: ::buffa::OwnedView<SharingTemporaryCredentialsView<'static>>,
+                inner: ::buffa::OwnedView<TemporaryCredentialsView<'static>>,
             ) -> Self {
-                SharingTemporaryCredentialsOwnedView(inner)
+                TemporaryCredentialsOwnedView(inner)
             }
         }
-        impl ::core::convert::From<SharingTemporaryCredentialsOwnedView>
-        for ::buffa::OwnedView<SharingTemporaryCredentialsView<'static>> {
-            fn from(wrapper: SharingTemporaryCredentialsOwnedView) -> Self {
+        impl ::core::convert::From<TemporaryCredentialsOwnedView>
+        for ::buffa::OwnedView<TemporaryCredentialsView<'static>> {
+            fn from(wrapper: TemporaryCredentialsOwnedView) -> Self {
                 wrapper.0
             }
         }
         impl ::core::convert::AsRef<
-            ::buffa::OwnedView<SharingTemporaryCredentialsView<'static>>,
-        > for SharingTemporaryCredentialsOwnedView {
-            fn as_ref(
-                &self,
-            ) -> &::buffa::OwnedView<SharingTemporaryCredentialsView<'static>> {
+            ::buffa::OwnedView<TemporaryCredentialsView<'static>>,
+        > for TemporaryCredentialsOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<TemporaryCredentialsView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::SharingTemporaryCredentials {
-            type View<'a> = SharingTemporaryCredentialsView<'a>;
-            type ViewHandle = SharingTemporaryCredentialsOwnedView;
+        impl ::buffa::HasMessageView for super::super::TemporaryCredentials {
+            type View<'a> = TemporaryCredentialsView<'a>;
+            type ViewHandle = TemporaryCredentialsOwnedView;
         }
-        impl ::serde::Serialize for SharingTemporaryCredentialsOwnedView {
+        impl ::serde::Serialize for TemporaryCredentialsOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -12609,7 +12584,7 @@ pub mod __buffa {
         }
         /// Temporary credentials for AWS S3.
         #[derive(Clone, Debug, Default)]
-        pub struct SharingAwsCredentialsView<'a> {
+        pub struct AwsCredentialsView<'a> {
             /// The access key ID that identifies the temporary credentials.
             ///
             /// Field 1: `access_key_id`
@@ -12624,7 +12599,7 @@ pub mod __buffa {
             pub session_token: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> SharingAwsCredentialsView<'a> {
+        impl<'a> AwsCredentialsView<'a> {
             /// Decode from `buf`, enforcing a recursion depth limit for nested messages.
             ///
             /// Called by [`::buffa::MessageView::decode_view`] with [`::buffa::RECURSION_LIMIT`]
@@ -12711,8 +12686,8 @@ pub mod __buffa {
                 ::core::result::Result::Ok(())
             }
         }
-        impl<'a> ::buffa::MessageView<'a> for SharingAwsCredentialsView<'a> {
-            type Owned = super::super::SharingAwsCredentials;
+        impl<'a> ::buffa::MessageView<'a> for AwsCredentialsView<'a> {
+            type Owned = super::super::AwsCredentials;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -12724,18 +12699,18 @@ pub mod __buffa {
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 Self::_decode_depth(buf, depth)
             }
-            fn to_owned_message(&self) -> super::super::SharingAwsCredentials {
+            fn to_owned_message(&self) -> super::super::AwsCredentials {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> super::super::SharingAwsCredentials {
+            ) -> super::super::AwsCredentials {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                super::super::SharingAwsCredentials {
+                super::super::AwsCredentials {
                     access_key_id: self.access_key_id.to_string(),
                     secret_access_key: self.secret_access_key.to_string(),
                     session_token: self.session_token.to_string(),
@@ -12748,7 +12723,7 @@ pub mod __buffa {
                 }
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for SharingAwsCredentialsView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for AwsCredentialsView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -12821,7 +12796,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for SharingAwsCredentialsView<'__a> {
+        impl<'__a> ::serde::Serialize for AwsCredentialsView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -12842,42 +12817,40 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for SharingAwsCredentialsView<'a> {
+        impl<'a> ::buffa::MessageName for AwsCredentialsView<'a> {
             const PACKAGE: &'static str = "opensharing.v1";
-            const NAME: &'static str = "SharingAwsCredentials";
-            const FULL_NAME: &'static str = "opensharing.v1.SharingAwsCredentials";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingAwsCredentials";
+            const NAME: &'static str = "AwsCredentials";
+            const FULL_NAME: &'static str = "opensharing.v1.AwsCredentials";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.AwsCredentials";
         }
-        impl<'v> ::buffa::DefaultViewInstance for SharingAwsCredentialsView<'v> {
+        impl<'v> ::buffa::DefaultViewInstance for AwsCredentialsView<'v> {
             fn default_view_instance<'a>() -> &'a Self
             where
                 Self: 'a,
             {
-                static VALUE: ::buffa::__private::OnceBox<
-                    SharingAwsCredentialsView<'static>,
-                > = ::buffa::__private::OnceBox::new();
+                static VALUE: ::buffa::__private::OnceBox<AwsCredentialsView<'static>> = ::buffa::__private::OnceBox::new();
                 VALUE
                     .get_or_init(|| ::buffa::alloc::boxed::Box::new(
-                        <SharingAwsCredentialsView<'static>>::default(),
+                        <AwsCredentialsView<'static>>::default(),
                     ))
             }
         }
-        impl ::buffa::ViewReborrow for SharingAwsCredentialsView<'static> {
-            type Reborrowed<'b> = SharingAwsCredentialsView<'b>;
+        impl ::buffa::ViewReborrow for AwsCredentialsView<'static> {
+            type Reborrowed<'b> = AwsCredentialsView<'b>;
             fn reborrow<'b>(this: &'b Self) -> &'b Self::Reborrowed<'b> {
                 this
             }
         }
-        /** Self-contained, `'static` owned view of a `SharingAwsCredentials` message.
+        /** Self-contained, `'static` owned view of a `AwsCredentials` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`SharingAwsCredentialsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`AwsCredentialsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SharingAwsCredentialsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`AwsCredentialsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct SharingAwsCredentialsOwnedView(
-            ::buffa::OwnedView<SharingAwsCredentialsView<'static>>,
+        pub struct AwsCredentialsOwnedView(
+            ::buffa::OwnedView<AwsCredentialsView<'static>>,
         );
-        impl SharingAwsCredentialsOwnedView {
+        impl AwsCredentialsOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -12891,7 +12864,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingAwsCredentialsOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    AwsCredentialsOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -12906,7 +12879,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingAwsCredentialsOwnedView(
+                    AwsCredentialsOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -12918,20 +12891,20 @@ pub mod __buffa {
             /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::SharingAwsCredentials,
+                msg: &super::super::AwsCredentials,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingAwsCredentialsOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    AwsCredentialsOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`SharingAwsCredentialsView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`AwsCredentialsView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &SharingAwsCredentialsView<'_> {
+            pub fn view(&self) -> &AwsCredentialsView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::SharingAwsCredentials {
+            pub fn to_owned_message(&self) -> super::super::AwsCredentials {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -12966,33 +12939,29 @@ pub mod __buffa {
                 self.0.reborrow().session_token
             }
         }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<SharingAwsCredentialsView<'static>>,
-        > for SharingAwsCredentialsOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<SharingAwsCredentialsView<'static>>,
-            ) -> Self {
-                SharingAwsCredentialsOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<AwsCredentialsView<'static>>>
+        for AwsCredentialsOwnedView {
+            fn from(inner: ::buffa::OwnedView<AwsCredentialsView<'static>>) -> Self {
+                AwsCredentialsOwnedView(inner)
             }
         }
-        impl ::core::convert::From<SharingAwsCredentialsOwnedView>
-        for ::buffa::OwnedView<SharingAwsCredentialsView<'static>> {
-            fn from(wrapper: SharingAwsCredentialsOwnedView) -> Self {
+        impl ::core::convert::From<AwsCredentialsOwnedView>
+        for ::buffa::OwnedView<AwsCredentialsView<'static>> {
+            fn from(wrapper: AwsCredentialsOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<SharingAwsCredentialsView<'static>>,
-        > for SharingAwsCredentialsOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<SharingAwsCredentialsView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<AwsCredentialsView<'static>>>
+        for AwsCredentialsOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<AwsCredentialsView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::SharingAwsCredentials {
-            type View<'a> = SharingAwsCredentialsView<'a>;
-            type ViewHandle = SharingAwsCredentialsOwnedView;
+        impl ::buffa::HasMessageView for super::super::AwsCredentials {
+            type View<'a> = AwsCredentialsView<'a>;
+            type ViewHandle = AwsCredentialsOwnedView;
         }
-        impl ::serde::Serialize for SharingAwsCredentialsOwnedView {
+        impl ::serde::Serialize for AwsCredentialsOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -13002,14 +12971,14 @@ pub mod __buffa {
         }
         /// User delegation SAS token for Azure Blob Storage.
         #[derive(Clone, Debug, Default)]
-        pub struct SharingAzureUserDelegationSasView<'a> {
+        pub struct AzureUserDelegationSasView<'a> {
             /// The SAS token granting read access to the asset's storage location.
             ///
             /// Field 1: `sas_token`
             pub sas_token: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> SharingAzureUserDelegationSasView<'a> {
+        impl<'a> AzureUserDelegationSasView<'a> {
             /// Decode from `buf`, enforcing a recursion depth limit for nested messages.
             ///
             /// Called by [`::buffa::MessageView::decode_view`] with [`::buffa::RECURSION_LIMIT`]
@@ -13070,8 +13039,8 @@ pub mod __buffa {
                 ::core::result::Result::Ok(())
             }
         }
-        impl<'a> ::buffa::MessageView<'a> for SharingAzureUserDelegationSasView<'a> {
-            type Owned = super::super::SharingAzureUserDelegationSas;
+        impl<'a> ::buffa::MessageView<'a> for AzureUserDelegationSasView<'a> {
+            type Owned = super::super::AzureUserDelegationSas;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -13083,18 +13052,18 @@ pub mod __buffa {
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 Self::_decode_depth(buf, depth)
             }
-            fn to_owned_message(&self) -> super::super::SharingAzureUserDelegationSas {
+            fn to_owned_message(&self) -> super::super::AzureUserDelegationSas {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> super::super::SharingAzureUserDelegationSas {
+            ) -> super::super::AzureUserDelegationSas {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                super::super::SharingAzureUserDelegationSas {
+                super::super::AzureUserDelegationSas {
                     sas_token: self.sas_token.to_string(),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
@@ -13105,7 +13074,7 @@ pub mod __buffa {
                 }
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for SharingAzureUserDelegationSasView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for AzureUserDelegationSasView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -13149,7 +13118,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for SharingAzureUserDelegationSasView<'__a> {
+        impl<'__a> ::serde::Serialize for AzureUserDelegationSasView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -13162,42 +13131,42 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for SharingAzureUserDelegationSasView<'a> {
+        impl<'a> ::buffa::MessageName for AzureUserDelegationSasView<'a> {
             const PACKAGE: &'static str = "opensharing.v1";
-            const NAME: &'static str = "SharingAzureUserDelegationSas";
-            const FULL_NAME: &'static str = "opensharing.v1.SharingAzureUserDelegationSas";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingAzureUserDelegationSas";
+            const NAME: &'static str = "AzureUserDelegationSas";
+            const FULL_NAME: &'static str = "opensharing.v1.AzureUserDelegationSas";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.AzureUserDelegationSas";
         }
-        impl<'v> ::buffa::DefaultViewInstance for SharingAzureUserDelegationSasView<'v> {
+        impl<'v> ::buffa::DefaultViewInstance for AzureUserDelegationSasView<'v> {
             fn default_view_instance<'a>() -> &'a Self
             where
                 Self: 'a,
             {
                 static VALUE: ::buffa::__private::OnceBox<
-                    SharingAzureUserDelegationSasView<'static>,
+                    AzureUserDelegationSasView<'static>,
                 > = ::buffa::__private::OnceBox::new();
                 VALUE
                     .get_or_init(|| ::buffa::alloc::boxed::Box::new(
-                        <SharingAzureUserDelegationSasView<'static>>::default(),
+                        <AzureUserDelegationSasView<'static>>::default(),
                     ))
             }
         }
-        impl ::buffa::ViewReborrow for SharingAzureUserDelegationSasView<'static> {
-            type Reborrowed<'b> = SharingAzureUserDelegationSasView<'b>;
+        impl ::buffa::ViewReborrow for AzureUserDelegationSasView<'static> {
+            type Reborrowed<'b> = AzureUserDelegationSasView<'b>;
             fn reborrow<'b>(this: &'b Self) -> &'b Self::Reborrowed<'b> {
                 this
             }
         }
-        /** Self-contained, `'static` owned view of a `SharingAzureUserDelegationSas` message.
+        /** Self-contained, `'static` owned view of a `AzureUserDelegationSas` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`SharingAzureUserDelegationSasView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`AzureUserDelegationSasView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SharingAzureUserDelegationSasView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`AzureUserDelegationSasView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct SharingAzureUserDelegationSasOwnedView(
-            ::buffa::OwnedView<SharingAzureUserDelegationSasView<'static>>,
+        pub struct AzureUserDelegationSasOwnedView(
+            ::buffa::OwnedView<AzureUserDelegationSasView<'static>>,
         );
-        impl SharingAzureUserDelegationSasOwnedView {
+        impl AzureUserDelegationSasOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -13211,9 +13180,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingAzureUserDelegationSasOwnedView(
-                        ::buffa::OwnedView::decode(bytes)?,
-                    ),
+                    AzureUserDelegationSasOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -13228,7 +13195,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingAzureUserDelegationSasOwnedView(
+                    AzureUserDelegationSasOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -13240,24 +13207,20 @@ pub mod __buffa {
             /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::SharingAzureUserDelegationSas,
+                msg: &super::super::AzureUserDelegationSas,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingAzureUserDelegationSasOwnedView(
-                        ::buffa::OwnedView::from_owned(msg)?,
-                    ),
+                    AzureUserDelegationSasOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`SharingAzureUserDelegationSasView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`AzureUserDelegationSasView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &SharingAzureUserDelegationSasView<'_> {
+            pub fn view(&self) -> &AzureUserDelegationSasView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
             #[must_use]
-            pub fn to_owned_message(
-                &self,
-            ) -> super::super::SharingAzureUserDelegationSas {
+            pub fn to_owned_message(&self) -> super::super::AzureUserDelegationSas {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -13279,34 +13242,34 @@ pub mod __buffa {
             }
         }
         impl ::core::convert::From<
-            ::buffa::OwnedView<SharingAzureUserDelegationSasView<'static>>,
-        > for SharingAzureUserDelegationSasOwnedView {
+            ::buffa::OwnedView<AzureUserDelegationSasView<'static>>,
+        > for AzureUserDelegationSasOwnedView {
             fn from(
-                inner: ::buffa::OwnedView<SharingAzureUserDelegationSasView<'static>>,
+                inner: ::buffa::OwnedView<AzureUserDelegationSasView<'static>>,
             ) -> Self {
-                SharingAzureUserDelegationSasOwnedView(inner)
+                AzureUserDelegationSasOwnedView(inner)
             }
         }
-        impl ::core::convert::From<SharingAzureUserDelegationSasOwnedView>
-        for ::buffa::OwnedView<SharingAzureUserDelegationSasView<'static>> {
-            fn from(wrapper: SharingAzureUserDelegationSasOwnedView) -> Self {
+        impl ::core::convert::From<AzureUserDelegationSasOwnedView>
+        for ::buffa::OwnedView<AzureUserDelegationSasView<'static>> {
+            fn from(wrapper: AzureUserDelegationSasOwnedView) -> Self {
                 wrapper.0
             }
         }
         impl ::core::convert::AsRef<
-            ::buffa::OwnedView<SharingAzureUserDelegationSasView<'static>>,
-        > for SharingAzureUserDelegationSasOwnedView {
+            ::buffa::OwnedView<AzureUserDelegationSasView<'static>>,
+        > for AzureUserDelegationSasOwnedView {
             fn as_ref(
                 &self,
-            ) -> &::buffa::OwnedView<SharingAzureUserDelegationSasView<'static>> {
+            ) -> &::buffa::OwnedView<AzureUserDelegationSasView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::SharingAzureUserDelegationSas {
-            type View<'a> = SharingAzureUserDelegationSasView<'a>;
-            type ViewHandle = SharingAzureUserDelegationSasOwnedView;
+        impl ::buffa::HasMessageView for super::super::AzureUserDelegationSas {
+            type View<'a> = AzureUserDelegationSasView<'a>;
+            type ViewHandle = AzureUserDelegationSasOwnedView;
         }
-        impl ::serde::Serialize for SharingAzureUserDelegationSasOwnedView {
+        impl ::serde::Serialize for AzureUserDelegationSasOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -13316,14 +13279,14 @@ pub mod __buffa {
         }
         /// OAuth token for Google Cloud Storage.
         #[derive(Clone, Debug, Default)]
-        pub struct SharingGcpOauthTokenView<'a> {
+        pub struct GcpOauthTokenView<'a> {
             /// The OAuth token granting read access to the asset's storage location.
             ///
             /// Field 1: `oauth_token`
             pub oauth_token: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> SharingGcpOauthTokenView<'a> {
+        impl<'a> GcpOauthTokenView<'a> {
             /// Decode from `buf`, enforcing a recursion depth limit for nested messages.
             ///
             /// Called by [`::buffa::MessageView::decode_view`] with [`::buffa::RECURSION_LIMIT`]
@@ -13384,8 +13347,8 @@ pub mod __buffa {
                 ::core::result::Result::Ok(())
             }
         }
-        impl<'a> ::buffa::MessageView<'a> for SharingGcpOauthTokenView<'a> {
-            type Owned = super::super::SharingGcpOauthToken;
+        impl<'a> ::buffa::MessageView<'a> for GcpOauthTokenView<'a> {
+            type Owned = super::super::GcpOauthToken;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -13397,18 +13360,18 @@ pub mod __buffa {
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 Self::_decode_depth(buf, depth)
             }
-            fn to_owned_message(&self) -> super::super::SharingGcpOauthToken {
+            fn to_owned_message(&self) -> super::super::GcpOauthToken {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> super::super::SharingGcpOauthToken {
+            ) -> super::super::GcpOauthToken {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                super::super::SharingGcpOauthToken {
+                super::super::GcpOauthToken {
                     oauth_token: self.oauth_token.to_string(),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
@@ -13419,7 +13382,7 @@ pub mod __buffa {
                 }
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for SharingGcpOauthTokenView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for GcpOauthTokenView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -13464,7 +13427,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for SharingGcpOauthTokenView<'__a> {
+        impl<'__a> ::serde::Serialize for GcpOauthTokenView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -13477,42 +13440,40 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for SharingGcpOauthTokenView<'a> {
+        impl<'a> ::buffa::MessageName for GcpOauthTokenView<'a> {
             const PACKAGE: &'static str = "opensharing.v1";
-            const NAME: &'static str = "SharingGcpOauthToken";
-            const FULL_NAME: &'static str = "opensharing.v1.SharingGcpOauthToken";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingGcpOauthToken";
+            const NAME: &'static str = "GcpOauthToken";
+            const FULL_NAME: &'static str = "opensharing.v1.GcpOauthToken";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.GcpOauthToken";
         }
-        impl<'v> ::buffa::DefaultViewInstance for SharingGcpOauthTokenView<'v> {
+        impl<'v> ::buffa::DefaultViewInstance for GcpOauthTokenView<'v> {
             fn default_view_instance<'a>() -> &'a Self
             where
                 Self: 'a,
             {
-                static VALUE: ::buffa::__private::OnceBox<
-                    SharingGcpOauthTokenView<'static>,
-                > = ::buffa::__private::OnceBox::new();
+                static VALUE: ::buffa::__private::OnceBox<GcpOauthTokenView<'static>> = ::buffa::__private::OnceBox::new();
                 VALUE
                     .get_or_init(|| ::buffa::alloc::boxed::Box::new(
-                        <SharingGcpOauthTokenView<'static>>::default(),
+                        <GcpOauthTokenView<'static>>::default(),
                     ))
             }
         }
-        impl ::buffa::ViewReborrow for SharingGcpOauthTokenView<'static> {
-            type Reborrowed<'b> = SharingGcpOauthTokenView<'b>;
+        impl ::buffa::ViewReborrow for GcpOauthTokenView<'static> {
+            type Reborrowed<'b> = GcpOauthTokenView<'b>;
             fn reborrow<'b>(this: &'b Self) -> &'b Self::Reborrowed<'b> {
                 this
             }
         }
-        /** Self-contained, `'static` owned view of a `SharingGcpOauthToken` message.
+        /** Self-contained, `'static` owned view of a `GcpOauthToken` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`SharingGcpOauthTokenView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`GcpOauthTokenView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SharingGcpOauthTokenView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`GcpOauthTokenView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct SharingGcpOauthTokenOwnedView(
-            ::buffa::OwnedView<SharingGcpOauthTokenView<'static>>,
+        pub struct GcpOauthTokenOwnedView(
+            ::buffa::OwnedView<GcpOauthTokenView<'static>>,
         );
-        impl SharingGcpOauthTokenOwnedView {
+        impl GcpOauthTokenOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -13526,7 +13487,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingGcpOauthTokenOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    GcpOauthTokenOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -13541,7 +13502,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingGcpOauthTokenOwnedView(
+                    GcpOauthTokenOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -13553,20 +13514,20 @@ pub mod __buffa {
             /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::SharingGcpOauthToken,
+                msg: &super::super::GcpOauthToken,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingGcpOauthTokenOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    GcpOauthTokenOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`SharingGcpOauthTokenView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`GcpOauthTokenView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &SharingGcpOauthTokenView<'_> {
+            pub fn view(&self) -> &GcpOauthTokenView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::SharingGcpOauthToken {
+            pub fn to_owned_message(&self) -> super::super::GcpOauthToken {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -13587,32 +13548,29 @@ pub mod __buffa {
                 self.0.reborrow().oauth_token
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<SharingGcpOauthTokenView<'static>>>
-        for SharingGcpOauthTokenOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<SharingGcpOauthTokenView<'static>>,
-            ) -> Self {
-                SharingGcpOauthTokenOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<GcpOauthTokenView<'static>>>
+        for GcpOauthTokenOwnedView {
+            fn from(inner: ::buffa::OwnedView<GcpOauthTokenView<'static>>) -> Self {
+                GcpOauthTokenOwnedView(inner)
             }
         }
-        impl ::core::convert::From<SharingGcpOauthTokenOwnedView>
-        for ::buffa::OwnedView<SharingGcpOauthTokenView<'static>> {
-            fn from(wrapper: SharingGcpOauthTokenOwnedView) -> Self {
+        impl ::core::convert::From<GcpOauthTokenOwnedView>
+        for ::buffa::OwnedView<GcpOauthTokenView<'static>> {
+            fn from(wrapper: GcpOauthTokenOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<SharingGcpOauthTokenView<'static>>,
-        > for SharingGcpOauthTokenOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<SharingGcpOauthTokenView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<GcpOauthTokenView<'static>>>
+        for GcpOauthTokenOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<GcpOauthTokenView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::SharingGcpOauthToken {
-            type View<'a> = SharingGcpOauthTokenView<'a>;
-            type ViewHandle = SharingGcpOauthTokenOwnedView;
+        impl ::buffa::HasMessageView for super::super::GcpOauthToken {
+            type View<'a> = GcpOauthTokenView<'a>;
+            type ViewHandle = GcpOauthTokenOwnedView;
         }
-        impl ::serde::Serialize for SharingGcpOauthTokenOwnedView {
+        impl ::serde::Serialize for GcpOauthTokenOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -13622,7 +13580,7 @@ pub mod __buffa {
         }
         /// Temporary credentials for Cloudflare R2.
         #[derive(Clone, Debug, Default)]
-        pub struct SharingR2CredentialsView<'a> {
+        pub struct R2CredentialsView<'a> {
             /// The access key ID that identifies the temporary credentials.
             ///
             /// Field 1: `access_key_id`
@@ -13637,7 +13595,7 @@ pub mod __buffa {
             pub session_token: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> SharingR2CredentialsView<'a> {
+        impl<'a> R2CredentialsView<'a> {
             /// Decode from `buf`, enforcing a recursion depth limit for nested messages.
             ///
             /// Called by [`::buffa::MessageView::decode_view`] with [`::buffa::RECURSION_LIMIT`]
@@ -13724,8 +13682,8 @@ pub mod __buffa {
                 ::core::result::Result::Ok(())
             }
         }
-        impl<'a> ::buffa::MessageView<'a> for SharingR2CredentialsView<'a> {
-            type Owned = super::super::SharingR2Credentials;
+        impl<'a> ::buffa::MessageView<'a> for R2CredentialsView<'a> {
+            type Owned = super::super::R2Credentials;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -13737,18 +13695,18 @@ pub mod __buffa {
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 Self::_decode_depth(buf, depth)
             }
-            fn to_owned_message(&self) -> super::super::SharingR2Credentials {
+            fn to_owned_message(&self) -> super::super::R2Credentials {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> super::super::SharingR2Credentials {
+            ) -> super::super::R2Credentials {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                super::super::SharingR2Credentials {
+                super::super::R2Credentials {
                     access_key_id: self.access_key_id.to_string(),
                     secret_access_key: self.secret_access_key.to_string(),
                     session_token: self.session_token.to_string(),
@@ -13761,7 +13719,7 @@ pub mod __buffa {
                 }
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for SharingR2CredentialsView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for R2CredentialsView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -13834,7 +13792,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for SharingR2CredentialsView<'__a> {
+        impl<'__a> ::serde::Serialize for R2CredentialsView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -13855,42 +13813,40 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for SharingR2CredentialsView<'a> {
+        impl<'a> ::buffa::MessageName for R2CredentialsView<'a> {
             const PACKAGE: &'static str = "opensharing.v1";
-            const NAME: &'static str = "SharingR2Credentials";
-            const FULL_NAME: &'static str = "opensharing.v1.SharingR2Credentials";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingR2Credentials";
+            const NAME: &'static str = "R2Credentials";
+            const FULL_NAME: &'static str = "opensharing.v1.R2Credentials";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.R2Credentials";
         }
-        impl<'v> ::buffa::DefaultViewInstance for SharingR2CredentialsView<'v> {
+        impl<'v> ::buffa::DefaultViewInstance for R2CredentialsView<'v> {
             fn default_view_instance<'a>() -> &'a Self
             where
                 Self: 'a,
             {
-                static VALUE: ::buffa::__private::OnceBox<
-                    SharingR2CredentialsView<'static>,
-                > = ::buffa::__private::OnceBox::new();
+                static VALUE: ::buffa::__private::OnceBox<R2CredentialsView<'static>> = ::buffa::__private::OnceBox::new();
                 VALUE
                     .get_or_init(|| ::buffa::alloc::boxed::Box::new(
-                        <SharingR2CredentialsView<'static>>::default(),
+                        <R2CredentialsView<'static>>::default(),
                     ))
             }
         }
-        impl ::buffa::ViewReborrow for SharingR2CredentialsView<'static> {
-            type Reborrowed<'b> = SharingR2CredentialsView<'b>;
+        impl ::buffa::ViewReborrow for R2CredentialsView<'static> {
+            type Reborrowed<'b> = R2CredentialsView<'b>;
             fn reborrow<'b>(this: &'b Self) -> &'b Self::Reborrowed<'b> {
                 this
             }
         }
-        /** Self-contained, `'static` owned view of a `SharingR2Credentials` message.
+        /** Self-contained, `'static` owned view of a `R2Credentials` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`SharingR2CredentialsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`R2CredentialsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SharingR2CredentialsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`R2CredentialsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct SharingR2CredentialsOwnedView(
-            ::buffa::OwnedView<SharingR2CredentialsView<'static>>,
+        pub struct R2CredentialsOwnedView(
+            ::buffa::OwnedView<R2CredentialsView<'static>>,
         );
-        impl SharingR2CredentialsOwnedView {
+        impl R2CredentialsOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -13904,7 +13860,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingR2CredentialsOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    R2CredentialsOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -13919,7 +13875,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingR2CredentialsOwnedView(
+                    R2CredentialsOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -13931,20 +13887,20 @@ pub mod __buffa {
             /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::SharingR2Credentials,
+                msg: &super::super::R2Credentials,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingR2CredentialsOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    R2CredentialsOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`SharingR2CredentialsView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`R2CredentialsView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &SharingR2CredentialsView<'_> {
+            pub fn view(&self) -> &R2CredentialsView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::SharingR2Credentials {
+            pub fn to_owned_message(&self) -> super::super::R2Credentials {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -13979,32 +13935,29 @@ pub mod __buffa {
                 self.0.reborrow().session_token
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<SharingR2CredentialsView<'static>>>
-        for SharingR2CredentialsOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<SharingR2CredentialsView<'static>>,
-            ) -> Self {
-                SharingR2CredentialsOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<R2CredentialsView<'static>>>
+        for R2CredentialsOwnedView {
+            fn from(inner: ::buffa::OwnedView<R2CredentialsView<'static>>) -> Self {
+                R2CredentialsOwnedView(inner)
             }
         }
-        impl ::core::convert::From<SharingR2CredentialsOwnedView>
-        for ::buffa::OwnedView<SharingR2CredentialsView<'static>> {
-            fn from(wrapper: SharingR2CredentialsOwnedView) -> Self {
+        impl ::core::convert::From<R2CredentialsOwnedView>
+        for ::buffa::OwnedView<R2CredentialsView<'static>> {
+            fn from(wrapper: R2CredentialsOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<SharingR2CredentialsView<'static>>,
-        > for SharingR2CredentialsOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<SharingR2CredentialsView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<R2CredentialsView<'static>>>
+        for R2CredentialsOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<R2CredentialsView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::SharingR2Credentials {
-            type View<'a> = SharingR2CredentialsView<'a>;
-            type ViewHandle = SharingR2CredentialsOwnedView;
+        impl ::buffa::HasMessageView for super::super::R2Credentials {
+            type View<'a> = R2CredentialsView<'a>;
+            type ViewHandle = R2CredentialsOwnedView;
         }
-        impl ::serde::Serialize for SharingR2CredentialsOwnedView {
+        impl ::serde::Serialize for R2CredentialsOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -14018,7 +13971,7 @@ pub mod __buffa {
         /// recipient lists and reads its files directly via the cloud storage API using
         /// credentials from the `temporary-volume-credentials` endpoint.
         #[derive(Clone, Debug, Default)]
-        pub struct SharingVolumeView<'a> {
+        pub struct VolumeView<'a> {
             /// The name of the volume. It's case-insensitive and unique within a schema.
             ///
             /// Field 1: `name`
@@ -14045,7 +13998,7 @@ pub mod __buffa {
             pub storage_location: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> SharingVolumeView<'a> {
+        impl<'a> VolumeView<'a> {
             /// Decode from `buf`, enforcing a recursion depth limit for nested messages.
             ///
             /// Called by [`::buffa::MessageView::decode_view`] with [`::buffa::RECURSION_LIMIT`]
@@ -14168,8 +14121,8 @@ pub mod __buffa {
                 ::core::result::Result::Ok(())
             }
         }
-        impl<'a> ::buffa::MessageView<'a> for SharingVolumeView<'a> {
-            type Owned = super::super::SharingVolume;
+        impl<'a> ::buffa::MessageView<'a> for VolumeView<'a> {
+            type Owned = super::super::Volume;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -14181,18 +14134,18 @@ pub mod __buffa {
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 Self::_decode_depth(buf, depth)
             }
-            fn to_owned_message(&self) -> super::super::SharingVolume {
+            fn to_owned_message(&self) -> super::super::Volume {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> super::super::SharingVolume {
+            ) -> super::super::Volume {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                super::super::SharingVolume {
+                super::super::Volume {
                     name: self.name.to_string(),
                     schema: self.schema.to_string(),
                     share: self.share.to_string(),
@@ -14208,7 +14161,7 @@ pub mod __buffa {
                 }
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for SharingVolumeView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for VolumeView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -14308,7 +14261,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for SharingVolumeView<'__a> {
+        impl<'__a> ::serde::Serialize for VolumeView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -14336,40 +14289,38 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for SharingVolumeView<'a> {
+        impl<'a> ::buffa::MessageName for VolumeView<'a> {
             const PACKAGE: &'static str = "opensharing.v1";
-            const NAME: &'static str = "SharingVolume";
-            const FULL_NAME: &'static str = "opensharing.v1.SharingVolume";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingVolume";
+            const NAME: &'static str = "Volume";
+            const FULL_NAME: &'static str = "opensharing.v1.Volume";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.Volume";
         }
-        impl<'v> ::buffa::DefaultViewInstance for SharingVolumeView<'v> {
+        impl<'v> ::buffa::DefaultViewInstance for VolumeView<'v> {
             fn default_view_instance<'a>() -> &'a Self
             where
                 Self: 'a,
             {
-                static VALUE: ::buffa::__private::OnceBox<SharingVolumeView<'static>> = ::buffa::__private::OnceBox::new();
+                static VALUE: ::buffa::__private::OnceBox<VolumeView<'static>> = ::buffa::__private::OnceBox::new();
                 VALUE
                     .get_or_init(|| ::buffa::alloc::boxed::Box::new(
-                        <SharingVolumeView<'static>>::default(),
+                        <VolumeView<'static>>::default(),
                     ))
             }
         }
-        impl ::buffa::ViewReborrow for SharingVolumeView<'static> {
-            type Reborrowed<'b> = SharingVolumeView<'b>;
+        impl ::buffa::ViewReborrow for VolumeView<'static> {
+            type Reborrowed<'b> = VolumeView<'b>;
             fn reborrow<'b>(this: &'b Self) -> &'b Self::Reborrowed<'b> {
                 this
             }
         }
-        /** Self-contained, `'static` owned view of a `SharingVolume` message.
+        /** Self-contained, `'static` owned view of a `Volume` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`SharingVolumeView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`VolumeView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SharingVolumeView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`VolumeView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct SharingVolumeOwnedView(
-            ::buffa::OwnedView<SharingVolumeView<'static>>,
-        );
-        impl SharingVolumeOwnedView {
+        pub struct VolumeOwnedView(::buffa::OwnedView<VolumeView<'static>>);
+        impl VolumeOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -14383,7 +14334,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingVolumeOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    VolumeOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -14398,7 +14349,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingVolumeOwnedView(
+                    VolumeOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -14410,20 +14361,20 @@ pub mod __buffa {
             /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::SharingVolume,
+                msg: &super::super::Volume,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingVolumeOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    VolumeOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`SharingVolumeView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`VolumeView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &SharingVolumeView<'_> {
+            pub fn view(&self) -> &VolumeView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::SharingVolume {
+            pub fn to_owned_message(&self) -> super::super::Volume {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -14479,29 +14430,29 @@ pub mod __buffa {
                 self.0.reborrow().storage_location
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<SharingVolumeView<'static>>>
-        for SharingVolumeOwnedView {
-            fn from(inner: ::buffa::OwnedView<SharingVolumeView<'static>>) -> Self {
-                SharingVolumeOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<VolumeView<'static>>>
+        for VolumeOwnedView {
+            fn from(inner: ::buffa::OwnedView<VolumeView<'static>>) -> Self {
+                VolumeOwnedView(inner)
             }
         }
-        impl ::core::convert::From<SharingVolumeOwnedView>
-        for ::buffa::OwnedView<SharingVolumeView<'static>> {
-            fn from(wrapper: SharingVolumeOwnedView) -> Self {
+        impl ::core::convert::From<VolumeOwnedView>
+        for ::buffa::OwnedView<VolumeView<'static>> {
+            fn from(wrapper: VolumeOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<::buffa::OwnedView<SharingVolumeView<'static>>>
-        for SharingVolumeOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<SharingVolumeView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<VolumeView<'static>>>
+        for VolumeOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<VolumeView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::SharingVolume {
-            type View<'a> = SharingVolumeView<'a>;
-            type ViewHandle = SharingVolumeOwnedView;
+        impl ::buffa::HasMessageView for super::super::Volume {
+            type View<'a> = VolumeView<'a>;
+            type ViewHandle = VolumeOwnedView;
         }
-        impl ::serde::Serialize for SharingVolumeOwnedView {
+        impl ::serde::Serialize for VolumeOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -14516,7 +14467,7 @@ pub mod __buffa {
         /// It is backed by its own storage location; the recipient reads its files via
         /// credentials from the `temporary-skill-credentials` endpoint.
         #[derive(Clone, Debug, Default)]
-        pub struct SharingSkillView<'a> {
+        pub struct SkillView<'a> {
             /// The name of the skill. It's case-insensitive and unique within a schema.
             ///
             /// Field 1: `name`
@@ -14559,7 +14510,7 @@ pub mod __buffa {
             pub metadata: ::buffa::MapView<'a, &'a str, &'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> SharingSkillView<'a> {
+        impl<'a> SkillView<'a> {
             /// Decode from `buf`, enforcing a recursion depth limit for nested messages.
             ///
             /// Called by [`::buffa::MessageView::decode_view`] with [`::buffa::RECURSION_LIMIT`]
@@ -14775,8 +14726,8 @@ pub mod __buffa {
                 ::core::result::Result::Ok(())
             }
         }
-        impl<'a> ::buffa::MessageView<'a> for SharingSkillView<'a> {
-            type Owned = super::super::SharingSkill;
+        impl<'a> ::buffa::MessageView<'a> for SkillView<'a> {
+            type Owned = super::super::Skill;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -14788,18 +14739,18 @@ pub mod __buffa {
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 Self::_decode_depth(buf, depth)
             }
-            fn to_owned_message(&self) -> super::super::SharingSkill {
+            fn to_owned_message(&self) -> super::super::Skill {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> super::super::SharingSkill {
+            ) -> super::super::Skill {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                super::super::SharingSkill {
+                super::super::Skill {
                     name: self.name.to_string(),
                     schema: self.schema.to_string(),
                     share: self.share.to_string(),
@@ -14827,7 +14778,7 @@ pub mod __buffa {
                 }
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for SharingSkillView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for SkillView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -14992,7 +14943,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for SharingSkillView<'__a> {
+        impl<'__a> ::serde::Serialize for SkillView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -15049,38 +15000,38 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for SharingSkillView<'a> {
+        impl<'a> ::buffa::MessageName for SkillView<'a> {
             const PACKAGE: &'static str = "opensharing.v1";
-            const NAME: &'static str = "SharingSkill";
-            const FULL_NAME: &'static str = "opensharing.v1.SharingSkill";
-            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.SharingSkill";
+            const NAME: &'static str = "Skill";
+            const FULL_NAME: &'static str = "opensharing.v1.Skill";
+            const TYPE_URL: &'static str = "type.googleapis.com/opensharing.v1.Skill";
         }
-        impl<'v> ::buffa::DefaultViewInstance for SharingSkillView<'v> {
+        impl<'v> ::buffa::DefaultViewInstance for SkillView<'v> {
             fn default_view_instance<'a>() -> &'a Self
             where
                 Self: 'a,
             {
-                static VALUE: ::buffa::__private::OnceBox<SharingSkillView<'static>> = ::buffa::__private::OnceBox::new();
+                static VALUE: ::buffa::__private::OnceBox<SkillView<'static>> = ::buffa::__private::OnceBox::new();
                 VALUE
                     .get_or_init(|| ::buffa::alloc::boxed::Box::new(
-                        <SharingSkillView<'static>>::default(),
+                        <SkillView<'static>>::default(),
                     ))
             }
         }
-        impl ::buffa::ViewReborrow for SharingSkillView<'static> {
-            type Reborrowed<'b> = SharingSkillView<'b>;
+        impl ::buffa::ViewReborrow for SkillView<'static> {
+            type Reborrowed<'b> = SkillView<'b>;
             fn reborrow<'b>(this: &'b Self) -> &'b Self::Reborrowed<'b> {
                 this
             }
         }
-        /** Self-contained, `'static` owned view of a `SharingSkill` message.
+        /** Self-contained, `'static` owned view of a `Skill` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`SharingSkillView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`SkillView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SharingSkillView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`SkillView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct SharingSkillOwnedView(::buffa::OwnedView<SharingSkillView<'static>>);
-        impl SharingSkillOwnedView {
+        pub struct SkillOwnedView(::buffa::OwnedView<SkillView<'static>>);
+        impl SkillOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -15094,7 +15045,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingSkillOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    SkillOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -15109,9 +15060,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingSkillOwnedView(
-                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
-                    ),
+                    SkillOwnedView(::buffa::OwnedView::decode_with_options(bytes, opts)?),
                 )
             }
             /// Build from an owned message via an encode → decode round-trip.
@@ -15121,20 +15070,20 @@ pub mod __buffa {
             /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::SharingSkill,
+                msg: &super::super::Skill,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    SharingSkillOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    SkillOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`SharingSkillView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`SkillView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &SharingSkillView<'_> {
+            pub fn view(&self) -> &SkillView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::SharingSkill {
+            pub fn to_owned_message(&self) -> super::super::Skill {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -15218,29 +15167,29 @@ pub mod __buffa {
                 &self.0.reborrow().metadata
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<SharingSkillView<'static>>>
-        for SharingSkillOwnedView {
-            fn from(inner: ::buffa::OwnedView<SharingSkillView<'static>>) -> Self {
-                SharingSkillOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<SkillView<'static>>>
+        for SkillOwnedView {
+            fn from(inner: ::buffa::OwnedView<SkillView<'static>>) -> Self {
+                SkillOwnedView(inner)
             }
         }
-        impl ::core::convert::From<SharingSkillOwnedView>
-        for ::buffa::OwnedView<SharingSkillView<'static>> {
-            fn from(wrapper: SharingSkillOwnedView) -> Self {
+        impl ::core::convert::From<SkillOwnedView>
+        for ::buffa::OwnedView<SkillView<'static>> {
+            fn from(wrapper: SkillOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<::buffa::OwnedView<SharingSkillView<'static>>>
-        for SharingSkillOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<SharingSkillView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<SkillView<'static>>>
+        for SkillOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<SkillView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::SharingSkill {
-            type View<'a> = SharingSkillView<'a>;
-            type ViewHandle = SharingSkillOwnedView;
+        impl ::buffa::HasMessageView for super::super::Skill {
+            type View<'a> = SkillView<'a>;
+            type ViewHandle = SkillOwnedView;
         }
-        impl ::serde::Serialize for SharingSkillOwnedView {
+        impl ::serde::Serialize for SkillOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -23576,7 +23525,7 @@ pub mod __buffa {
             /// Field 1: `items`
             pub items: ::buffa::RepeatedView<
                 'a,
-                super::super::__buffa::view::SharingSkillView<'a>,
+                super::super::__buffa::view::SkillView<'a>,
             >,
             /// Token that can be used to retrieve the next page of skills.
             ///
@@ -23652,7 +23601,7 @@ pub mod __buffa {
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             view.items
                                 .push(
-                                    super::super::__buffa::view::SharingSkillView::_decode_depth(
+                                    super::super::__buffa::view::SkillView::_decode_depth(
                                         sub,
                                         depth - 1,
                                     )?,
@@ -23892,10 +23841,7 @@ pub mod __buffa {
             #[must_use]
             pub fn items(
                 &self,
-            ) -> &::buffa::RepeatedView<
-                '_,
-                super::super::__buffa::view::SharingSkillView<'_>,
-            > {
+            ) -> &::buffa::RepeatedView<'_, super::super::__buffa::view::SkillView<'_>> {
                 &self.0.reborrow().items
             }
             /// Token that can be used to retrieve the next page of skills.
@@ -24335,7 +24281,7 @@ pub mod __buffa {
             /// Field 1: `items`
             pub items: ::buffa::RepeatedView<
                 'a,
-                super::super::__buffa::view::SharingSkillView<'a>,
+                super::super::__buffa::view::SkillView<'a>,
             >,
             /// Token that can be used to retrieve the next page of skills.
             ///
@@ -24411,7 +24357,7 @@ pub mod __buffa {
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             view.items
                                 .push(
-                                    super::super::__buffa::view::SharingSkillView::_decode_depth(
+                                    super::super::__buffa::view::SkillView::_decode_depth(
                                         sub,
                                         depth - 1,
                                     )?,
@@ -24651,10 +24597,7 @@ pub mod __buffa {
             #[must_use]
             pub fn items(
                 &self,
-            ) -> &::buffa::RepeatedView<
-                '_,
-                super::super::__buffa::view::SharingSkillView<'_>,
-            > {
+            ) -> &::buffa::RepeatedView<'_, super::super::__buffa::view::SkillView<'_>> {
                 &self.0.reborrow().items
             }
             /// Token that can be used to retrieve the next page of skills.
@@ -30028,7 +29971,7 @@ pub mod __buffa {
             /// Field 1: `items`
             pub items: ::buffa::RepeatedView<
                 'a,
-                super::super::__buffa::view::SharingVolumeView<'a>,
+                super::super::__buffa::view::VolumeView<'a>,
             >,
             /// Token that can be used to retrieve the next page of volumes.
             ///
@@ -30104,7 +30047,7 @@ pub mod __buffa {
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             view.items
                                 .push(
-                                    super::super::__buffa::view::SharingVolumeView::_decode_depth(
+                                    super::super::__buffa::view::VolumeView::_decode_depth(
                                         sub,
                                         depth - 1,
                                     )?,
@@ -30346,7 +30289,7 @@ pub mod __buffa {
                 &self,
             ) -> &::buffa::RepeatedView<
                 '_,
-                super::super::__buffa::view::SharingVolumeView<'_>,
+                super::super::__buffa::view::VolumeView<'_>,
             > {
                 &self.0.reborrow().items
             }
@@ -30790,7 +30733,7 @@ pub mod __buffa {
             /// Field 1: `items`
             pub items: ::buffa::RepeatedView<
                 'a,
-                super::super::__buffa::view::SharingVolumeView<'a>,
+                super::super::__buffa::view::VolumeView<'a>,
             >,
             /// Token that can be used to retrieve the next page of volumes.
             ///
@@ -30866,7 +30809,7 @@ pub mod __buffa {
                             let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                             view.items
                                 .push(
-                                    super::super::__buffa::view::SharingVolumeView::_decode_depth(
+                                    super::super::__buffa::view::VolumeView::_decode_depth(
                                         sub,
                                         depth - 1,
                                     )?,
@@ -31108,7 +31051,7 @@ pub mod __buffa {
                 &self,
             ) -> &::buffa::RepeatedView<
                 '_,
-                super::super::__buffa::view::SharingVolumeView<'_>,
+                super::super::__buffa::view::VolumeView<'_>,
             > {
                 &self.0.reborrow().items
             }
@@ -31946,35 +31889,35 @@ pub mod __buffa {
         pub mod oneof {
             #[allow(unused_imports)]
             use super::*;
-            pub mod sharing_temporary_credentials {
+            pub mod temporary_credentials {
                 #[allow(unused_imports)]
                 use super::*;
                 #[derive(Clone, Debug)]
                 pub enum Credentials<'a> {
                     AwsTempCredentials(
                         ::buffa::alloc::boxed::Box<
-                            super::super::super::super::__buffa::view::SharingAwsCredentialsView<
+                            super::super::super::super::__buffa::view::AwsCredentialsView<
                                 'a,
                             >,
                         >,
                     ),
                     AzureUserDelegationSas(
                         ::buffa::alloc::boxed::Box<
-                            super::super::super::super::__buffa::view::SharingAzureUserDelegationSasView<
+                            super::super::super::super::__buffa::view::AzureUserDelegationSasView<
                                 'a,
                             >,
                         >,
                     ),
                     GcpOauthToken(
                         ::buffa::alloc::boxed::Box<
-                            super::super::super::super::__buffa::view::SharingGcpOauthTokenView<
+                            super::super::super::super::__buffa::view::GcpOauthTokenView<
                                 'a,
                             >,
                         >,
                     ),
                     R2Credentials(
                         ::buffa::alloc::boxed::Box<
-                            super::super::super::super::__buffa::view::SharingR2CredentialsView<
+                            super::super::super::super::__buffa::view::R2CredentialsView<
                                 'a,
                             >,
                         >,
@@ -32049,72 +31992,69 @@ pub mod __buffa {
     pub mod oneof {
         #[allow(unused_imports)]
         use super::*;
-        pub mod sharing_temporary_credentials {
+        pub mod temporary_credentials {
             #[allow(unused_imports)]
             use super::*;
             /// Exactly one provider-specific credential.
             #[derive(Clone, PartialEq, Debug)]
             pub enum Credentials {
                 AwsTempCredentials(
-                    ::buffa::alloc::boxed::Box<
-                        super::super::super::SharingAwsCredentials,
-                    >,
+                    ::buffa::alloc::boxed::Box<super::super::super::AwsCredentials>,
                 ),
                 AzureUserDelegationSas(
                     ::buffa::alloc::boxed::Box<
-                        super::super::super::SharingAzureUserDelegationSas,
+                        super::super::super::AzureUserDelegationSas,
                     >,
                 ),
                 GcpOauthToken(
-                    ::buffa::alloc::boxed::Box<super::super::super::SharingGcpOauthToken>,
+                    ::buffa::alloc::boxed::Box<super::super::super::GcpOauthToken>,
                 ),
                 R2Credentials(
-                    ::buffa::alloc::boxed::Box<super::super::super::SharingR2Credentials>,
+                    ::buffa::alloc::boxed::Box<super::super::super::R2Credentials>,
                 ),
             }
             impl ::buffa::Oneof for Credentials {}
-            impl From<super::super::super::SharingAwsCredentials> for Credentials {
-                fn from(v: super::super::super::SharingAwsCredentials) -> Self {
+            impl From<super::super::super::AwsCredentials> for Credentials {
+                fn from(v: super::super::super::AwsCredentials) -> Self {
                     Self::AwsTempCredentials(::buffa::alloc::boxed::Box::new(v))
                 }
             }
-            impl From<super::super::super::SharingAwsCredentials>
+            impl From<super::super::super::AwsCredentials>
             for ::core::option::Option<Credentials> {
-                fn from(v: super::super::super::SharingAwsCredentials) -> Self {
+                fn from(v: super::super::super::AwsCredentials) -> Self {
                     Self::Some(Credentials::from(v))
                 }
             }
-            impl From<super::super::super::SharingAzureUserDelegationSas>
-            for Credentials {
-                fn from(v: super::super::super::SharingAzureUserDelegationSas) -> Self {
+            impl From<super::super::super::AzureUserDelegationSas> for Credentials {
+                fn from(v: super::super::super::AzureUserDelegationSas) -> Self {
                     Self::AzureUserDelegationSas(::buffa::alloc::boxed::Box::new(v))
                 }
             }
-            impl From<super::super::super::SharingAzureUserDelegationSas>
+            impl From<super::super::super::AzureUserDelegationSas>
             for ::core::option::Option<Credentials> {
-                fn from(v: super::super::super::SharingAzureUserDelegationSas) -> Self {
+                fn from(v: super::super::super::AzureUserDelegationSas) -> Self {
                     Self::Some(Credentials::from(v))
                 }
             }
-            impl From<super::super::super::SharingGcpOauthToken> for Credentials {
-                fn from(v: super::super::super::SharingGcpOauthToken) -> Self {
+            impl From<super::super::super::GcpOauthToken> for Credentials {
+                fn from(v: super::super::super::GcpOauthToken) -> Self {
                     Self::GcpOauthToken(::buffa::alloc::boxed::Box::new(v))
                 }
             }
-            impl From<super::super::super::SharingGcpOauthToken>
+            impl From<super::super::super::GcpOauthToken>
             for ::core::option::Option<Credentials> {
-                fn from(v: super::super::super::SharingGcpOauthToken) -> Self {
+                fn from(v: super::super::super::GcpOauthToken) -> Self {
                     Self::Some(Credentials::from(v))
                 }
             }
-            impl From<super::super::super::SharingR2Credentials> for Credentials {
-                fn from(v: super::super::super::SharingR2Credentials) -> Self {
+            impl From<super::super::super::R2Credentials> for Credentials {
+                fn from(v: super::super::super::R2Credentials) -> Self {
                     Self::R2Credentials(::buffa::alloc::boxed::Box::new(v))
                 }
             }
-            impl From<super::super::super::SharingR2Credentials>
+            impl From<super::super::super::R2Credentials>
             for ::core::option::Option<Credentials> {
-                fn from(v: super::super::super::SharingR2Credentials) -> Self {
+                fn from(v: super::super::super::R2Credentials) -> Self {
                     Self::Some(Credentials::from(v))
                 }
             }
@@ -32302,13 +32242,13 @@ pub mod __buffa {
     }
     /// Register this package's `Any` type entries and extension entries.
     pub fn register_types(reg: &mut ::buffa::type_registry::TypeRegistry) {
-        reg.register_json_any(super::__SHARING_TEMPORARY_CREDENTIALS_JSON_ANY);
-        reg.register_json_any(super::__SHARING_AWS_CREDENTIALS_JSON_ANY);
-        reg.register_json_any(super::__SHARING_AZURE_USER_DELEGATION_SAS_JSON_ANY);
-        reg.register_json_any(super::__SHARING_GCP_OAUTH_TOKEN_JSON_ANY);
-        reg.register_json_any(super::__SHARING_R2CREDENTIALS_JSON_ANY);
-        reg.register_json_any(super::__SHARING_VOLUME_JSON_ANY);
-        reg.register_json_any(super::__SHARING_SKILL_JSON_ANY);
+        reg.register_json_any(super::__TEMPORARY_CREDENTIALS_JSON_ANY);
+        reg.register_json_any(super::__AWS_CREDENTIALS_JSON_ANY);
+        reg.register_json_any(super::__AZURE_USER_DELEGATION_SAS_JSON_ANY);
+        reg.register_json_any(super::__GCP_OAUTH_TOKEN_JSON_ANY);
+        reg.register_json_any(super::__R2CREDENTIALS_JSON_ANY);
+        reg.register_json_any(super::__VOLUME_JSON_ANY);
+        reg.register_json_any(super::__SKILL_JSON_ANY);
         reg.register_json_any(super::__SHARE_JSON_ANY);
         reg.register_json_any(super::__SCHEMA_JSON_ANY);
         reg.register_json_any(super::__TABLE_JSON_ANY);
@@ -32356,33 +32296,33 @@ pub mod __buffa {
     }
 }
 #[doc(inline)]
-pub use self::__buffa::view::SharingTemporaryCredentialsView;
+pub use self::__buffa::view::TemporaryCredentialsView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingTemporaryCredentialsOwnedView;
+pub use self::__buffa::view::TemporaryCredentialsOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingAwsCredentialsView;
+pub use self::__buffa::view::AwsCredentialsView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingAwsCredentialsOwnedView;
+pub use self::__buffa::view::AwsCredentialsOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingAzureUserDelegationSasView;
+pub use self::__buffa::view::AzureUserDelegationSasView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingAzureUserDelegationSasOwnedView;
+pub use self::__buffa::view::AzureUserDelegationSasOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingGcpOauthTokenView;
+pub use self::__buffa::view::GcpOauthTokenView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingGcpOauthTokenOwnedView;
+pub use self::__buffa::view::GcpOauthTokenOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingR2CredentialsView;
+pub use self::__buffa::view::R2CredentialsView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingR2CredentialsOwnedView;
+pub use self::__buffa::view::R2CredentialsOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingVolumeView;
+pub use self::__buffa::view::VolumeView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingVolumeOwnedView;
+pub use self::__buffa::view::VolumeOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingSkillView;
+pub use self::__buffa::view::SkillView;
 #[doc(inline)]
-pub use self::__buffa::view::SharingSkillOwnedView;
+pub use self::__buffa::view::SkillOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::ShareView;
 #[doc(inline)]

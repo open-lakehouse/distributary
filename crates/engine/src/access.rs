@@ -20,7 +20,7 @@ use async_trait::async_trait;
 use object_store::DynObjectStore;
 use url::Url;
 
-use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
+use opensharing_common::models::opensharing::v1::TemporaryCredentials;
 
 use crate::Result;
 use crate::catalog::SharedAsset;
@@ -78,7 +78,7 @@ pub trait StorageAccess<Cx = opensharing_api::DefaultContext>: Send + Sync + 'st
         &self,
         asset: &SharedAsset,
         cx: &Cx,
-    ) -> Result<SharingTemporaryCredentials>;
+    ) -> Result<TemporaryCredentials>;
 }
 
 /// A [`FileSigner`] that returns each URL unchanged and never expires it.

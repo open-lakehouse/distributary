@@ -6,11 +6,11 @@ use opensharing_common::models::opensharing::v1::*;
 use url::Url;
 /// HTTP client for service operations
 #[derive(Clone)]
-pub struct SharingVolumeClient {
+pub struct SkillClient {
     pub(crate) client: CloudClient,
     pub(crate) base_url: Url,
 }
-impl SharingVolumeClient {
+impl SkillClient {
     /// Create a new client instance
     pub fn new(client: CloudClient, mut base_url: Url) -> Self {
         if !base_url.path().ends_with('/') {
@@ -18,12 +18,9 @@ impl SharingVolumeClient {
         }
         Self { client, base_url }
     }
-    /// List the volumes in a given share's schema.
-    pub async fn list_volumes(&self, request: &ListVolumesRequest) -> Result<ListVolumesResponse> {
-        let formatted_path = format!(
-            "shares/{}/schemas/{}/volumes",
-            request.share, request.schema
-        );
+    /// List the agent skills in a given share's schema.
+    pub async fn list_skills(&self, request: &ListSkillsRequest) -> Result<ListSkillsResponse> {
+        let formatted_path = format!("shares/{}/schemas/{}/skills", request.share, request.schema);
         let mut url = self.base_url.join(&formatted_path)?;
         if let Some(ref value) = request.max_results {
             url.query_pairs_mut()
@@ -40,12 +37,12 @@ impl SharingVolumeClient {
         let result = response.bytes().await?;
         Ok(serde_json::from_slice(&result)?)
     }
-    /// List all the volumes under a share, across all schemas.
-    pub async fn list_all_volumes(
+    /// List all the agent skills under a share, across all schemas.
+    pub async fn list_all_skills(
         &self,
-        request: &ListAllVolumesRequest,
-    ) -> Result<ListAllVolumesResponse> {
-        let formatted_path = format!("shares/{}/all-volumes", request.share);
+        request: &ListAllSkillsRequest,
+    ) -> Result<ListAllSkillsResponse> {
+        let formatted_path = format!("shares/{}/all-skills", request.share);
         let mut url = self.base_url.join(&formatted_path)?;
         if let Some(ref value) = request.max_results {
             url.query_pairs_mut()
@@ -62,10 +59,10 @@ impl SharingVolumeClient {
         let result = response.bytes().await?;
         Ok(serde_json::from_slice(&result)?)
     }
-    /// Get the metadata for a single shared volume.
-    pub async fn get_volume(&self, request: &GetVolumeRequest) -> Result<SharingVolume> {
+    /// Get the metadata for a single shared agent skill.
+    pub async fn get_skill(&self, request: &GetSkillRequest) -> Result<Skill> {
         let formatted_path = format!(
-            "shares/{}/schemas/{}/volumes/{}",
+            "shares/{}/schemas/{}/skills/{}",
             request.share, request.schema, request.name
         );
         let url = self.base_url.join(&formatted_path)?;
@@ -76,14 +73,14 @@ impl SharingVolumeClient {
         let result = response.bytes().await?;
         Ok(serde_json::from_slice(&result)?)
     }
-    /// Generate temporary credentials scoped to a shared volume's storage
+    /// Generate temporary credentials scoped to a shared skill's storage
     /// location, for direct file access via the cloud storage API.
-    pub async fn generate_temporary_volume_credentials(
+    pub async fn generate_temporary_skill_credentials(
         &self,
-        request: &GenerateTemporaryVolumeCredentialsRequest,
-    ) -> Result<SharingTemporaryCredentials> {
+        request: &GenerateTemporarySkillCredentialsRequest,
+    ) -> Result<TemporaryCredentials> {
         let formatted_path = format!(
-            "shares/{}/schemas/{}/volumes/{}/temporary-volume-credentials",
+            "shares/{}/schemas/{}/skills/{}/temporary-skill-credentials",
             request.share, request.schema, request.name
         );
         let url = self.base_url.join(&formatted_path)?;

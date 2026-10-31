@@ -4,7 +4,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use opensharing_api::codegen::sharing::SharingHandler;
+use opensharing_api::codegen::shares::ShareHandler;
 use opensharing_api::{Error, Result, SharingQueryHandler};
 use opensharing_common::models::opensharing::v1::*;
 use opensharing_engine::SharingService;

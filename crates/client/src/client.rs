@@ -5,8 +5,8 @@ use itertools::Itertools;
 use olai_http::CloudClient;
 
 use super::utils::stream_paginated;
-use crate::codegen::sharing::SharingClient;
-use crate::codegen::sharing::builders::GetShareBuilder;
+use crate::codegen::shares::ShareClient;
+use crate::codegen::shares::builders::GetShareBuilder;
 use crate::models::opensharing::v1::*;
 use crate::models::{MetadataResponse, MetadataResponseData, ProtocolResponseData};
 use crate::{Error, Result};
@@ -15,14 +15,14 @@ use crate::{Error, Result};
 pub struct DeltaSharingClient {
     client: CloudClient,
     base_url: url::Url,
-    discovery: SharingClient,
+    discovery: ShareClient,
 }
 
 impl DeltaSharingClient {
     pub fn new(client: CloudClient, base_url: url::Url) -> Self {
         let base_url = base_url.join("api/v1/delta-sharing/").unwrap();
         Self {
-            discovery: SharingClient::new(client.clone(), base_url.clone()),
+            discovery: ShareClient::new(client.clone(), base_url.clone()),
             client,
             base_url,
         }
@@ -40,7 +40,7 @@ impl DeltaSharingClient {
             base_url.join(&prefix).unwrap()
         };
         Self {
-            discovery: SharingClient::new(client.clone(), base_url.clone()),
+            discovery: ShareClient::new(client.clone(), base_url.clone()),
             client,
             base_url,
         }

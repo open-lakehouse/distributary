@@ -11,10 +11,7 @@ import "google/api/field_behavior.proto";
 // skills, and other storage-backed assets. Exactly one credential variant is
 // populated; the recipient uses it to read files directly via the cloud storage
 // API. Clients should cache the credential until `expiration_time`.
-//
-// Names are prefixed with `Sharing` to avoid colliding with the Unity Catalog
-// `TemporaryCredential` schema in the shared OpenAPI document.
-message SharingTemporaryCredentials {
+message TemporaryCredentials {
   // Server time when the credential expires, in epoch milliseconds.
   int64 expiration_time = 1 [
     (buf.validate.field).int64.gt = 0,
@@ -29,21 +26,21 @@ message SharingTemporaryCredentials {
     option (buf.validate.oneof).required = true;
 
     // Temporary credentials for AWS S3.
-    SharingAwsCredentials aws_temp_credentials = 100;
+    AwsCredentials aws_temp_credentials = 100;
 
     // User delegation SAS token for Azure Blob Storage.
-    SharingAzureUserDelegationSas azure_user_delegation_sas = 101;
+    AzureUserDelegationSas azure_user_delegation_sas = 101;
 
     // OAuth token for Google Cloud Storage.
-    SharingGcpOauthToken gcp_oauth_token = 102;
+    GcpOauthToken gcp_oauth_token = 102;
 
     // Temporary credentials for Cloudflare R2.
-    SharingR2Credentials r2_credentials = 103;
+    R2Credentials r2_credentials = 103;
   }
 }
 
 // Temporary credentials for AWS S3.
-message SharingAwsCredentials {
+message AwsCredentials {
   // The access key ID that identifies the temporary credentials.
   string access_key_id = 1 [(google.api.field_behavior) = REQUIRED];
 
@@ -55,19 +52,19 @@ message SharingAwsCredentials {
 }
 
 // User delegation SAS token for Azure Blob Storage.
-message SharingAzureUserDelegationSas {
+message AzureUserDelegationSas {
   // The SAS token granting read access to the asset's storage location.
   string sas_token = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // OAuth token for Google Cloud Storage.
-message SharingGcpOauthToken {
+message GcpOauthToken {
   // The OAuth token granting read access to the asset's storage location.
   string oauth_token = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // Temporary credentials for Cloudflare R2.
-message SharingR2Credentials {
+message R2Credentials {
   // The access key ID that identifies the temporary credentials.
   string access_key_id = 1 [(google.api.field_behavior) = REQUIRED];
 
@@ -83,7 +80,7 @@ message SharingR2Credentials {
 // A volume groups unstructured files under a single storage location; the
 // recipient lists and reads its files directly via the cloud storage API using
 // credentials from the `temporary-volume-credentials` endpoint.
-message SharingVolume {
+message Volume {
   // The name of the volume. It's case-insensitive and unique within a schema.
   string name = 1 [
     (buf.validate.field).string.min_len = 1,
@@ -120,7 +117,7 @@ message SharingVolume {
 // `scripts/`, `references/`, and `assets/`) that an agent loads and executes.
 // It is backed by its own storage location; the recipient reads its files via
 // credentials from the `temporary-skill-credentials` endpoint.
-message SharingSkill {
+message Skill {
   // The name of the skill. It's case-insensitive and unique within a schema.
   string name = 1 [
     (buf.validate.field).string.min_len = 1,

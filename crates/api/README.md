@@ -5,8 +5,8 @@ The **OpenSharing** / **Delta Sharing** REST surface, and nothing more.
 This crate is the protocol as the spec defines it, generic over a request
 context `Cx`:
 
-- the generated handler traits `SharingHandler` (shares, schemas, tables),
-  `SharingVolumeHandler` and `SharingSkillHandler`;
+- the generated handler traits `ShareHandler` (shares, schemas, tables),
+  `VolumeHandler` and `SkillHandler`;
 - the hand-written `SharingQueryHandler`: the NDJSON `version` / `metadata` /
   `query` path, temporary table credentials, change data feed and asynchronous
   queries;
@@ -20,7 +20,7 @@ context `Cx`:
 It holds no sharing semantics and depends on no catalog, table format or object
 store. The most barebones server there is implements the traits and mounts a
 router (`tests/barebones.rs`). A Delta Sharing server needs only
-`SharingHandler` and `SharingQueryHandler`.
+`ShareHandler` and `SharingQueryHandler`.
 
 [`opensharing-engine`](../engine) implements every trait over pluggable ports
 (share catalog, storage access, table formats, with a kernel-backed Delta

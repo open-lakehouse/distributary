@@ -38,7 +38,7 @@ message ListSkillsRequest {
 // Response for ListSkillsRequest.
 message ListSkillsResponse {
   // The skills that were requested.
-  repeated SharingSkill items = 1;
+  repeated Skill items = 1;
 
   // Token that can be used to retrieve the next page of skills.
   optional string next_page_token = 2;
@@ -67,7 +67,7 @@ message ListAllSkillsRequest {
 // Response for ListAllSkillsRequest.
 message ListAllSkillsResponse {
   // The skills that were requested.
-  repeated SharingSkill items = 1;
+  repeated Skill items = 1;
 
   // Token that can be used to retrieve the next page of skills.
   optional string next_page_token = 2;
@@ -123,7 +123,7 @@ message GenerateTemporarySkillCredentialsRequest {
 
 // OpenSharing agent-skill APIs: discovery and credential vending for shared
 // storage-backed agent skills.
-service SharingSkillService {
+service SkillsService {
   // List the agent skills in a given share's schema.
   rpc ListSkills(ListSkillsRequest) returns (ListSkillsResponse) {
     option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/skills"};
@@ -137,14 +137,14 @@ service SharingSkillService {
   }
 
   // Get the metadata for a single shared agent skill.
-  rpc GetSkill(GetSkillRequest) returns (SharingSkill) {
+  rpc GetSkill(GetSkillRequest) returns (Skill) {
     option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/skills/{name}"};
     option (gnostic.openapi.v3.operation) = {operation_id: "GetSkill"};
   }
 
   // Generate temporary credentials scoped to a shared skill's storage
   // location, for direct file access via the cloud storage API.
-  rpc GenerateTemporarySkillCredentials(GenerateTemporarySkillCredentialsRequest) returns (SharingTemporaryCredentials) {
+  rpc GenerateTemporarySkillCredentials(GenerateTemporarySkillCredentialsRequest) returns (TemporaryCredentials) {
     option (google.api.http) = {
       post: "/shares/{share}/schemas/{schema}/skills/{name}/temporary-skill-credentials"
       body: "*"

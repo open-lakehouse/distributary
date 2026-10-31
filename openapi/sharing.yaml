@@ -15,7 +15,7 @@ paths:
   /shares:
     get:
       tags:
-      - SharingService
+      - SharesService
       description: List shares accessible to a recipient.
       operationId: ListShares
       parameters:
@@ -46,7 +46,7 @@ paths:
   /shares/{name}:
     get:
       tags:
-      - SharingService
+      - SharesService
       description: Get the metadata for a specific share.
       operationId: GetShare
       parameters:
@@ -72,7 +72,7 @@ paths:
   /shares/{name}/all-tables:
     get:
       tags:
-      - SharingService
+      - SharesService
       description: "List all the tables under a share.\n\n A convenience over per-schema listing: returns every table across all\n schemas in the share."
       operationId: ListAllTables
       parameters:
@@ -109,7 +109,7 @@ paths:
   /shares/{share}/all-skills:
     get:
       tags:
-      - SharingSkillService
+      - SkillsService
       description: List all the agent skills under a share, across all schemas.
       operationId: ListAllSkills
       parameters:
@@ -146,7 +146,7 @@ paths:
   /shares/{share}/all-volumes:
     get:
       tags:
-      - SharingVolumeService
+      - VolumesService
       description: List all the volumes under a share, across all schemas.
       operationId: ListAllVolumes
       parameters:
@@ -183,7 +183,7 @@ paths:
   /shares/{share}/schemas:
     get:
       tags:
-      - SharingService
+      - SharesService
       description: List the schemas in a share.
       operationId: ListSchemas
       parameters:
@@ -220,7 +220,7 @@ paths:
   /shares/{share}/schemas/{name}/tables:
     get:
       tags:
-      - SharingService
+      - SharesService
       description: List the tables in a given share's schema.
       operationId: ListTables
       parameters:
@@ -263,7 +263,7 @@ paths:
   /shares/{share}/schemas/{schema}/skills:
     get:
       tags:
-      - SharingSkillService
+      - SkillsService
       description: List the agent skills in a given share's schema.
       operationId: ListSkills
       parameters:
@@ -306,7 +306,7 @@ paths:
   /shares/{share}/schemas/{schema}/skills/{name}:
     get:
       tags:
-      - SharingSkillService
+      - SkillsService
       description: Get the metadata for a single shared agent skill.
       operationId: GetSkill
       parameters:
@@ -334,7 +334,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SharingSkill'
+                $ref: '#/components/schemas/Skill'
         default:
           description: Default error response
           content:
@@ -344,7 +344,7 @@ paths:
   /shares/{share}/schemas/{schema}/skills/{name}/temporary-skill-credentials:
     post:
       tags:
-      - SharingSkillService
+      - SkillsService
       description: "Generate temporary credentials scoped to a shared skill's storage\n location, for direct file access via the cloud storage API."
       operationId: GenerateTemporarySkillCredentials
       parameters:
@@ -378,7 +378,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SharingTemporaryCredentials'
+                $ref: '#/components/schemas/TemporaryCredentials'
         default:
           description: Default error response
           content:
@@ -388,7 +388,7 @@ paths:
   /shares/{share}/schemas/{schema}/volumes:
     get:
       tags:
-      - SharingVolumeService
+      - VolumesService
       description: List the volumes in a given share's schema.
       operationId: ListVolumes
       parameters:
@@ -431,7 +431,7 @@ paths:
   /shares/{share}/schemas/{schema}/volumes/{name}:
     get:
       tags:
-      - SharingVolumeService
+      - VolumesService
       description: Get the metadata for a single shared volume.
       operationId: GetVolume
       parameters:
@@ -459,7 +459,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SharingVolume'
+                $ref: '#/components/schemas/Volume'
         default:
           description: Default error response
           content:
@@ -469,7 +469,7 @@ paths:
   /shares/{share}/schemas/{schema}/volumes/{name}/temporary-volume-credentials:
     post:
       tags:
-      - SharingVolumeService
+      - VolumesService
       description: "Generate temporary credentials scoped to a shared volume's storage\n location, for direct file access via the cloud storage API."
       operationId: GenerateTemporaryVolumeCredentials
       parameters:
@@ -503,7 +503,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SharingTemporaryCredentials'
+                $ref: '#/components/schemas/TemporaryCredentials'
         default:
           description: Default error response
           content:
@@ -753,6 +753,41 @@ paths:
                 $ref: '#/components/schemas/ChangeDataFeedResponse'
 components:
   schemas:
+    AwsCredentials:
+      required:
+      - accessKeyId
+      - secretAccessKey
+      - sessionToken
+      type: object
+      properties:
+        accessKeyId:
+          type: string
+          description: The access key ID that identifies the temporary credentials.
+        secretAccessKey:
+          type: string
+          description: The secret access key used to sign AWS API requests.
+        sessionToken:
+          type: string
+          description: The session token passed to the AWS API alongside the access key.
+      description: Temporary credentials for AWS S3.
+    AzureUserDelegationSas:
+      required:
+      - sasToken
+      type: object
+      properties:
+        sasToken:
+          type: string
+          description: The SAS token granting read access to the asset's storage location.
+      description: User delegation SAS token for Azure Blob Storage.
+    GcpOauthToken:
+      required:
+      - oauthToken
+      type: object
+      properties:
+        oauthToken:
+          type: string
+          description: The OAuth token granting read access to the asset's storage location.
+      description: OAuth token for Google Cloud Storage.
     GenerateTemporarySkillCredentialsRequest:
       required:
       - share
@@ -801,7 +836,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/SharingSkill'
+            $ref: '#/components/schemas/Skill'
           description: The skills that were requested.
         nextPageToken:
           type: string
@@ -825,7 +860,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/SharingVolume'
+            $ref: '#/components/schemas/Volume'
           description: The volumes that were requested.
         nextPageToken:
           type: string
@@ -861,7 +896,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/SharingSkill'
+            $ref: '#/components/schemas/Skill'
           description: The skills that were requested.
         nextPageToken:
           type: string
@@ -885,12 +920,29 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/SharingVolume'
+            $ref: '#/components/schemas/Volume'
           description: The volumes that were requested.
         nextPageToken:
           type: string
           description: Token that can be used to retrieve the next page of volumes.
       description: Response for ListVolumesRequest.
+    R2Credentials:
+      required:
+      - accessKeyId
+      - secretAccessKey
+      - sessionToken
+      type: object
+      properties:
+        accessKeyId:
+          type: string
+          description: The access key ID that identifies the temporary credentials.
+        secretAccessKey:
+          type: string
+          description: The secret access key used to sign requests.
+        sessionToken:
+          type: string
+          description: The session token passed alongside the access key.
+      description: Temporary credentials for Cloudflare R2.
     Schema:
       required:
       - name
@@ -932,59 +984,7 @@ components:
             type: string
           description: A map of key-value properties attached to the share.
       description: "A share is a logical grouping to share with recipients. A share can be shared with one or multiple recipients.\n A recipient can access all resources in a share. A share may contain multiple schemas."
-    SharingAwsCredentials:
-      required:
-      - accessKeyId
-      - secretAccessKey
-      - sessionToken
-      type: object
-      properties:
-        accessKeyId:
-          type: string
-          description: The access key ID that identifies the temporary credentials.
-        secretAccessKey:
-          type: string
-          description: The secret access key used to sign AWS API requests.
-        sessionToken:
-          type: string
-          description: The session token passed to the AWS API alongside the access key.
-      description: Temporary credentials for AWS S3.
-    SharingAzureUserDelegationSas:
-      required:
-      - sasToken
-      type: object
-      properties:
-        sasToken:
-          type: string
-          description: The SAS token granting read access to the asset's storage location.
-      description: User delegation SAS token for Azure Blob Storage.
-    SharingGcpOauthToken:
-      required:
-      - oauthToken
-      type: object
-      properties:
-        oauthToken:
-          type: string
-          description: The OAuth token granting read access to the asset's storage location.
-      description: OAuth token for Google Cloud Storage.
-    SharingR2Credentials:
-      required:
-      - accessKeyId
-      - secretAccessKey
-      - sessionToken
-      type: object
-      properties:
-        accessKeyId:
-          type: string
-          description: The access key ID that identifies the temporary credentials.
-        secretAccessKey:
-          type: string
-          description: The secret access key used to sign requests.
-        sessionToken:
-          type: string
-          description: The session token passed alongside the access key.
-      description: Temporary credentials for Cloudflare R2.
-    SharingSkill:
+    Skill:
       required:
       - name
       - schema
@@ -1029,63 +1029,6 @@ components:
             type: string
           description: Arbitrary additional metadata declared by the skill.
       description: "An agent skill shared as a storage-backed asset.\n\n A skill is a directory of files (a required `SKILL.md` plus optional\n `scripts/`, `references/`, and `assets/`) that an agent loads and executes.\n It is backed by its own storage location; the recipient reads its files via\n credentials from the `temporary-skill-credentials` endpoint."
-    SharingTemporaryCredentials:
-      type: object
-      properties:
-        expirationTime:
-          readOnly: true
-          type: string
-          description: Server time when the credential expires, in epoch milliseconds.
-        url:
-          readOnly: true
-          type: string
-          description: The storage location URL the credential grants access to.
-        awsTempCredentials:
-          allOf:
-          - $ref: '#/components/schemas/SharingAwsCredentials'
-          description: Temporary credentials for AWS S3.
-        azureUserDelegationSas:
-          allOf:
-          - $ref: '#/components/schemas/SharingAzureUserDelegationSas'
-          description: User delegation SAS token for Azure Blob Storage.
-        gcpOauthToken:
-          allOf:
-          - $ref: '#/components/schemas/SharingGcpOauthToken'
-          description: OAuth token for Google Cloud Storage.
-        r2Credentials:
-          allOf:
-          - $ref: '#/components/schemas/SharingR2Credentials'
-          description: Temporary credentials for Cloudflare R2.
-      description: "Temporary cloud credentials scoped to a storage-backed asset's location.\n\n Returned by the `temporary-*-credentials` endpoints for volumes, agent\n skills, and other storage-backed assets. Exactly one credential variant is\n populated; the recipient uses it to read files directly via the cloud storage\n API. Clients should cache the credential until `expiration_time`.\n\n Names are prefixed with `Sharing` to avoid colliding with the Unity Catalog\n `TemporaryCredential` schema in the shared OpenAPI document."
-    SharingVolume:
-      required:
-      - name
-      - schema
-      - share
-      type: object
-      properties:
-        name:
-          type: string
-          description: The name of the volume. It's case-insensitive and unique within a schema.
-        schema:
-          type: string
-          description: The schema name that the volume belongs to. It's case-insensitive.
-        share:
-          type: string
-          description: The share name that the volume belongs to. It's case-insensitive.
-        id:
-          readOnly: true
-          type: string
-          description: Unique identifier for the volume.
-        shareId:
-          readOnly: true
-          type: string
-          description: A unique identifier for the share this volume belongs to.
-        storageLocation:
-          readOnly: true
-          type: string
-          description: The fully qualified storage location of the volume.
-      description: "A volume shared as a storage-backed asset.\n\n A volume groups unstructured files under a single storage location; the\n recipient lists and reads its files directly via the cloud storage API using\n credentials from the `temporary-volume-credentials` endpoint."
     Status:
       type: object
       properties:
@@ -1139,6 +1082,63 @@ components:
             type: string
           description: The access modes supported for this table (e.g. `url`, `dir`).
       description: A table is a Delta Lake table or a view on top of a Delta Lake table.
+    TemporaryCredentials:
+      type: object
+      properties:
+        expirationTime:
+          readOnly: true
+          type: string
+          description: Server time when the credential expires, in epoch milliseconds.
+        url:
+          readOnly: true
+          type: string
+          description: The storage location URL the credential grants access to.
+        awsTempCredentials:
+          allOf:
+          - $ref: '#/components/schemas/AwsCredentials'
+          description: Temporary credentials for AWS S3.
+        azureUserDelegationSas:
+          allOf:
+          - $ref: '#/components/schemas/AzureUserDelegationSas'
+          description: User delegation SAS token for Azure Blob Storage.
+        gcpOauthToken:
+          allOf:
+          - $ref: '#/components/schemas/GcpOauthToken'
+          description: OAuth token for Google Cloud Storage.
+        r2Credentials:
+          allOf:
+          - $ref: '#/components/schemas/R2Credentials'
+          description: Temporary credentials for Cloudflare R2.
+      description: "Temporary cloud credentials scoped to a storage-backed asset's location.\n\n Returned by the `temporary-*-credentials` endpoints for volumes, agent\n skills, and other storage-backed assets. Exactly one credential variant is\n populated; the recipient uses it to read files directly via the cloud storage\n API. Clients should cache the credential until `expiration_time`."
+    Volume:
+      required:
+      - name
+      - schema
+      - share
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the volume. It's case-insensitive and unique within a schema.
+        schema:
+          type: string
+          description: The schema name that the volume belongs to. It's case-insensitive.
+        share:
+          type: string
+          description: The share name that the volume belongs to. It's case-insensitive.
+        id:
+          readOnly: true
+          type: string
+          description: Unique identifier for the volume.
+        shareId:
+          readOnly: true
+          type: string
+          description: A unique identifier for the share this volume belongs to.
+        storageLocation:
+          readOnly: true
+          type: string
+          description: The fully qualified storage location of the volume.
+      description: "A volume shared as a storage-backed asset.\n\n A volume groups unstructured files under a single storage location; the\n recipient lists and reads its files directly via the cloud storage API using\n credentials from the `temporary-volume-credentials` endpoint."
     Ops:
       type: string
       enum:
@@ -1296,9 +1296,9 @@ components:
           schema:
             $ref: '#/components/schemas/CommonErrorResponse'
 tags:
-- name: SharingService
+- name: SharesService
   description: Service exposing the official APIs for Delta Sharing.
-- name: SharingSkillService
+- name: SkillsService
   description: "OpenSharing agent-skill APIs: discovery and credential vending for shared\n storage-backed agent skills."
-- name: SharingVolumeService
+- name: VolumesService
   description: "OpenSharing volume APIs: discovery and credential vending for shared\n storage-backed volumes."

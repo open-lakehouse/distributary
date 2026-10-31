@@ -8,14 +8,14 @@ use opensharing_common::models::opensharing::v1::*;
 use std::future::IntoFuture;
 /// Builder for skills
 pub struct ListSkillsBuilder {
-    client: SharingSkillClient,
+    client: SkillClient,
     request: ListSkillsRequest,
 }
 impl ListSkillsBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingSkillClient`.
+    /// Obtain via the corresponding method on `SkillClient`.
     pub(crate) fn new(
-        client: SharingSkillClient,
+        client: SkillClient,
         share: impl Into<String>,
         schema: impl Into<String>,
     ) -> Self {
@@ -48,13 +48,13 @@ impl IntoFuture for ListSkillsBuilder {
 }
 /// Builder for all skills
 pub struct ListAllSkillsBuilder {
-    client: SharingSkillClient,
+    client: SkillClient,
     request: ListAllSkillsRequest,
 }
 impl ListAllSkillsBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingSkillClient`.
-    pub(crate) fn new(client: SharingSkillClient, share: impl Into<String>) -> Self {
+    /// Obtain via the corresponding method on `SkillClient`.
+    pub(crate) fn new(client: SkillClient, share: impl Into<String>) -> Self {
         let request = ListAllSkillsRequest {
             share: share.into(),
             ..Default::default()
@@ -83,14 +83,14 @@ impl IntoFuture for ListAllSkillsBuilder {
 }
 /// Builder for skill
 pub struct GetSkillBuilder {
-    client: SharingSkillClient,
+    client: SkillClient,
     request: GetSkillRequest,
 }
 impl GetSkillBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingSkillClient`.
+    /// Obtain via the corresponding method on `SkillClient`.
     pub(crate) fn new(
-        client: SharingSkillClient,
+        client: SkillClient,
         share: impl Into<String>,
         schema: impl Into<String>,
         name: impl Into<String>,
@@ -105,7 +105,7 @@ impl GetSkillBuilder {
     }
 }
 impl IntoFuture for GetSkillBuilder {
-    type Output = Result<SharingSkill>;
+    type Output = Result<Skill>;
     type IntoFuture = BoxFut<'static, Self::Output>;
     fn into_future(self) -> Self::IntoFuture {
         let client = self.client;
@@ -115,14 +115,14 @@ impl IntoFuture for GetSkillBuilder {
 }
 /// Builder for temporary skill credentials
 pub struct GenerateTemporarySkillCredentialsBuilder {
-    client: SharingSkillClient,
+    client: SkillClient,
     request: GenerateTemporarySkillCredentialsRequest,
 }
 impl GenerateTemporarySkillCredentialsBuilder {
     /// Create a new builder instance.
-    /// Obtain via the corresponding method on `SharingSkillClient`.
+    /// Obtain via the corresponding method on `SkillClient`.
     pub(crate) fn new(
-        client: SharingSkillClient,
+        client: SkillClient,
         share: impl Into<String>,
         schema: impl Into<String>,
         name: impl Into<String>,
@@ -137,7 +137,7 @@ impl GenerateTemporarySkillCredentialsBuilder {
     }
 }
 impl IntoFuture for GenerateTemporarySkillCredentialsBuilder {
-    type Output = Result<SharingTemporaryCredentials>;
+    type Output = Result<TemporaryCredentials>;
     type IntoFuture = BoxFut<'static, Self::Output>;
     fn into_future(self) -> Self::IntoFuture {
         let client = self.client;
