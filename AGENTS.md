@@ -28,6 +28,37 @@ for the design.
 - **Every change ships with tests.** Never delete a passing test to green a
   suite.
 
+## Codegen gotchas
+
+- Install the `trestle` CLI from the open-lakehouse Homebrew tap:
+  `brew install open-lakehouse/tap/trestle`, or `brew upgrade trestle` after a
+  trestle release. Trestle's release pipeline updates the tap, so a release is
+  installable right away. A crates.io proxy that age-filters new versions can
+  hide it for days. A stale CLI rejects `json_field_names`. The `../trestle`
+  source checkout is only needed to patch the `olai-*` library crates
+  (`just configure-trestle-deps`), not for the CLI.
+- The admin protos (`proto/opensharing/{shares,recipients,providers}`) have their
+  own pipeline (`buf.gen.admin.yaml`, `trestle.admin.yaml`, `crates/admin`). They
+  share message names with the protocol (`Share`, `ListSharesRequest`, …), and a
+  single trestle run over both cross-wires the generated protocol client.
+  The admin run emits the models into `crates/admin` and the handler traits and
+  route functions into `crates/admin-api/src/codegen`.
+- Run `buf generate` **before** `trestle generate`. Raw buffa output carries
+  camelCase JSON names, and trestle rewrites them to the snake_case wire names.
+  `just generate` runs both, in order.
+- The NDJSON table query RPCs (`version`, `metadata`, `query`) are not in the
+  proto services. They are hand-written in
+  `crates/common/src/query_extractors.rs` and `crates/api`.
+
+## Toolchain
+
+CI and `rust-toolchain.toml` pin Rust 1.99, the same as the other
+open-lakehouse repos (mangrove, headwaters). The minimum supported Rust is the
+workspace `rust-version` (1.95.0, set by the dependency tree). It is separate
+from the pin, so bumping the pin never raises it. With 1.99, keep
+`async-trait` ≥ 0.1.92 and `thiserror` ≥ 2.0.21: older versions of their
+macros trip clippy's `double_must_use` and `redundant_field_names`.
+
 ## Pre-push check (mimics CI)
 
 ```bash

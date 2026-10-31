@@ -1,7 +1,7 @@
 # Task runner for distributary. Run `just` to list the recipes.
 #
-# Code generation needs the `trestle` CLI (built from a `../trestle` source
-# checkout, see README), `buf`, `uv` and `bunx`. The fast edit/check loop
+# Code generation needs the `trestle` CLI (`brew install
+# open-lakehouse/tap/trestle`), `buf`, `uv` and `bunx`. The fast edit/check loop
 # (`cargo check`, `cargo test`) needs none of this tooling.
 
 set dotenv-load
