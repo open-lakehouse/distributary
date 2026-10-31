@@ -83,6 +83,8 @@ jobs:
   # - opensharing-api is the bare protocol surface: no table format, object
   #   store or engine (those are opensharing-engine's), and opensharing-engine
   #   depends on no catalog and no admin crate;
+  # - opensharing-provider (the provider domain) depends on no catalog and on
+  #   no SQL driver (the SQL stores live outside it);
   # - opensharing-server without `unity` depends on no olai-uc-* crate either:
   #   its storage access comes from the catalog-independent trestle vending
   #   crates (olai-storage-credentials, olai-vended-store, olai-credential-vending),
@@ -134,6 +136,10 @@ jobs:
             '^olai-uc-' -p opensharing-engine --all-features
           deny "opensharing-engine must not depend on the admin crates" \
             '^opensharing-admin' -p opensharing-engine --all-features
+          deny "opensharing-provider must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p opensharing-provider --all-features
+          deny "opensharing-provider must not depend on sqlx" \
+            '^sqlx' -p opensharing-provider --all-features
           deny "opensharing-server (no unity) must not depend on olai-uc-* crates" \
             '^olai-uc-' -p opensharing-server --no-default-features --features postgres,admin
           deny "opensharing-server (no admin) must not depend on opensharing-admin" \
@@ -143,6 +149,7 @@ jobs:
         run: |
           cargo check --locked --all-targets -p opensharing-api --no-default-features
           cargo check --locked --all-targets -p opensharing-engine --no-default-features
+          cargo check --locked --all-targets -p opensharing-provider --no-default-features
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres,admin
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features sqlite

@@ -21,8 +21,8 @@
 //! decides. A catalog that mounts these routes into its own server uses its own
 //! context and plugs its permission model in as the [`AdminPolicy`].
 //!
-//! With the `unity` feature, [`unity::admin`](crate::unity::admin) adds the
-//! UC-shaped `credentials` and `external-locations` routes to the same router.
+//! `opensharing-server`'s `unity` feature merges the UC-shaped `credentials`
+//! and `external-locations` routes into [`routes`] before [`mount`]ing them.
 //!
 //! The store keeps shares as catalog-independent
 //! [`ShareObject`](crate::store::ShareObject)s; [`shares`] converts them to and
@@ -158,8 +158,19 @@ impl<Cx: Send + Sync + 'static> ProviderService<Cx> {
         self
     }
 
-    pub(crate) async fn authorize(&self, action: AdminAction<'_>, context: &Cx) -> Result<()> {
+    /// Ask the policy whether the caller in `context` may perform `action`.
+    pub async fn authorize(&self, action: AdminAction<'_>, context: &Cx) -> Result<()> {
         self.policy.authorize(action, context).await
+    }
+
+    /// The store the service manages.
+    pub fn store(&self) -> &Arc<dyn SharingStore> {
+        &self.store
+    }
+
+    /// The secrets the service seals with.
+    pub fn secrets(&self) -> &Secrets {
+        &self.secrets
     }
 }
 
@@ -189,22 +200,29 @@ impl ProviderAuthenticator for ProviderTokens {
     }
 }
 
-/// The admin API under [`ADMIN_PREFIX`], behind `authenticator`: the share and
-/// recipient routes, plus (feature `unity`) the credential and external-location
-/// routes. The activation links of the tokens it issues are served by the
-/// protocol router ([`activation_router`](crate::recipients::activation_router)).
+/// The share and recipient admin routes, unmounted and unauthenticated. Merge
+/// further admin routes into them, then [`mount`] the result.
+pub fn routes(service: ProviderService<Provider>) -> Router {
+    admin_router::<ProviderService<Provider>, Provider>(service)
+}
+
+/// Mount admin `routes` under [`ADMIN_PREFIX`], behind `authenticator`.
+pub fn mount(routes: Router, authenticator: Arc<dyn ProviderAuthenticator>) -> Router {
+    Router::new().nest(ADMIN_PREFIX, require_provider(routes, authenticator))
+}
+
+/// The share and recipient admin API under [`ADMIN_PREFIX`], behind
+/// `authenticator`. The activation links of the tokens it issues are served by
+/// the protocol router ([`activation_router`](crate::recipients::activation_router)).
 pub fn router(
     service: ProviderService<Provider>,
     authenticator: Arc<dyn ProviderAuthenticator>,
 ) -> Router {
-    let admin = admin_router::<ProviderService<Provider>, Provider>(service.clone());
-    #[cfg(feature = "unity")]
-    let admin = admin.merge(crate::unity::admin::routes::<Provider>().with_state(service.clone()));
-    Router::new().nest(ADMIN_PREFIX, require_provider(admin, authenticator))
+    mount(routes(service), authenticator)
 }
 
 /// Check `name` is a plain identifier (non-empty, no `.` or `/`).
-pub(crate) fn identifier(name: &str) -> Result<()> {
+pub fn identifier(name: &str) -> Result<()> {
     if name.is_empty() || name.contains(['.', '/']) {
         return Err(Error::invalid_argument(format!(
             "'{name}' is not a valid name (non-empty, without '.' or '/')"

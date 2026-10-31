@@ -2583,6 +2583,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "opensharing-provider"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "olai-credential-vending",
+ "olai-storage-credentials",
+ "olai-store",
+ "opensharing-admin",
+ "opensharing-admin-api",
+ "opensharing-api",
+ "opensharing-engine",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "opensharing-server"
 version = "0.0.1"
 dependencies = [
@@ -2604,6 +2630,7 @@ dependencies = [
  "opensharing-api",
  "opensharing-common",
  "opensharing-engine",
+ "opensharing-provider",
  "serde",
  "serde_json",
  "serde_yml",

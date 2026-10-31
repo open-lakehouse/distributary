@@ -29,7 +29,7 @@ use opensharing_engine::catalog::{
 use opensharing_engine::policy::{SharingAction, SharingPolicy};
 use opensharing_engine::service::paginate;
 
-use crate::recipients::Recipient;
+use crate::RecipientIdentity;
 use crate::store::{ShareObject, ShareObjectKind, ShareReader, ShareRecord};
 use crate::{Error, Result};
 use opensharing_api::{Error as ApiError, Result as ApiResult};
@@ -127,7 +127,8 @@ fn info(share: &ShareRecord) -> ShareInfo {
 }
 
 /// The recipient-facing [`SharingPolicy`] over the store's grants: a recipient
-/// may read exactly the shares granted to it.
+/// may read exactly the shares granted to it, and a caller who is no recipient
+/// none.
 pub struct GrantPolicy {
     store: Arc<dyn ShareReader>,
 }
@@ -139,13 +140,17 @@ impl GrantPolicy {
 }
 
 #[async_trait]
-impl SharingPolicy<Recipient> for GrantPolicy {
-    async fn authorize(&self, action: SharingAction<'_>, cx: &Recipient) -> ApiResult<()> {
+impl<Cx: RecipientIdentity> SharingPolicy<Cx> for GrantPolicy {
+    async fn authorize(&self, action: SharingAction<'_>, cx: &Cx) -> ApiResult<()> {
         match action {
             // The catalog lists only the caller's shares.
             SharingAction::ListShares => Ok(()),
             SharingAction::ReadShare { share } => {
-                if self.store.is_granted(share, &cx.id).await? {
+                let granted = match cx.recipient_id() {
+                    Some(recipient) => self.store.is_granted(share, recipient).await?,
+                    None => false,
+                };
+                if granted {
                     Ok(())
                 } else {
                     // Do not reveal whether an ungranted share exists.
@@ -157,9 +162,12 @@ impl SharingPolicy<Recipient> for GrantPolicy {
 }
 
 #[async_trait]
-impl ShareCatalog<Recipient> for StoreCatalog {
-    async fn list_shares(&self, page: PageRequest, cx: &Recipient) -> ApiResult<Page<ShareInfo>> {
-        let shares = self.store.shares_of(&cx.id).await?;
+impl<Cx: RecipientIdentity> ShareCatalog<Cx> for StoreCatalog {
+    async fn list_shares(&self, page: PageRequest, cx: &Cx) -> ApiResult<Page<ShareInfo>> {
+        let shares = match cx.recipient_id() {
+            Some(recipient) => self.store.shares_of(recipient).await?,
+            None => Vec::new(),
+        };
         paginate(
             shares.iter().map(info).collect(),
             page.max_results.map(|n| n.min(i32::MAX as usize) as i32),
@@ -167,11 +175,11 @@ impl ShareCatalog<Recipient> for StoreCatalog {
         )
     }
 
-    async fn get_share(&self, share: &str, _cx: &Recipient) -> ApiResult<ShareInfo> {
+    async fn get_share(&self, share: &str, _cx: &Cx) -> ApiResult<ShareInfo> {
         Ok(info(&self.store.get_share(share).await?))
     }
 
-    async fn list_objects(&self, share: &str, _cx: &Recipient) -> ApiResult<Vec<SharedObject>> {
+    async fn list_objects(&self, share: &str, _cx: &Cx) -> ApiResult<Vec<SharedObject>> {
         let share = self.store.get_share(share).await?;
         Ok(self
             .expose(&share)
@@ -181,7 +189,7 @@ impl ShareCatalog<Recipient> for StoreCatalog {
             .collect())
     }
 
-    async fn resolve(&self, asset: &AssetRef, _cx: &Recipient) -> ApiResult<SharedAsset> {
+    async fn resolve(&self, asset: &AssetRef, _cx: &Cx) -> ApiResult<SharedAsset> {
         let share = self.store.get_share(&asset.share).await?;
         let exposed = self
             .expose(&share)

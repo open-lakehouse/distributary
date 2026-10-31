@@ -18,11 +18,13 @@ use opensharing_engine::source::fixed::{StaticSource, StaticTable};
 use opensharing_engine::source::{
     AccessMode, CatalogSource, RegisteredSource, SourceRegistry, SourceTable, SourceVolume,
 };
+use opensharing_provider::admin::{
+    self, AdminAction, AdminPolicy, ProviderService, ProviderTokens,
+};
+use opensharing_provider::secrets::Secrets;
 use opensharing_server::Result;
-use opensharing_server::admin::{self, AdminAction, AdminPolicy, ProviderService, ProviderTokens};
 use opensharing_server::config::{ConfigValue, EncryptionConfig, KeyConfig, KeyProviderKind};
 use opensharing_server::embed::{self, Settings};
-use opensharing_server::secrets::Secrets;
 use opensharing_server::store::memory::InMemoryStore;
 use opensharing_server::store::{CredentialStore, SharingStore};
 use serde_json::{Value, json};
@@ -550,7 +552,10 @@ async fn the_admin_policy_authorizes_every_action() {
         ProviderService::new(store, secrets(key("v1", 1), vec![]), PUBLIC_URL.to_string())
             .with_policy(Arc::new(NoDeletes));
     let client = Client {
-        app: admin::router(service, Arc::new(ProviderTokens::new([ADMIN]))),
+        app: admin::mount(
+            embed::admin_routes(service),
+            Arc::new(ProviderTokens::new([ADMIN])),
+        ),
     };
 
     client

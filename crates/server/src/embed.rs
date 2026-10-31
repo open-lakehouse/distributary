@@ -9,18 +9,18 @@ use axum::routing::get;
 use opensharing_api::auth::require_bearer;
 use opensharing_api::sharing_router;
 use opensharing_engine::SharingService;
+use opensharing_engine::source::SourceRegistry;
+use opensharing_provider::credentials::open_credential;
+use opensharing_provider::recipients::{
+    Recipient, StoreAuthenticator, activation_router, rewrap_tokens,
+};
+use opensharing_provider::secrets::Secrets;
+use opensharing_provider::{AccessSettings, sharing_service};
 
 use crate::Result;
-use opensharing_engine::vending::SourceStorageAccess;
-
-use crate::access::{StoreCredentialResolver, open_credential};
-use crate::catalog::{GrantPolicy, StoreCatalog};
 use crate::config::{Config, DatabaseConfig, EncryptionConfig};
-use crate::recipients::{Recipient, StoreAuthenticator, activation_router, rewrap_tokens};
-use crate::secrets::Secrets;
 use crate::store::SharingStore;
 use crate::store::memory::InMemoryStore;
-use opensharing_engine::source::SourceRegistry;
 
 /// Everything the routes need, besides the store.
 #[derive(Clone)]
@@ -52,24 +52,25 @@ pub struct Service {
 ///
 /// The provider side is separate ([`admin_router`], feature `admin`). A host
 /// with its own admin surface manages shares, recipients and grants through the
-/// [`SharingStore`] directly (see [`issue_token`](crate::recipients::issue_token)),
+/// [`SharingStore`] directly (see
+/// [`issue_token`](opensharing_provider::recipients::issue_token)),
 /// or mounts the generated admin routers over its own context (see
-/// [`crate::admin`]).
+/// [`opensharing_provider::admin`]).
 pub fn router(
     store: Arc<dyn SharingStore>,
     secrets: Secrets,
     sources: SourceRegistry,
     settings: Settings,
 ) -> Router {
-    let catalog = Arc::new(StoreCatalog::new(store.clone(), sources.clone()));
-    let access = Arc::new(SourceStorageAccess::new(
+    let service = sharing_service::<Recipient>(
+        store.clone(),
+        secrets.clone(),
         sources,
-        StoreCredentialResolver::new(store.clone(), secrets.clone()),
-        settings.presign_ttl,
-        settings.aws_region,
-    ));
-    let policy = Arc::new(GrantPolicy::new(store.clone()));
-    let service = SharingService::<Recipient>::new(catalog, access, policy);
+        AccessSettings {
+            presign_ttl: settings.presign_ttl,
+            aws_region: settings.aws_region,
+        },
+    );
     let sharing = require_bearer(
         sharing_router::<SharingService<Recipient>, Recipient>(service),
         Arc::new(StoreAuthenticator::new(store.clone())),
@@ -80,15 +81,31 @@ pub fn router(
         .route("/health", get(|| async { "ok" }))
 }
 
-/// The provider admin API under `/api/2.1/unity-catalog` (shares, permissions,
-/// recipients; with the `unity` feature also credentials and external
-/// locations), behind the provider tokens. Merge it into [`router`].
+/// The provider admin routes of `service`, unmounted: shares, permissions and
+/// recipients, plus (feature `unity`) credentials and external locations.
+/// [`mount`](opensharing_provider::admin::mount) them behind an authenticator.
+#[cfg(feature = "admin")]
+pub fn admin_routes(
+    service: opensharing_provider::admin::ProviderService<opensharing_admin_api::auth::Provider>,
+) -> Router {
+    let routes = opensharing_provider::admin::routes(service.clone());
+    #[cfg(feature = "unity")]
+    let routes = routes.merge(crate::unity::admin::routes().with_state(service));
+    routes
+}
+
+/// The provider admin API under `/api/2.1/unity-catalog` (see
+/// [`admin_routes`]), behind the provider tokens. Merge it into [`router`].
 #[cfg(feature = "admin")]
 pub fn admin_router(store: Arc<dyn SharingStore>, secrets: Secrets, settings: &Settings) -> Router {
-    use crate::admin::{self, ProviderService, ProviderTokens};
+    use opensharing_provider::admin::{self, ProviderService, ProviderTokens};
 
-    admin::router(
-        ProviderService::new(store, secrets, settings.public_url.clone()),
+    admin::mount(
+        admin_routes(ProviderService::new(
+            store,
+            secrets,
+            settings.public_url.clone(),
+        )),
         Arc::new(ProviderTokens::new(&settings.provider_tokens)),
     )
 }

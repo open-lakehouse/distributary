@@ -1,7 +1,7 @@
 //! [`StoreCredentialResolver`]: the credentials local-mode storage access mints
 //! from, read from the store's external locations and sealed credentials.
 //!
-//! It is the [`CredentialResolver`] the server hands
+//! It is the [`CredentialResolver`] the provider hands
 //! [`SourceStorageAccess`](opensharing_engine::vending::SourceStorageAccess).
 
 use std::sync::Arc;
@@ -38,7 +38,7 @@ impl StoreCredentialResolver {
 ///
 /// Credentials sealed as a full Unity Catalog `Credential` document (as the admin
 /// API stored them before) open too: the metadata keys are ignored.
-pub(crate) async fn open_credential(
+pub async fn open_credential(
     store: &dyn CredentialStore,
     secrets: &Secrets,
     name: &str,
@@ -57,7 +57,7 @@ pub(crate) async fn open_credential(
 }
 
 /// The AAD a stored credential is sealed under.
-pub(crate) fn credential_aad(name: &str) -> String {
+pub fn credential_aad(name: &str) -> String {
     format!("credential:{name}")
 }
 

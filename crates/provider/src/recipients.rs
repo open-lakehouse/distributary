@@ -15,6 +15,7 @@ use axum::{Json, Router};
 use opensharing_api::auth::{BearerAuthenticator, authenticated};
 use serde::Serialize;
 
+use crate::RecipientIdentity;
 use crate::secrets::Secrets;
 use crate::store::{RecipientRecord, RecipientStore, TokenReader, TokenRecord, now_millis};
 use crate::tokens::random_secret;
@@ -34,6 +35,12 @@ pub struct Recipient {
     pub id: String,
     /// The recipient's name.
     pub name: String,
+}
+
+impl RecipientIdentity for Recipient {
+    fn recipient_id(&self) -> Option<&str> {
+        Some(&self.id)
+    }
 }
 
 impl<S: Send + Sync> FromRequestParts<S> for Recipient {

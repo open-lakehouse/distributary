@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-server"
 version = "0.0.1"
-description = "A composable OpenSharing / Delta Sharing server: shares mapped onto assets in pluggable source catalogs (static, Unity Catalog behind a feature), recipient tokens, delegated or local storage access, sealed secrets, and a provider admin API."
+description = "The batteries-included OpenSharing / Delta Sharing server: the protocol, engine and provider crates assembled with SQL stores, layered configuration, Unity Catalog integration behind a feature, and the sharing-server binary."
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true
@@ -23,6 +23,7 @@ opensharing-admin = { path = "../admin", version = "0.0.1", optional = true }
 opensharing-admin-api = { path = "../admin-api", version = "0.0.1", optional = true }
 opensharing-api = { path = "../api", version = "0.0.1" }
 opensharing-engine = { path = "../engine", version = "0.0.1" }
+opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false }
 opensharing-common = { path = "../common", version = "0.0.1" }
 # The Unity Catalog source and the UC-shaped credential admin routes (feature `unity`).
 unitycatalog-client = { workspace = true, optional = true }
@@ -73,6 +74,7 @@ name = "e2e"
 required-features = ["admin"]
 
 [dev-dependencies]
+opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false, features = ["testing"] }
 tempfile = "3"
 tower = { workspace = true }
 
@@ -90,6 +92,6 @@ unity = ["dep:futures", "dep:unitycatalog-client", "dep:unitycatalog-common"]
 # with `unity` also credentials and external locations), on the handler traits
 # `opensharing-admin-api` generates. Without it the server serves only the protocol,
 # and shares and recipients are provisioned through the `ShareStore`.
-admin = ["dep:opensharing-admin", "dep:opensharing-admin-api"]
+admin = ["dep:opensharing-admin", "dep:opensharing-admin-api", "opensharing-provider/admin"]
 # The `sharing-server` binary.
 bin = ["postgres", "sqlite", "unity", "admin", "dep:clap", "dep:tracing-subscriber"]

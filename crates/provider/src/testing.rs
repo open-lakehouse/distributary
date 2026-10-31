@@ -1,8 +1,10 @@
-//! The behavior every [`SharingStore`] shares, run against each backend
-//! (`tests/{memory,sqlite,postgres}.rs` include this file).
+//! The behavior every [`SharingStore`] shares (feature `testing`).
+//!
+//! Every store implementation runs [`round_trips`] against an empty store in
+//! its tests; it panics on the first divergence.
 
-use opensharing_server::Error;
-use opensharing_server::store::{
+use crate::Error;
+use crate::store::{
     ExternalLocationRecord, SealedCredential, ShareObject, ShareObjectKind, SharingStore,
     TokenRecord,
 };

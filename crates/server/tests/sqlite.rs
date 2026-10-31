@@ -3,8 +3,7 @@
 
 use opensharing_server::store::sqlite::{SqliteStore, connect, ensure_schema_current, migrate};
 
-#[path = "store/conformance.rs"]
-mod conformance;
+use opensharing_provider::testing::round_trips;
 
 #[tokio::test]
 async fn sqlite_store_round_trips() {
@@ -17,7 +16,7 @@ async fn sqlite_store_round_trips() {
     );
     migrate(&pool).await.unwrap();
     ensure_schema_current(&pool).await.unwrap();
-    conformance::round_trips(&SqliteStore::new(pool)).await;
+    round_trips(&SqliteStore::new(pool)).await;
 }
 
 #[tokio::test]

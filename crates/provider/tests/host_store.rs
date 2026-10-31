@@ -1,8 +1,10 @@
-//! A catalog that keeps shares and recipients in its own store and reuses the
-//! server's protocol side on top of it. It implements only the read-only
-//! [`ShareReader`] and [`TokenReader`] views and builds the sharing router
-//! itself, from [`StoreCatalog`], [`GrantPolicy`], [`StoreAuthenticator`] and
-//! [`SourceStorageAccess`]. Runs without any feature.
+//! A catalog that keeps shares and recipients in its own store, with its own
+//! request context, and reuses the provider's protocol side on top of it.
+//!
+//! It implements only the read-only [`ShareReader`] and [`TokenReader`] views,
+//! and its context implements [`RecipientIdentity`]. It builds the sharing
+//! router itself, from [`StoreCatalog`], [`GrantPolicy`], [`SourceStorageAccess`]
+//! and an authenticator that maps the provider's [`Recipient`] onto its context.
 
 use std::path::Path;
 use std::sync::Arc;
@@ -11,24 +13,67 @@ use std::time::Duration;
 use async_trait::async_trait;
 use axum::Router;
 use axum::body::Body;
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
 use axum::http::{Request, StatusCode};
-use opensharing_api::auth::require_bearer;
+use opensharing_api::auth::{BearerAuthenticator, authenticated, require_bearer};
 use opensharing_api::sharing_router;
-use opensharing_engine::SharingService;
+use opensharing_engine::catalog::PageRequest;
+use opensharing_engine::policy::{SharingAction, SharingPolicy};
 use opensharing_engine::source::fixed::{StaticSource, StaticTable};
 use opensharing_engine::source::{AccessMode, RegisteredSource, SourceRegistry};
 use opensharing_engine::vending::{NoCredentials, SourceStorageAccess};
-use opensharing_server::catalog::{GrantPolicy, StoreCatalog};
-use opensharing_server::recipients::{Recipient, StoreAuthenticator, token_hash};
-use opensharing_server::store::{
+use opensharing_engine::{ShareCatalog, SharingService};
+use opensharing_provider::RecipientIdentity;
+use opensharing_provider::catalog::{GrantPolicy, StoreCatalog};
+use opensharing_provider::recipients::{Recipient, StoreAuthenticator, token_hash};
+use opensharing_provider::store::{
     RecipientRecord, ShareObject, ShareObjectKind, ShareReader, ShareRecord, TokenReader,
     TokenRecord,
 };
-use opensharing_server::{Error, Result};
+use opensharing_provider::{Error, Result};
 use serde_json::Value;
 use tower::ServiceExt;
 
 const TOKEN: &str = "host-issued-token";
+
+/// The host's own request context: its principal, and the sharing recipient
+/// that principal is, if any.
+#[derive(Debug, Clone)]
+struct HostContext {
+    #[allow(dead_code)]
+    principal: String,
+    recipient_id: Option<String>,
+}
+
+impl RecipientIdentity for HostContext {
+    fn recipient_id(&self) -> Option<&str> {
+        self.recipient_id.as_deref()
+    }
+}
+
+impl<S: Send + Sync> FromRequestParts<S> for HostContext {
+    type Rejection = opensharing_api::Error;
+
+    async fn from_request_parts(parts: &mut Parts, _: &S) -> opensharing_api::Result<Self> {
+        authenticated(parts)
+    }
+}
+
+/// The host's authentication: recipient tokens resolve through the provider's
+/// token store, and the recipient becomes the host's principal.
+struct HostAuthenticator(StoreAuthenticator);
+
+#[async_trait]
+impl BearerAuthenticator<HostContext> for HostAuthenticator {
+    async fn authenticate(&self, token: &str) -> opensharing_api::Result<HostContext> {
+        let recipient: Recipient = self.0.authenticate(token).await?;
+        Ok(HostContext {
+            principal: format!("sharing:{}", recipient.name),
+            recipient_id: Some(recipient.id),
+        })
+    }
+}
 
 /// The catalog's own state: one share, granted to one recipient with one token.
 struct HostStore {
@@ -121,7 +166,7 @@ fn sources() -> SourceRegistry {
     }])
 }
 
-/// The host's sharing router, assembled from the server's protocol pieces.
+/// The host's sharing router, assembled from the provider's protocol pieces.
 fn router(host: Arc<HostStore>) -> Router {
     let catalog = Arc::new(StoreCatalog::new(host.clone(), sources()));
     // The host stores no storage credentials; local access reads the table directly.
@@ -132,10 +177,10 @@ fn router(host: Arc<HostStore>) -> Router {
         None,
     ));
     let policy = Arc::new(GrantPolicy::new(host.clone()));
-    let service = SharingService::<Recipient>::new(catalog, access, policy);
+    let service = SharingService::<HostContext>::new(catalog, access, policy);
     require_bearer(
-        sharing_router::<SharingService<Recipient>, Recipient>(service),
-        Arc::new(StoreAuthenticator::new(host)),
+        sharing_router::<SharingService<HostContext>, HostContext>(service),
+        Arc::new(HostAuthenticator(StoreAuthenticator::new(host))),
     )
 }
 
@@ -158,6 +203,28 @@ async fn call(app: &Router, method: &str, uri: &str, token: Option<&str>) -> (St
         .await
         .unwrap();
     (status, String::from_utf8(bytes.to_vec()).unwrap())
+}
+
+#[tokio::test]
+async fn a_principal_that_is_no_recipient_sees_nothing() {
+    let policy = GrantPolicy::new(Arc::new(HostStore::new()));
+    let catalog = StoreCatalog::new(Arc::new(HostStore::new()), sources());
+    let anonymous = HostContext {
+        principal: "anonymous".to_string(),
+        recipient_id: None,
+    };
+    let shares = catalog
+        .list_shares(PageRequest::default(), &anonymous)
+        .await
+        .unwrap();
+    assert!(shares.items.is_empty());
+    let read = policy
+        .authorize(SharingAction::ReadShare { share: "letters" }, &anonymous)
+        .await;
+    assert!(
+        matches!(read, Err(opensharing_api::Error::NotFound)),
+        "{read:?}"
+    );
 }
 
 #[tokio::test]
