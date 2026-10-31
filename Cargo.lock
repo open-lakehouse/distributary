@@ -2502,21 +2502,15 @@ dependencies = [
  "async-trait",
  "axum",
  "axum-extra",
- "buoyant_kernel",
- "buoyant_kernel_engine",
  "bytes",
- "chrono",
- "object_store",
  "opensharing-common",
  "serde",
  "serde_json",
- "tempfile",
  "thiserror",
  "tokio",
  "tower",
  "tracing",
  "url",
- "uuid",
 ]
 
 [[package]]
@@ -2541,10 +2535,32 @@ dependencies = [
  "axum",
  "axum-extra",
  "buffa",
- "buoyant_kernel",
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "opensharing-engine"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "axum",
+ "buoyant_kernel",
+ "buoyant_kernel_engine",
+ "bytes",
+ "chrono",
+ "object_store",
+ "opensharing-api",
+ "opensharing-common",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
 ]
 
 [[package]]
@@ -2583,6 +2599,7 @@ dependencies = [
  "opensharing-admin-api",
  "opensharing-api",
  "opensharing-common",
+ "opensharing-engine",
  "serde",
  "serde_json",
  "serde_yml",

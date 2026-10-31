@@ -25,7 +25,7 @@ const PUBLIC_URL: &str = "https://sharing.example.com";
 
 fn table_location() -> String {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../api/tests/data/basic_partitioned")
+        .join("../engine/tests/data/basic_partitioned")
         .canonicalize()
         .unwrap();
     url::Url::from_directory_path(dir).unwrap().to_string()

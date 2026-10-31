@@ -22,8 +22,8 @@ use url::Url;
 
 use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
 
+use crate::Result;
 use crate::catalog::SharedAsset;
-use crate::error::Result;
 
 /// A presigned (or otherwise directly readable) URL for one file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -68,7 +68,7 @@ pub struct TableStorage {
 
 /// The storage access port. See the module docs.
 #[async_trait]
-pub trait StorageAccess<Cx = crate::DefaultContext>: Send + Sync + 'static {
+pub trait StorageAccess<Cx = opensharing_api::DefaultContext>: Send + Sync + 'static {
     /// Storage access for serving a shared table.
     async fn table_storage(&self, asset: &SharedAsset, cx: &Cx) -> Result<TableStorage>;
 

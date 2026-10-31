@@ -2,19 +2,18 @@
 //!
 //! A service is assembled from one implementation of each port — a
 //! [`ShareCatalog`], a [`StorageAccess`] and a [`FormatRegistry`] — and
-//! implements every sharing handler trait on top of them (see
-//! [`crate::handler`]). Hosts build one, hand it to a router, and never
-//! re-implement any protocol semantics.
+//! implements every `opensharing-api` handler trait on top of them. Hosts build
+//! one, hand it to a router, and never re-implement any protocol semantics.
 
 use std::sync::Arc;
 
 use crate::access::StorageAccess;
 use crate::catalog::{Page, ShareCatalog};
-use crate::error::{Error, Result};
 use crate::format::FormatRegistry;
+use crate::{Error, Result};
 
 /// The sharing service. Cheap to clone (all ports are behind [`Arc`]s).
-pub struct SharingService<Cx = crate::DefaultContext> {
+pub struct SharingService<Cx = opensharing_api::DefaultContext> {
     pub(crate) catalog: Arc<dyn ShareCatalog<Cx>>,
     pub(crate) access: Arc<dyn StorageAccess<Cx>>,
     pub(crate) formats: Arc<FormatRegistry>,

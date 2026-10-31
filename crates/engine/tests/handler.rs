@@ -1,13 +1,14 @@
 //! Handler integration tests: drive the discovery + asset surface through the
 //! generated handler traits over the in-memory backend.
 
-use opensharing_api::catalog::AssetKind;
 use opensharing_api::codegen::sharing::SharingHandler;
 use opensharing_api::codegen::sharing_skill::SharingSkillHandler;
 use opensharing_api::codegen::sharing_volume::SharingVolumeHandler;
-use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
-use opensharing_api::{Error, SharingQueryHandler, SharingService};
+use opensharing_api::{Error, SharingQueryHandler};
 use opensharing_common::models::opensharing::v1::*;
+use opensharing_engine::SharingService;
+use opensharing_engine::catalog::AssetKind;
+use opensharing_engine::testing::{FixtureObject, FixtureShare, in_memory_service};
 
 fn backend() -> SharingService<()> {
     in_memory_service(vec![FixtureShare {

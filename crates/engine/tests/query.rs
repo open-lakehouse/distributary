@@ -10,12 +10,13 @@ use axum::http::{Request, StatusCode};
 use tower::ServiceExt;
 use url::Url;
 
-use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
-use opensharing_api::{Error, SharingQueryHandler, SharingService, opensharing_router};
+use opensharing_api::{Error, SharingQueryHandler, opensharing_router};
 use opensharing_common::models::opensharing::v1::*;
 use opensharing_common::models::{
     MetadataResponseData, ParquetFile, ProtocolResponseData, QueryResponseLine,
 };
+use opensharing_engine::SharingService;
+use opensharing_engine::testing::{FixtureObject, FixtureShare, in_memory_service};
 
 const SHARE: &str = "share1";
 const SCHEMA: &str = "schema1";

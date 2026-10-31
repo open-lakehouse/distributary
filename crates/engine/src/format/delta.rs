@@ -24,16 +24,16 @@ use serde::Serialize;
 use url::Url;
 
 use opensharing_common::models::{
-    MetadataResponse, MetadataResponseData, ParquetFile, ParquetMetadata, ProtocolResponseData,
-    QueryResponseLine,
+    MetadataResponse, MetadataResponseData, ParquetFile, ParquetMetadata, ParquetProtocol,
+    ProtocolResponseData, QueryResponseLine,
 };
 
 use super::predicate::to_kernel_predicate;
 use super::{QuerySpec, TableFormat, TableResponse, VersionSpec};
 use crate::access::TableStorage;
 use crate::catalog::SharedAsset;
-use crate::error::{Error, Result};
 use crate::kernel::build_engine;
+use crate::{Error, Result};
 
 /// The kernel-backed Delta [`TableFormat`]. See the module docs.
 #[derive(Debug, Clone, Copy, Default)]
@@ -51,7 +51,9 @@ impl TableFormat for DeltaFormat {
         let root = directory(&storage.root);
         let start_version = asset.start_version;
         blocking(move || {
-            let latest = Snapshot::builder_for(root.as_str()).build(engine.as_ref())?;
+            let latest = Snapshot::builder_for(root.as_str())
+                .build(engine.as_ref())
+                .map_err(kernel_error)?;
             let version = match starting_timestamp {
                 None => latest.version(),
                 Some(ts) => {
@@ -108,11 +110,14 @@ impl TableFormat for DeltaFormat {
                 .clone()
                 .scan_builder()
                 .with_predicate(predicate.map(Arc::new))
-                .build()?;
+                .build()
+                .map_err(kernel_error)?;
             let mut files = Vec::new();
-            for scan_metadata in scan.scan_metadata(engine.as_ref())? {
-                files = scan_metadata?
-                    .visit_scan_files(files, |files: &mut Vec<ScanFile>, file| files.push(file))?;
+            for scan_metadata in scan.scan_metadata(engine.as_ref()).map_err(kernel_error)? {
+                files = scan_metadata
+                    .map_err(kernel_error)?
+                    .visit_scan_files(files, |files: &mut Vec<ScanFile>, file| files.push(file))
+                    .map_err(kernel_error)?;
             }
             Ok((snapshot, commit, files))
         })
@@ -180,6 +185,19 @@ async fn blocking<T: Send + 'static>(f: impl FnOnce() -> Result<T> + Send + 'sta
         .map_err(|e| Error::generic(format!("table reader task failed: {e}")))?
 }
 
+/// A kernel failure while reading a table: an internal error (→ 500), whose
+/// detail is logged rather than returned to the recipient.
+fn kernel_error(err: delta_kernel::Error) -> Error {
+    Error::generic(format!("Delta Kernel Error: {err}"))
+}
+
+/// The table's latest snapshot.
+fn latest_snapshot(engine: &dyn Engine, root: &Url) -> Result<SnapshotRef> {
+    Snapshot::builder_for(root.as_str())
+        .build(engine)
+        .map_err(kernel_error)
+}
+
 /// Resolve the snapshot `at` names, enforcing the provider's `start_version`.
 ///
 /// Returns the commit the snapshot was located by, for a timestamp query.
@@ -190,7 +208,7 @@ fn resolve_snapshot(
     start_version: Option<Version>,
 ) -> Result<(SnapshotRef, Option<CommitAt>)> {
     let (snapshot, commit) = match at {
-        VersionSpec::Latest => (Snapshot::builder_for(root.as_str()).build(engine)?, None),
+        VersionSpec::Latest => (latest_snapshot(engine, root)?, None),
         VersionSpec::Version(version) => {
             match Snapshot::builder_for(root.as_str())
                 .at_version(version)
@@ -200,19 +218,19 @@ fn resolve_snapshot(
                 Err(err) => {
                     // Distinguish a version past the end of the table (the caller's
                     // mistake) from a failure reading it.
-                    let latest = Snapshot::builder_for(root.as_str()).build(engine)?;
+                    let latest = latest_snapshot(engine, root)?;
                     if version > latest.version() {
                         return Err(Error::invalid_argument(format!(
                             "version {version} is beyond the table's latest version {}",
                             latest.version()
                         )));
                     }
-                    return Err(err.into());
+                    return Err(kernel_error(err));
                 }
             }
         }
         VersionSpec::Timestamp(ts) => {
-            let latest = Snapshot::builder_for(root.as_str()).build(engine)?;
+            let latest = latest_snapshot(engine, root)?;
             let commit = latest_version_as_of(&latest, engine, ts, HistoryCommitType::Recreatable)
                 .map_err(|e| Error::invalid_argument(format!("timestamp: {e}")))?;
             let snapshot = if commit.version == latest.version() {
@@ -220,7 +238,8 @@ fn resolve_snapshot(
             } else {
                 Snapshot::builder_for(root.as_str())
                     .at_version(commit.version)
-                    .build(engine)?
+                    .build(engine)
+                    .map_err(kernel_error)?
             };
             (snapshot, Some(commit))
         }
@@ -247,12 +266,17 @@ fn header_lines(snapshot: &Snapshot, at: VersionSpec) -> Result<[MetadataRespons
             protocol.min_reader_version()
         )));
     }
-    let mut metadata: ParquetMetadata = config.metadata().try_into()?;
+    // The kernel's metadata action serializes in the shape of the Delta log,
+    // which the parquet metadata line shares.
+    let mut metadata: ParquetMetadata =
+        serde_json::from_value(serde_json::to_value(config.metadata())?)?;
     if at.is_time_travel() {
         metadata.version = Some(snapshot.version() as i64);
     }
     Ok([
-        MetadataResponse::Protocol(ProtocolResponseData::ParquetProtocol(protocol.into())),
+        MetadataResponse::Protocol(ProtocolResponseData::ParquetProtocol(ParquetProtocol {
+            min_reader_version: protocol.min_reader_version(),
+        })),
         MetadataResponse::MetaData(MetadataResponseData::ParquetMetadata(metadata)),
     ])
 }

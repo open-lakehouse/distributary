@@ -12,14 +12,15 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use bytes::Bytes;
 use delta_kernel::Version;
 
 use opensharing_common::models::opensharing::v1::JsonPredicate;
 
+pub use opensharing_api::TableResponse;
+
 use crate::access::TableStorage;
 use crate::catalog::{DataFormat, SharedAsset};
-use crate::error::{Error, Result};
+use crate::{Error, Result};
 
 #[cfg(feature = "delta")]
 pub mod delta;
@@ -53,14 +54,6 @@ pub struct QuerySpec {
     pub predicate: Option<JsonPredicate>,
     /// A best-effort hint on how many rows the recipient intends to read.
     pub limit_hint: Option<u64>,
-}
-
-/// A newline-delimited JSON table response and the table version it describes
-/// (sent as the `Delta-Table-Version` response header).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TableResponse {
-    pub version: Version,
-    pub body: Bytes,
 }
 
 /// Serves one table format. See the module docs.

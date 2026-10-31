@@ -80,6 +80,9 @@ jobs:
   #   crate at all;
   # - opensharing-api depends on no admin crate, and opensharing-admin-api on
   #   no protocol crate;
+  # - opensharing-api is the bare protocol surface: no table format, object
+  #   store or engine (those are opensharing-engine's), and opensharing-engine
+  #   depends on no catalog and no admin crate;
   # - opensharing-server without `unity` depends on no olai-uc-* crate either:
   #   its storage access comes from the catalog-independent trestle vending
   #   crates (olai-storage-credentials, olai-vended-store, olai-credential-vending),
@@ -125,6 +128,12 @@ jobs:
             '^opensharing-admin' -p opensharing-api --all-features
           deny "opensharing-admin-api must not depend on the protocol crates" \
             '^opensharing-(api|common|client) ' -p opensharing-admin-api --all-features
+          deny "opensharing-api must not depend on a table format, object store or the engine" \
+            '^(buoyant_kernel|object_store|opensharing-engine) ' -p opensharing-api --all-features
+          deny "opensharing-engine must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p opensharing-engine --all-features
+          deny "opensharing-engine must not depend on the admin crates" \
+            '^opensharing-admin' -p opensharing-engine --all-features
           deny "opensharing-server (no unity) must not depend on olai-uc-* crates" \
             '^olai-uc-' -p opensharing-server --no-default-features --features postgres,admin
           deny "opensharing-server (no admin) must not depend on opensharing-admin" \
@@ -133,6 +142,7 @@ jobs:
       - name: Build without Unity Catalog
         run: |
           cargo check --locked --all-targets -p opensharing-api --no-default-features
+          cargo check --locked --all-targets -p opensharing-engine --no-default-features
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres,admin
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features sqlite

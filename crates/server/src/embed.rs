@@ -7,7 +7,8 @@ use std::time::Duration;
 use axum::Router;
 use axum::routing::get;
 use opensharing_api::auth::{Recipient, require_recipient};
-use opensharing_api::{SharingService, sharing_router};
+use opensharing_api::sharing_router;
+use opensharing_engine::SharingService;
 
 use crate::Result;
 use crate::access::{SourceStorageAccess, open_credential};

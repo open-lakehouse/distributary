@@ -33,7 +33,7 @@ const PUBLIC_URL: &str = "https://sharing.example.com";
 
 fn table_location() -> String {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../api/tests/data/basic_partitioned")
+        .join("../engine/tests/data/basic_partitioned")
         .canonicalize()
         .unwrap();
     url::Url::from_directory_path(dir).unwrap().to_string()
@@ -418,7 +418,7 @@ impl CatalogSource for VendingCatalog {
             name: full_name.rsplit('.').next().unwrap().to_string(),
             id: Some("11111111-1111-1111-1111-111111111111".to_string()),
             location: self.location.clone(),
-            format: opensharing_api::catalog::DataFormat::Delta,
+            format: opensharing_engine::catalog::DataFormat::Delta,
         })
     }
 

@@ -1,7 +1,7 @@
 [package]
 name = "opensharing-api"
 version = "0.0.1"
-description = "Portable OpenSharing / Delta Sharing REST API: pluggable share-catalog, storage-access and table-format ports, the discovery + asset handlers, and a delta_kernel-backed Delta query path."
+description = "The OpenSharing / Delta Sharing REST surface: the generated handler traits, the hand-written NDJSON query trait, and the axum routers."
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true
@@ -21,62 +21,32 @@ async-trait = { workspace = true }
 axum = { workspace = true, optional = true }
 axum-extra = { workspace = true, optional = true }
 bytes = { workspace = true }
-chrono = { workspace = true }
-delta_kernel = { workspace = true }
-delta_kernel_default_engine = { workspace = true, optional = true }
-object_store = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["rt"] }
 tracing = { workspace = true }
 url = { workspace = true }
-# Stable file ids in query responses (v5 = name-based).
-uuid = { workspace = true, features = ["v5"], optional = true }
 
 [dev-dependencies]
-tempfile = "3"
 tokio = { version = "1", features = ["full"] }
 tower = { workspace = true }
 
-# The handler + router integration tests drive the in-memory backend, which
-# lives behind the `testing` feature.
 [[test]]
-name = "handler"
-required-features = ["testing"]
-
-[[test]]
-name = "router"
-required-features = ["testing"]
-
-[[test]]
-name = "query"
-required-features = ["testing"]
-
-[[test]]
-name = "mount"
-required-features = ["testing"]
+name = "barebones"
+required-features = ["axum"]
 
 [features]
-# `axum` gates the generated axum route functions, the hand-written router, and
-# the error `IntoResponse`. On by default: this crate exists to serve an axum
-# surface. The feature name must be `axum` because the generated server code
-# hard-codes `#[cfg(feature = "axum")]`. Downstream consumers that only want the
-# port + types (no HTTP surface) can opt out with `default-features = false`.
-default = ["axum", "delta"]
+# `axum` gates the generated axum route functions, the hand-written router, the
+# bearer-auth layer and the error `IntoResponse`. On by default: this crate
+# exists to serve an axum surface. The feature name must be `axum` because the
+# generated server code hard-codes `#[cfg(feature = "axum")]`. Consumers that
+# only want the traits (no HTTP surface) opt out with `default-features = false`.
+default = ["axum"]
 axum = [
   "dep:axum",
   "dep:axum-extra",
   "opensharing-common/axum",
 ]
-# The kernel-backed Delta table format (`format::delta`).
-delta = ["dep:delta_kernel_default_engine", "dep:uuid"]
-# Exposes `InMemorySharingBackend`, an in-memory `SharingBackend` implementation
-# for exercising the sharing logic (discovery + query + asset serving) without a
-# real backend. Downstream servers can enable it to test their own port wiring.
-testing = ["axum", "delta"]
 
-# docs.rs builds with default features only; enable all features there so the
-# `testing` module is documented.
 [package.metadata.docs.rs]
 all-features = true

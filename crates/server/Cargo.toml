@@ -22,6 +22,7 @@ required-features = ["bin"]
 opensharing-admin = { path = "../admin", version = "0.0.1", optional = true }
 opensharing-admin-api = { path = "../admin-api", version = "0.0.1", optional = true }
 opensharing-api = { path = "../api", version = "0.0.1" }
+opensharing-engine = { path = "../engine", version = "0.0.1" }
 opensharing-common = { path = "../common", version = "0.0.1" }
 # The Unity Catalog source and the UC-shaped credential admin routes (feature `unity`).
 unitycatalog-client = { workspace = true, optional = true }

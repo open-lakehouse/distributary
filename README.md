@@ -2,14 +2,16 @@
 
 An [OpenSharing](https://github.com/OpenSharing-IO/OpenSharing) /
 [Delta Sharing](https://github.com/delta-io/delta-sharing) implementation in
-Rust: the protocol models, a client, a portable server-side protocol layer, and a
+Rust: the protocol models, a client, the bare protocol surface, an engine that
+implements it over pluggable ports, and a
 composable sharing server that maps shares onto any catalog.
 
 | Crate | Package | What |
 |---|---|---|
 | [`crates/common`](crates/common) | `opensharing-common` | Wire models, NDJSON query lines, capabilities, axum extractors |
 | [`crates/client`](crates/client) | `opensharing-client` | HTTP client for the sharing protocol |
-| [`crates/api`](crates/api) | `opensharing-api` | Protocol ports (`ShareCatalog`, `StorageAccess`, `TableFormat`), handlers, router and recipient auth |
+| [`crates/api`](crates/api) | `opensharing-api` | The protocol surface: generated handler traits, the NDJSON query trait, routers, bearer auth |
+| [`crates/engine`](crates/engine) | `opensharing-engine` | The protocol implemented over ports (`ShareCatalog`, `StorageAccess`, `TableFormat`): `SharingService` and the kernel-backed Delta format |
 | [`crates/admin`](crates/admin) | `opensharing-admin` | Provider admin API models: shares, permissions, recipients, providers |
 | [`crates/admin-api`](crates/admin-api) | `opensharing-admin-api` | Provider admin API server surface: generated handler traits, routers, provider auth |
 | [`crates/server`](crates/server) | `opensharing-server` | A complete server: share, recipient and credential stores (memory, Postgres, SQLite), sealed secrets, catalog sources, admin API (feature `admin`), `sharing-server` binary |

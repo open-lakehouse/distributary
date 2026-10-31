@@ -13,7 +13,8 @@ use axum::Router;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use opensharing_api::auth::{Recipient, require_recipient};
-use opensharing_api::{SharingService, sharing_router};
+use opensharing_api::sharing_router;
+use opensharing_engine::SharingService;
 use opensharing_server::access::SourceStorageAccess;
 use opensharing_server::catalog::StoreCatalog;
 use opensharing_server::config::EncryptionConfig;
@@ -104,7 +105,7 @@ impl TokenReader for HostStore {
 
 fn sources() -> SourceRegistry {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../api/tests/data/basic_partitioned")
+        .join("../engine/tests/data/basic_partitioned")
         .canonicalize()
         .unwrap();
     let mut source = StaticSource::default();

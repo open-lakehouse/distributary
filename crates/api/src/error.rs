@@ -3,7 +3,7 @@
 //! [`Error`] is the error half of every handler `Result` in this crate: the
 //! generated `SharingHandler` / `SharingVolumeHandler` / `SharingSkillHandler`
 //! traits return `crate::Result<T>`, and the hand-written NDJSON query path does
-//! too. Its [`IntoResponse`] emits the [`ErrorResponse`] envelope
+//! too. Its `IntoResponse` (feature `axum`) emits the [`ErrorResponse`] envelope
 //! (`{ "errorCode", "message" }`, the shape Delta Sharing and Unity Catalog
 //! servers share) with the status codes the sharing surface uses, plus a
 //! [`NotImplemented`](Error::NotImplemented) variant (→ 501) for the
@@ -24,13 +24,6 @@ pub type SharingApiResult<T> = Result<T>;
 /// (typically via `From`), so the crate never sees a server error type.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// A delta-kernel failure encountered while serving the query path. → 500.
-    #[error("Delta Kernel Error: {source}")]
-    DeltaKernel {
-        #[from]
-        source: delta_kernel::Error,
-    },
-
     /// A response (de)serialization failure. → 500.
     #[error("Malformed response: {source}")]
     MalformedResponse {
@@ -149,10 +142,6 @@ mod server {
         fn into_response(self) -> Response {
             let error_code = self.error_code().to_string();
             let (status, message): (StatusCode, String) = match self {
-                Error::DeltaKernel { source } => {
-                    error!("Delta Kernel error: {}", source);
-                    internal()
-                }
                 // Invalid-argument messages are written for the caller (a version
                 // past the end of the table, an unshared history, …), so they are
                 // returned rather than replaced by a generic message.

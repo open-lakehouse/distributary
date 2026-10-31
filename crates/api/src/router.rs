@@ -40,7 +40,7 @@ use crate::codegen::sharing::{self, SharingHandler};
 use crate::codegen::sharing_skill::{self, SharingSkillHandler};
 use crate::codegen::sharing_volume::{self, SharingVolumeHandler};
 use crate::error::{Error, Result};
-use crate::handler::SharingQueryHandler;
+use crate::query::SharingQueryHandler;
 
 /// Response header advertising the Delta Sharing capabilities this server
 /// supports. The query path currently emits responses in `parquet` format.

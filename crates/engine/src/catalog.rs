@@ -20,7 +20,7 @@ use delta_kernel::Version;
 
 use opensharing_common::models::opensharing::v1::Share as SharingShare;
 
-use crate::error::{Error, Result};
+use crate::{Error, Result};
 
 /// The kind of object shared in a share.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -217,7 +217,7 @@ pub struct Page<T> {
 
 /// The recipient-facing share catalog port. See the module docs.
 #[async_trait]
-pub trait ShareCatalog<Cx = crate::DefaultContext>: Send + Sync + 'static {
+pub trait ShareCatalog<Cx = opensharing_api::DefaultContext>: Send + Sync + 'static {
     /// Authorize an action before the service performs it.
     async fn authorize(&self, action: SharingAction<'_>, cx: &Cx) -> Result<()>;
 

@@ -28,8 +28,8 @@ use crate::catalog::{
     AssetKind, AssetRef, DataFormat, Page, PageRequest, ResolvedLocation, ShareCatalog, ShareInfo,
     SharedAsset, SharedObject, SharingAction,
 };
-use crate::error::{Error, Result};
 use crate::service::{SharingService, paginate};
+use crate::{Error, Result};
 
 /// One shared object in a fixture share.
 #[derive(Debug, Clone)]

@@ -5,7 +5,7 @@
 //! asset's location, from which everything else is derived:
 //!
 //! - the server's own reads go through a store built from it ([`build_store`]);
-//! - query responses carry URLs presigned with it ([`presign`]), which never
+//! - query responses carry URLs presigned with it ([`presign()`]), which never
 //!   outlive it;
 //! - the recipient credential endpoints hand it on.
 //!
@@ -30,14 +30,14 @@ use olai_storage_credentials::{
     AccessLevel, StorageLocation, StorageProvider, StorageScope, VendedCredential,
 };
 use olai_vended_store::{CredentialSource, StoreOptions, build_store, presign};
-use opensharing_api::access::{FileSigner, SignedFile, StorageAccess, TableStorage};
 use opensharing_api::auth::Recipient;
-use opensharing_api::catalog::{AssetKind, SharedAsset};
 use opensharing_common::models::opensharing::v1::{
     SharingAwsCredentials, SharingAzureUserDelegationSas, SharingGcpOauthToken,
     SharingR2Credentials, SharingTemporaryCredentials,
     sharing_temporary_credentials::Credentials as SharingCredentials,
 };
+use opensharing_engine::access::{FileSigner, SignedFile, StorageAccess, TableStorage};
+use opensharing_engine::catalog::{AssetKind, SharedAsset};
 use url::Url;
 
 use crate::secrets::Secrets;

@@ -1,6 +1,5 @@
 use std::{collections::HashMap, str::FromStr};
 
-use delta_kernel::actions::{Metadata as KernelMetadata, Protocol as DeltaProtocol};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
@@ -183,41 +182,27 @@ pub struct Metadata {
     pub configuration: HashMap<String, String>,
 }
 
-impl TryFrom<&KernelMetadata> for Metadata {
-    type Error = Error;
-
-    fn try_from(metadata: &KernelMetadata) -> Result<Self, Self::Error> {
-        let bytes = serde_json::to_vec(metadata)?;
-        Ok(serde_json::from_slice(&bytes)?)
-    }
-}
-
-impl TryFrom<KernelMetadata> for Metadata {
-    type Error = Error;
-
-    fn try_from(metadata: KernelMetadata) -> Result<Self, Self::Error> {
-        (&metadata).try_into()
-    }
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParquetProtocol {
     pub min_reader_version: i32,
 }
 
-impl From<&DeltaProtocol> for ParquetProtocol {
-    fn from(protocol: &DeltaProtocol) -> Self {
-        Self {
-            min_reader_version: protocol.min_reader_version(),
-        }
-    }
-}
-
-impl From<DeltaProtocol> for ParquetProtocol {
-    fn from(protocol: DeltaProtocol) -> Self {
-        (&protocol).into()
-    }
+/// A table's protocol in the [Delta format] (the `deltaProtocol` response line).
+///
+/// The wire shape of a Delta log `protocol` action. The feature lists exist only
+/// for reader version 3 and writer version 7.
+///
+/// [Delta format]: https://github.com/delta-io/delta-sharing/blob/main/PROTOCOL.md#protocol-in-delta-format
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeltaProtocol {
+    pub min_reader_version: i32,
+    pub min_writer_version: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reader_features: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub writer_features: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -238,14 +223,14 @@ pub enum ProtocolResponseData {
 impl ProtocolResponseData {
     pub fn min_reader_version(&self) -> i32 {
         match self {
-            ProtocolResponseData::DeltaProtocol(protocol) => protocol.min_reader_version(),
+            ProtocolResponseData::DeltaProtocol(protocol) => protocol.min_reader_version,
             ProtocolResponseData::ParquetProtocol(protocol) => protocol.min_reader_version,
         }
     }
 
     pub fn min_writer_version(&self) -> Option<i32> {
         match self {
-            ProtocolResponseData::DeltaProtocol(protocol) => Some(protocol.min_writer_version()),
+            ProtocolResponseData::DeltaProtocol(protocol) => Some(protocol.min_writer_version),
             ProtocolResponseData::ParquetProtocol(_) => None,
         }
     }
@@ -258,28 +243,6 @@ pub struct DeltaMetadata {
     pub version: Option<i64>,
     pub size: Option<i64>,
     pub num_files: Option<i64>,
-}
-
-impl TryFrom<&KernelMetadata> for DeltaMetadata {
-    type Error = Error;
-
-    fn try_from(kernel_metadata: &KernelMetadata) -> Result<Self, Self::Error> {
-        let delta_metadata = Metadata::try_from(kernel_metadata)?;
-        Ok(DeltaMetadata {
-            delta_metadata,
-            version: None,
-            size: None,
-            num_files: None,
-        })
-    }
-}
-
-impl TryFrom<KernelMetadata> for DeltaMetadata {
-    type Error = Error;
-
-    fn try_from(metadata: KernelMetadata) -> Result<Self, Self::Error> {
-        (&metadata).try_into()
-    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -296,23 +259,6 @@ pub struct ParquetMetadata {
     pub version: Option<i64>,
     pub size: Option<i64>,
     pub num_files: Option<i64>,
-}
-
-impl TryFrom<&KernelMetadata> for ParquetMetadata {
-    type Error = Error;
-
-    fn try_from(metadata: &KernelMetadata) -> Result<Self, Self::Error> {
-        let bytes = serde_json::to_vec(metadata)?;
-        Ok(serde_json::from_slice(&bytes)?)
-    }
-}
-
-impl TryFrom<KernelMetadata> for ParquetMetadata {
-    type Error = Error;
-
-    fn try_from(metadata: KernelMetadata) -> Result<Self, Self::Error> {
-        (&metadata).try_into()
-    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -443,8 +389,22 @@ mod tests {
         else {
             panic!("Unexpected response");
         };
-        assert_eq!(protocol.min_reader_version(), 3);
-        assert_eq!(protocol.min_writer_version(), 7);
+        assert_eq!(protocol.min_reader_version, 3);
+        assert_eq!(protocol.min_writer_version, 7);
+        assert_eq!(
+            protocol.reader_features.as_deref(),
+            Some(&["columnMapping".to_string()][..])
+        );
+        // The protocol round-trips in the shape the Delta log writes it.
+        assert_eq!(
+            serde_json::to_value(&protocol).unwrap(),
+            json!({
+              "minReaderVersion": 3,
+              "minWriterVersion": 7,
+              "readerFeatures": ["columnMapping"],
+              "writerFeatures": ["columnMapping"]
+            })
+        );
     }
 
     #[test]

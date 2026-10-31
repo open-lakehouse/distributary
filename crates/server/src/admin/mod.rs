@@ -28,7 +28,7 @@
 //! [`ShareObject`](crate::store::ShareObject)s; [`shares`] converts them to and
 //! from `DataObject`s at the API boundary.
 //!
-//! [`ShareCatalog::authorize`]: opensharing_api::ShareCatalog::authorize
+//! [`ShareCatalog::authorize`]: opensharing_engine::ShareCatalog::authorize
 //! [`ShareHandler`]: opensharing_admin_api::ShareHandler
 //! [`RecipientHandler`]: opensharing_admin_api::RecipientHandler
 //! [`require_provider`]: opensharing_admin_api::auth::require_provider

@@ -14,12 +14,13 @@ use opensharing_common::models::opensharing::v1::{
 };
 
 use crate::catalog::{AssetKind, AssetRef, PageRequest, SharedAsset, SharedObject, SharingAction};
-use crate::codegen::sharing::SharingHandler;
-use crate::codegen::sharing_skill::SharingSkillHandler;
-use crate::codegen::sharing_volume::SharingVolumeHandler;
-use crate::error::{Error, Result};
 use crate::format::{QuerySpec, TableResponse, VersionSpec};
 use crate::service::{SharingService, paginate};
+use crate::{Error, Result};
+use opensharing_api::SharingQueryHandler;
+use opensharing_api::codegen::sharing::SharingHandler;
+use opensharing_api::codegen::sharing_skill::SharingSkillHandler;
+use opensharing_api::codegen::sharing_volume::SharingVolumeHandler;
 
 impl<Cx: Clone + Send + Sync + 'static> SharingService<Cx> {
     /// Authorize reading `share`.
@@ -426,50 +427,6 @@ fn skill(object: SharedObject, share: &str, share_id: Option<&str>) -> SharingSk
 // not-yet-implemented protocol additions (CDF, async queries).
 // ---------------------------------------------------------------------------
 
-/// The hand-written table-query surface: `version` / `metadata` / `query` return
-/// newline-delimited JSON (`application/x-ndjson`) with result-derived headers, a
-/// streaming contract the generated JSON handlers do not model. The recently
-/// added protocol endpoints — change data feed and asynchronous queries — have
-/// their types defined but return [`Error::NotImplemented`].
-#[async_trait::async_trait]
-pub trait SharingQueryHandler<Cx = crate::DefaultContext>: Send + Sync + 'static {
-    /// The current Delta version of a shared table.
-    async fn get_table_version(
-        &self,
-        request: GetTableVersionRequest,
-        context: Cx,
-    ) -> Result<GetTableVersionResponse>;
-
-    /// The NDJSON protocol + metadata lines for a shared table.
-    async fn get_table_metadata(
-        &self,
-        request: GetTableMetadataRequest,
-        context: Cx,
-    ) -> Result<TableResponse>;
-
-    /// The NDJSON protocol + metadata + file lines answering a table query.
-    async fn query_table(&self, request: QueryTableRequest, context: Cx) -> Result<TableResponse>;
-
-    /// Read-only temporary credentials for a shared table's storage location (the
-    /// OpenSharing `temporary-table-credentials` endpoint), so a recipient can
-    /// read the table directly instead of through presigned URLs.
-    async fn generate_temporary_table_credentials(
-        &self,
-        share: String,
-        schema: String,
-        name: String,
-        context: Cx,
-    ) -> Result<SharingTemporaryCredentials>;
-
-    /// Change data feed for a shared table. **Not implemented** — the request type
-    /// and route exist for spec coverage but the serving path returns 501.
-    async fn get_table_changes(&self, request: QueryTableRequest, context: Cx) -> Result<Bytes>;
-
-    /// Poll an asynchronous query by id. **Not implemented** — the route exists for
-    /// spec coverage but the serving path returns 501.
-    async fn poll_query(&self, query_id: String, context: Cx) -> Result<Bytes>;
-}
-
 #[async_trait::async_trait]
 impl<Cx: Clone + Send + Sync + 'static> SharingQueryHandler<Cx> for SharingService<Cx> {
     async fn get_table_version(
@@ -571,21 +528,4 @@ impl<Cx: Clone + Send + Sync + 'static> SharingQueryHandler<Cx> for SharingServi
             "Delta Sharing asynchronous queries (POST /queries/{id}) are not implemented",
         ))
     }
-}
-
-/// A convenience alias for the full set of handler traits a sharing router needs.
-///
-/// [`SharingService`] implements all of them. Named so a host (or the router) can
-/// bound on one trait instead of four.
-pub trait SharingApiHandler<Cx = crate::DefaultContext>:
-    SharingHandler<Cx> + SharingVolumeHandler<Cx> + SharingSkillHandler<Cx> + SharingQueryHandler<Cx>
-{
-}
-
-impl<T, Cx> SharingApiHandler<Cx> for T where
-    T: SharingHandler<Cx>
-        + SharingVolumeHandler<Cx>
-        + SharingSkillHandler<Cx>
-        + SharingQueryHandler<Cx>
-{
 }

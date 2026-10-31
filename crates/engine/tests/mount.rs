@@ -11,9 +11,10 @@ use axum::http::{Request, StatusCode};
 use tower::ServiceExt;
 
 use opensharing_api::auth::{Recipient, RecipientAuthenticator, require_recipient};
-use opensharing_api::testing::{FixtureObject, FixtureShare, in_memory_service};
-use opensharing_api::{Error, Result, SharingService, sharing_router};
+use opensharing_api::{Error, Result, sharing_router};
 use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
+use opensharing_engine::SharingService;
+use opensharing_engine::testing::{FixtureObject, FixtureShare, in_memory_service};
 
 const TOKEN: &str = "recipient-token";
 
