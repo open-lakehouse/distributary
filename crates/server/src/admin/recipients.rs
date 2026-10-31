@@ -6,12 +6,13 @@ use opensharing_admin::models::recipients::v1::{
     ListRecipientsRequest, ListRecipientsResponse, Recipient, RecipientToken,
     RotateRecipientTokenRequest, UpdateRecipientRequest,
 };
-use opensharing_api::admin::RecipientHandler;
+use opensharing_admin_api::RecipientHandler;
 
 use super::{AdminAction, ProviderService, identifier};
+use crate::Result;
 use crate::recipients::{activation_url, issue_token};
 use crate::store::{RecipientRecord, TokenRecord};
-use crate::{Error, Result};
+use opensharing_admin_api::{Error as AdminError, Result as AdminResult};
 
 /// A token as shown to the provider; the activation link only until it is used.
 pub fn listed_token(public_url: &str, token: &TokenRecord) -> RecipientToken {
@@ -52,7 +53,7 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         &self,
         _request: ListRecipientsRequest,
         context: Cx,
-    ) -> Result<ListRecipientsResponse> {
+    ) -> AdminResult<ListRecipientsResponse> {
         self.authorize(AdminAction::ListRecipients, &context)
             .await?;
         let mut recipients = Vec::new();
@@ -69,7 +70,7 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         &self,
         request: CreateRecipientRequest,
         context: Cx,
-    ) -> Result<Recipient> {
+    ) -> AdminResult<Recipient> {
         self.authorize(
             AdminAction::CreateRecipient {
                 recipient: &request.name,
@@ -82,7 +83,7 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
                 AuthenticationType::TOKEN | AuthenticationType::AUTHENTICATION_TYPE_UNSPECIFIED,
             ) => {}
             _ => {
-                return Err(Error::invalid_argument(
+                return Err(AdminError::invalid_argument(
                     "only TOKEN authentication is supported",
                 ));
             }
@@ -99,10 +100,14 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
             request.expiration_time,
         )
         .await?;
-        self.recipient(record).await
+        Ok(self.recipient(record).await?)
     }
 
-    async fn get_recipient(&self, request: GetRecipientRequest, context: Cx) -> Result<Recipient> {
+    async fn get_recipient(
+        &self,
+        request: GetRecipientRequest,
+        context: Cx,
+    ) -> AdminResult<Recipient> {
         self.authorize(
             AdminAction::ReadRecipient {
                 recipient: &request.name,
@@ -111,7 +116,7 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         )
         .await?;
         let record = self.store.get_recipient(&request.name).await?;
-        self.recipient(record).await
+        Ok(self.recipient(record).await?)
     }
 
     /// Update a recipient's comment. Renaming, changing the owner and setting
@@ -120,7 +125,7 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         &self,
         request: UpdateRecipientRequest,
         context: Cx,
-    ) -> Result<Recipient> {
+    ) -> AdminResult<Recipient> {
         self.authorize(
             AdminAction::UpdateRecipient {
                 recipient: &request.name,
@@ -129,17 +134,21 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         )
         .await?;
         if request.new_name.is_some() {
-            return Err(Error::invalid_argument(
+            return Err(AdminError::invalid_argument(
                 "renaming recipients is not supported",
             ));
         }
         let current = self.store.get_recipient(&request.name).await?;
         let comment = request.comment.or(current.comment);
         let record = self.store.update_recipient(&request.name, comment).await?;
-        self.recipient(record).await
+        Ok(self.recipient(record).await?)
     }
 
-    async fn delete_recipient(&self, request: DeleteRecipientRequest, context: Cx) -> Result<()> {
+    async fn delete_recipient(
+        &self,
+        request: DeleteRecipientRequest,
+        context: Cx,
+    ) -> AdminResult<()> {
         self.authorize(
             AdminAction::DeleteRecipient {
                 recipient: &request.name,
@@ -147,7 +156,7 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
             &context,
         )
         .await?;
-        self.store.delete_recipient(&request.name).await
+        Ok(self.store.delete_recipient(&request.name).await?)
     }
 
     /// Replace the recipient's tokens with a fresh one. Existing tokens stop
@@ -157,7 +166,7 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         &self,
         request: RotateRecipientTokenRequest,
         context: Cx,
-    ) -> Result<Recipient> {
+    ) -> AdminResult<Recipient> {
         self.authorize(
             AdminAction::RotateRecipientToken {
                 recipient: &request.name,
@@ -174,6 +183,6 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
             .and_then(|t| t.expires_at);
         self.store.delete_tokens(&record.id).await?;
         issue_token(self.store.as_ref(), &self.secrets, &record, expires_at).await?;
-        self.recipient(record).await
+        Ok(self.recipient(record).await?)
     }
 }

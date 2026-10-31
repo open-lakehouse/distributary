@@ -6,7 +6,7 @@
 # over both cross-wires the generated protocol client builders. Each config gets
 # its own descriptor set (see `just generate-code`). This config emits the
 # models (`opensharing-admin`) and the handler traits + route functions
-# (`opensharing-api`'s `admin` feature, under `src/admin/codegen`).
+# (`opensharing-admin-api`, under `src/codegen`).
 version: 1
 project:
   name: opensharing-admin
@@ -24,7 +24,7 @@ generate:
     crate_name: opensharing_admin
 
   server:
-    output: crates/api/src/admin
+    output: crates/admin-api/src
     # Generic over the context `Cx`, like the protocol traits: the default is
     # the crate-neutral `DefaultContext`; a host plugs in its own context.
     context_type: crate::DefaultContext

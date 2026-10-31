@@ -5,8 +5,8 @@
 //! deployable host for it:
 //!
 //! - [`store`]: the server's own state (shares, recipients, tokens, grants,
-//!   sealed storage credentials) behind the [`ShareStore`](store::ShareStore)
-//!   port, in memory or in Postgres;
+//!   sealed storage credentials) behind targeted per-resource store traits,
+//!   in memory or in Postgres;
 //! - [`source`]: the [`CatalogSource`](source::CatalogSource) port shares are
 //!   mapped onto — a static configuration, a Unity Catalog REST server
 //!   (feature `unity`), or your own;
@@ -17,7 +17,7 @@
 //! - [`recipients`]: recipient tokens with activation links;
 //! - `admin` (feature `admin`): the provider admin API (shares, permissions,
 //!   recipients), in the Databricks Delta Sharing REST shape, implementing the
-//!   handler traits `opensharing-api` generates;
+//!   handler traits `opensharing-admin-api` generates;
 //! - [`embed`]: the socket-less [`Router`](axum::Router) any host can serve;
 //! - `unity` (feature `unity`): the Unity Catalog source and the UC-shaped
 //!   storage credential / external location admin routes.
@@ -29,9 +29,13 @@
 //! catalog-independent trestle credential vending crates) remain; the `admin`
 //! feature adds the admin API back. A host with its own catalog implements
 //! [`CatalogSource`](source::CatalogSource) and manages shares and recipients
-//! through the [`ShareStore`](store::ShareStore), its own admin surface, or
+//! through the [`SharingStore`](store::SharingStore), its own admin surface, or
 //! the admin API mounted over its own request context, then serves
-//! [`embed::router`].
+//! [`embed::router`]. A catalog that keeps shares and recipients in its own
+//! store implements just [`ShareReader`](store::ShareReader) and
+//! [`TokenReader`](store::TokenReader) and assembles the protocol router from
+//! [`StoreCatalog`](catalog::StoreCatalog) and
+//! [`StoreAuthenticator`](recipients::StoreAuthenticator).
 //!
 //! See `ARCHITECTURE.md` for the design.
 
@@ -41,6 +45,7 @@ pub mod admin;
 pub mod catalog;
 pub mod config;
 pub mod embed;
+pub mod error;
 pub mod recipients;
 pub mod secrets;
 pub mod source;
@@ -50,4 +55,4 @@ mod tokens;
 pub mod unity;
 
 pub use config::Config;
-pub use opensharing_api::{Error, Result};
+pub use error::{Error, Result};

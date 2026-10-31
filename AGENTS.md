@@ -13,9 +13,14 @@ for the design.
   run `just generate`, then commit the output in the same commit as the source
   change.
 - **Keep the catalog boundary.** `opensharing-common`, `opensharing-admin`,
-  `opensharing-client` and `opensharing-api` never depend on a catalog crate.
+  `opensharing-admin-api`, `opensharing-client` and `opensharing-api` never
+  depend on a catalog crate.
   `opensharing-server` may depend on `olai-uc-*` only behind its `unity`
   feature. CI's `catalog-independence` job guards this.
+- **Keep the protocol and the admin API apart.** `opensharing-api` never
+  depends on `opensharing-admin*`, and `opensharing-admin-api` never depends on
+  `opensharing-api`, `opensharing-common` or `opensharing-client`. Each has its
+  own auth seam and error type. The same CI job guards this.
 - **Cargo.lock and trestle.** CI resolves the `olai-*` trestle crates from
   crates.io. A lock resolved under the local `just configure-trestle-deps` patch
   must not be committed. Check with `dev/scripts/check-cargo-lock-trestle.sh`,
@@ -34,6 +39,6 @@ cargo fmt --all --check \
 
 ## Commits and pull requests
 
-Conventional commits, scoped by crate directory (`common`, `admin`, `client`,
+Conventional commits, scoped by crate directory (`common`, `admin`, `admin-api`, `client`,
 `api`, `server`, `neon`): release-plz derives each crate's version bump and
 changelog from them. PR titles follow the same format.

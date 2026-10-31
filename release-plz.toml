@@ -9,7 +9,7 @@
 # never been published, and none of the `opensharing-*` names has been. Each
 # crate therefore carries `release = false` until a one-time token publish has
 # created it and its Trusted Publisher is registered. Bootstrap order (root ->
-# leaf): common, admin -> client, api -> server.
+# leaf): common, admin -> client, api, admin-api -> server.
 #
 # `opensharing-server` additionally depends on the git-pinned Unity Catalog
 # crates (see the workspace Cargo.toml); it cannot publish until those are
@@ -67,6 +67,12 @@ changelog_path = "crates/admin/CHANGELOG.md"
 release = false
 
 [[package]]
+name = "opensharing-admin-api"
+changelog_path = "crates/admin-api/CHANGELOG.md"
+# Bootstrap gate (see top), after opensharing-admin.
+release = false
+
+[[package]]
 name = "opensharing-api"
 changelog_path = "crates/api/CHANGELOG.md"
 # Bootstrap gate (see top), after opensharing-common.
@@ -75,7 +81,8 @@ release = false
 [[package]]
 name = "opensharing-server"
 changelog_path = "crates/server/CHANGELOG.md"
-# Bootstrap gate (see top), after opensharing-api; also blocked on the
+# Bootstrap gate (see top), after opensharing-api and
+# opensharing-admin-api; also blocked on the
 # git-pinned Unity Catalog crates.
 release = false
 
@@ -107,5 +114,5 @@ commit_parsers = [
 # Strip the redundant "(scope)" from each rendered line — each crate's changelog
 # is already crate-scoped.
 commit_preprocessors = [
-  { pattern = '\((common|admin|client|api|server|neon)\)', replace = "" },
+  { pattern = '\((common|admin|admin-api|client|api|server|neon)\)', replace = "" },
 ]

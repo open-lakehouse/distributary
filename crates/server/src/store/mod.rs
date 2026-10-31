@@ -1,4 +1,4 @@
-//! The [`ShareStore`] port: the sharing server's own state.
+//! The store ports: the sharing server's own state.
 //!
 //! The store holds what the provider configures — shares (each a list of
 //! [`ShareObject`]s naming assets in a source catalog), recipients, their bearer
@@ -7,8 +7,29 @@
 //! Secrets are stored only sealed (see [`crate::secrets`]) and tokens only as
 //! digests.
 //!
-//! Two implementations: [`memory::InMemoryStore`] (tests, ephemeral demos) and,
-//! with the `postgres` feature, [`postgres::PostgresStore`].
+//! The state is split by resource into targeted traits, not one generic
+//! resource store, because the set of resources is small and fixed:
+//!
+//! - [`ShareStore`] holds shares and grants. Its read-only view,
+//!   [`ShareReader`], is all the protocol needs.
+//! - [`RecipientStore`] holds recipients and tokens. Its read-only view,
+//!   [`TokenReader`], is all recipient authentication needs.
+//! - [`CredentialStore`] holds sealed storage credentials and external
+//!   locations.
+//! - [`SharingStore`] bundles all three.
+//!
+//! A catalog that keeps shares and recipients in its own store can implement
+//! just [`ShareReader`] and [`TokenReader`] and reuse the server's
+//! [`StoreCatalog`](crate::catalog::StoreCatalog) and
+//! [`StoreAuthenticator`](crate::recipients::StoreAuthenticator).
+//!
+//! Three implementations:
+//!
+//! - [`memory::InMemoryStore`], for tests and ephemeral demos;
+//! - `postgres::PostgresStore` (feature `postgres`);
+//! - `sqlite::SqliteStore` (feature `sqlite`), for single-node deployments.
+//!
+//! The SQL stores embed their own migrations (`migrations/{postgres,sqlite}`).
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -18,6 +39,10 @@ use crate::Result;
 pub mod memory;
 #[cfg(feature = "postgres")]
 pub mod postgres;
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
+mod sql;
+#[cfg(feature = "sqlite")]
+pub mod sqlite;
 
 /// One entry of a share: an asset, or a whole schema, in a source catalog.
 ///
@@ -164,16 +189,25 @@ pub struct ExternalLocationRecord {
     pub credential_name: String,
 }
 
-/// The sharing server's state. See the module docs.
-///
-/// Lookups of something missing return [`Error::NotFound`](crate::Error::NotFound);
-/// creating something that exists returns an invalid-argument error.
-#[async_trait]
-pub trait ShareStore: Send + Sync + 'static {
-    // -- shares ---------------------------------------------------------------
+// The store is split by resource, with read-only views for what the
+// recipient-facing protocol needs. Lookups of something missing return
+// [`Error::NotFound`](crate::Error::NotFound); creating something that exists
+// returns an invalid-argument error.
 
-    async fn create_share(&self, name: &str, comment: Option<String>) -> Result<ShareRecord>;
+/// The shares as the recipient-facing protocol reads them: what
+/// [`StoreCatalog`](crate::catalog::StoreCatalog) needs.
+#[async_trait]
+pub trait ShareReader: Send + Sync + 'static {
     async fn get_share(&self, name: &str) -> Result<ShareRecord>;
+    /// The shares granted to a recipient, ordered by name.
+    async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>>;
+    async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool>;
+}
+
+/// Shares and their grants, as the provider manages them.
+#[async_trait]
+pub trait ShareStore: ShareReader {
+    async fn create_share(&self, name: &str, comment: Option<String>) -> Result<ShareRecord>;
     /// All shares, ordered by name.
     async fn list_shares(&self) -> Result<Vec<ShareRecord>>;
     /// Replace a share's objects and comment.
@@ -185,8 +219,23 @@ pub trait ShareStore: Send + Sync + 'static {
     ) -> Result<ShareRecord>;
     async fn delete_share(&self, name: &str) -> Result<()>;
 
-    // -- recipients -----------------------------------------------------------
+    async fn grant(&self, share: &str, recipient: &str) -> Result<()>;
+    async fn revoke(&self, share: &str, recipient: &str) -> Result<()>;
+    /// The names of the recipients granted `share`, ordered.
+    async fn recipients_of(&self, share: &str) -> Result<Vec<String>>;
+}
 
+/// Recipient tokens as the recipient-facing protocol reads them: what
+/// [`StoreAuthenticator`](crate::recipients::StoreAuthenticator) needs.
+#[async_trait]
+pub trait TokenReader: Send + Sync + 'static {
+    /// The token with this digest and its recipient.
+    async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)>;
+}
+
+/// Recipients and their tokens: issuing, activation, rotation and re-wrapping.
+#[async_trait]
+pub trait RecipientStore: TokenReader {
     async fn create_recipient(
         &self,
         name: &str,
@@ -204,11 +253,7 @@ pub trait ShareStore: Send + Sync + 'static {
     /// Delete a recipient with its tokens and grants.
     async fn delete_recipient(&self, name: &str) -> Result<()>;
 
-    // -- tokens ---------------------------------------------------------------
-
     async fn insert_token(&self, token: TokenRecord) -> Result<()>;
-    /// The token with this digest and its recipient.
-    async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)>;
     /// The not-yet-activated token with this activation code.
     async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord>;
     /// Consume a token's activation: drop its sealed copy and activation code.
@@ -220,19 +265,12 @@ pub trait ShareStore: Send + Sync + 'static {
     /// Every token still holding a sealed copy (for key rotation).
     async fn sealed_tokens(&self) -> Result<Vec<TokenRecord>>;
     async fn update_sealed_token(&self, token_id: &str, sealed: Vec<u8>) -> Result<()>;
+}
 
-    // -- grants ---------------------------------------------------------------
-
-    async fn grant(&self, share: &str, recipient: &str) -> Result<()>;
-    async fn revoke(&self, share: &str, recipient: &str) -> Result<()>;
-    /// The names of the recipients granted `share`, ordered.
-    async fn recipients_of(&self, share: &str) -> Result<Vec<String>>;
-    /// The shares granted to a recipient, ordered by name.
-    async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>>;
-    async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool>;
-
-    // -- storage credentials (local access) -------------------------------------
-
+/// Sealed storage credentials and the external locations that map storage URLs
+/// onto them (local storage access).
+#[async_trait]
+pub trait CredentialStore: Send + Sync + 'static {
     async fn put_credential(&self, credential: SealedCredential) -> Result<()>;
     async fn get_credential(&self, name: &str) -> Result<SealedCredential>;
     /// All credentials, ordered by name.
@@ -244,6 +282,14 @@ pub trait ShareStore: Send + Sync + 'static {
     async fn list_external_locations(&self) -> Result<Vec<ExternalLocationRecord>>;
     async fn delete_external_location(&self, name: &str) -> Result<()>;
 }
+
+/// All of the server's state: what the standalone server runs on. Implemented
+/// for every type that implements the three stores.
+///
+/// An `Arc<dyn SharingStore>` coerces to any of the narrower stores and readers.
+pub trait SharingStore: ShareStore + RecipientStore + CredentialStore {}
+
+impl<T: ShareStore + RecipientStore + CredentialStore + ?Sized> SharingStore for T {}
 
 /// The current time in milliseconds since the epoch.
 pub(crate) fn now_millis() -> i64 {

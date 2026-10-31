@@ -1,0 +1,39 @@
+[package]
+name = "opensharing-admin-api"
+version = "0.0.1"
+description = "The OpenSharing provider admin API server surface: generated share, recipient and provider handler traits, their axum routers, and a provider authentication port, independent of the recipient-facing protocol."
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+rust-version.workspace = true
+
+[dependencies]
+# local dependencies in alphabetical order
+opensharing-admin = { path = "../admin", version = "0.0.1" }
+
+# workspace dependencies in alphabetical order
+async-trait = { workspace = true }
+axum = { workspace = true, optional = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+tower = { workspace = true }
+
+[[test]]
+name = "router"
+required-features = ["axum"]
+
+[features]
+# `axum` gates the generated route functions, the routers, the provider auth
+# layer and the error `IntoResponse`. The feature name must be `axum` because
+# the generated server code hard-codes `#[cfg(feature = "axum")]`. Without it
+# only the handler traits and the error type remain.
+default = ["axum"]
+axum = ["dep:axum", "opensharing-admin/axum"]

@@ -9,13 +9,14 @@ use opensharing_admin::models::shares::v1::{
     ListSharesResponse, PrivilegeAssignment, Share, UpdatePermissionsRequest,
     UpdatePermissionsResponse, UpdateShareRequest,
 };
-use opensharing_api::admin::ShareHandler;
+use opensharing_admin_api::ShareHandler;
 
 use super::{AdminAction, ProviderService, identifier};
 use crate::catalog::shared_as;
 use crate::source::split_name;
 use crate::store::{ShareObject, ShareRecord, now_millis};
 use crate::{Error, Result};
+use opensharing_admin_api::{Error as AdminError, Result as AdminResult};
 
 /// The only privilege a share grants.
 const SELECT: &str = "SELECT";
@@ -92,7 +93,7 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
         &self,
         _request: ListSharesRequest,
         context: Cx,
-    ) -> Result<ListSharesResponse> {
+    ) -> AdminResult<ListSharesResponse> {
         self.authorize(AdminAction::ListShares, &context).await?;
         Ok(ListSharesResponse {
             shares: self
@@ -106,7 +107,7 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
         })
     }
 
-    async fn create_share(&self, request: CreateShareRequest, context: Cx) -> Result<Share> {
+    async fn create_share(&self, request: CreateShareRequest, context: Cx) -> AdminResult<Share> {
         self.authorize(
             AdminAction::CreateShare {
                 share: &request.name,
@@ -115,14 +116,14 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
         )
         .await?;
         identifier(&request.name)?;
-        share(
+        Ok(share(
             self.store
                 .create_share(&request.name, request.comment)
                 .await?,
-        )
+        )?)
     }
 
-    async fn get_share(&self, request: GetShareRequest, context: Cx) -> Result<Share> {
+    async fn get_share(&self, request: GetShareRequest, context: Cx) -> AdminResult<Share> {
         self.authorize(
             AdminAction::ReadShare {
                 share: &request.name,
@@ -130,10 +131,10 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
             &context,
         )
         .await?;
-        share(self.store.get_share(&request.name).await?)
+        Ok(share(self.store.get_share(&request.name).await?)?)
     }
 
-    async fn update_share(&self, request: UpdateShareRequest, context: Cx) -> Result<Share> {
+    async fn update_share(&self, request: UpdateShareRequest, context: Cx) -> AdminResult<Share> {
         self.authorize(
             AdminAction::UpdateShare {
                 share: &request.name,
@@ -142,7 +143,9 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
         )
         .await?;
         if request.new_name.is_some() {
-            return Err(Error::invalid_argument("renaming shares is not supported"));
+            return Err(AdminError::invalid_argument(
+                "renaming shares is not supported",
+            ));
         }
         let current = self.store.get_share(&request.name).await?;
         let mut objects = current
@@ -166,7 +169,7 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
                     });
                 }
                 (Some(Action::ADD), Some(_)) => {
-                    return Err(Error::invalid_argument(format!(
+                    return Err(AdminError::invalid_argument(format!(
                         "'{}' is already in the share",
                         object.name
                     )));
@@ -182,12 +185,12 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
                     objects.remove(i);
                 }
                 (Some(Action::UPDATE | Action::REMOVE), None) => {
-                    return Err(Error::invalid_argument(format!(
+                    return Err(AdminError::invalid_argument(format!(
                         "'{}' is not in the share",
                         object.name
                     )));
                 }
-                _ => return Err(Error::invalid_argument("unknown share update action")),
+                _ => return Err(AdminError::invalid_argument("unknown share update action")),
             }
         }
         // Two objects may not be exposed under the same shared name.
@@ -201,7 +204,7 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
                 shared_as(&share_object(object)?)?,
             );
             if !exposed.insert(key) {
-                return Err(Error::invalid_argument(format!(
+                return Err(AdminError::invalid_argument(format!(
                     "'{}' would be shared under a name already in use",
                     object.name
                 )));
@@ -212,14 +215,14 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
             .iter()
             .map(share_object)
             .collect::<Result<Vec<_>>>()?;
-        share(
+        Ok(share(
             self.store
                 .update_share(&request.name, objects, comment)
                 .await?,
-        )
+        )?)
     }
 
-    async fn delete_share(&self, request: DeleteShareRequest, context: Cx) -> Result<()> {
+    async fn delete_share(&self, request: DeleteShareRequest, context: Cx) -> AdminResult<()> {
         self.authorize(
             AdminAction::DeleteShare {
                 share: &request.name,
@@ -227,14 +230,14 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
             &context,
         )
         .await?;
-        self.store.delete_share(&request.name).await
+        Ok(self.store.delete_share(&request.name).await?)
     }
 
     async fn get_permissions(
         &self,
         request: GetPermissionsRequest,
         context: Cx,
-    ) -> Result<GetPermissionsResponse> {
+    ) -> AdminResult<GetPermissionsResponse> {
         self.authorize(
             AdminAction::ReadPermissions {
                 share: &request.name,
@@ -253,7 +256,7 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
         &self,
         request: UpdatePermissionsRequest,
         context: Cx,
-    ) -> Result<UpdatePermissionsResponse> {
+    ) -> AdminResult<UpdatePermissionsResponse> {
         self.authorize(
             AdminAction::UpdatePermissions {
                 share: &request.name,
@@ -264,7 +267,7 @@ impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
         for change in &request.changes {
             for privilege in change.add.iter().chain(&change.remove) {
                 if !privilege.eq_ignore_ascii_case(SELECT) {
-                    return Err(Error::invalid_argument(format!(
+                    return Err(AdminError::invalid_argument(format!(
                         "unsupported privilege '{privilege}'; shares grant SELECT"
                     )));
                 }

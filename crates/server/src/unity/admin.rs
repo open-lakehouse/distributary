@@ -19,10 +19,11 @@ use serde_json::json;
 use unitycatalog_common::models::credentials::v1::Credential;
 use unitycatalog_common::models::external_locations::v1::CreateExternalLocationRequest;
 
+use crate::Error;
 use crate::access::credential_aad;
 use crate::admin::{AdminAction, ProviderService, identifier};
 use crate::store::{ExternalLocationRecord, SealedCredential};
-use crate::{Error, Result};
+use opensharing_admin_api::Result as AdminResult;
 
 /// The credential and external-location routes, to merge into
 /// [`admin::router`](crate::admin::router).
@@ -55,7 +56,7 @@ async fn create_credential<Cx: Send + Sync + 'static>(
     State(state): State<ProviderService<Cx>>,
     context: Cx,
     Json(credential): Json<Credential>,
-) -> Result<Json<serde_json::Value>> {
+) -> AdminResult<Json<serde_json::Value>> {
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
@@ -87,7 +88,7 @@ async fn create_credential<Cx: Send + Sync + 'static>(
 async fn list_credentials<Cx: Send + Sync + 'static>(
     State(state): State<ProviderService<Cx>>,
     context: Cx,
-) -> Result<Json<serde_json::Value>> {
+) -> AdminResult<Json<serde_json::Value>> {
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
@@ -105,7 +106,7 @@ async fn delete_credential<Cx: Send + Sync + 'static>(
     State(state): State<ProviderService<Cx>>,
     context: Cx,
     Path(name): Path<String>,
-) -> Result<StatusCode> {
+) -> AdminResult<StatusCode> {
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
@@ -117,7 +118,7 @@ async fn create_external_location<Cx: Send + Sync + 'static>(
     State(state): State<ProviderService<Cx>>,
     context: Cx,
     Json(request): Json<CreateExternalLocationRequest>,
-) -> Result<Json<serde_json::Value>> {
+) -> AdminResult<Json<serde_json::Value>> {
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
@@ -147,7 +148,7 @@ fn location_json(location: &ExternalLocationRecord) -> serde_json::Value {
 async fn list_external_locations<Cx: Send + Sync + 'static>(
     State(state): State<ProviderService<Cx>>,
     context: Cx,
-) -> Result<Json<serde_json::Value>> {
+) -> AdminResult<Json<serde_json::Value>> {
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
@@ -165,7 +166,7 @@ async fn delete_external_location<Cx: Send + Sync + 'static>(
     State(state): State<ProviderService<Cx>>,
     context: Cx,
     Path(name): Path<String>,
-) -> Result<StatusCode> {
+) -> AdminResult<StatusCode> {
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;

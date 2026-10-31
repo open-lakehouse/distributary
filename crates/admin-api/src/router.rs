@@ -8,13 +8,13 @@
 //!
 //! The routes bind to the generated route functions, so the request context
 //! `Cx` is extracted per request and handed to the handler, exactly as on the
-//! protocol surface (see [`crate::router`]).
+//! recipient-facing protocol in `opensharing-api`.
 
 use axum::routing::{Router, get, post};
 
-use super::codegen::providers::{self, ProviderHandler};
-use super::codegen::recipients::{self, RecipientHandler};
-use super::codegen::shares::{self, ShareHandler};
+use crate::codegen::providers::{self, ProviderHandler};
+use crate::codegen::recipients::{self, RecipientHandler};
+use crate::codegen::shares::{self, ShareHandler};
 
 /// Where the admin API is conventionally mounted, matching the Databricks /
 /// Unity Catalog REST API.

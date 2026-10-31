@@ -36,25 +36,43 @@ implementation in [`opensharing-api`](../api). See
 
 | Feature | Default | What |
 |---|---|---|
-| `postgres` | ✓ | The Postgres `ShareStore` (sqlx, embedded migrations) |
+| `postgres` | ✓ | The Postgres store (sqlx, embedded migrations) |
+| `sqlite` | | The SQLite store (sqlx, embedded migrations), for single-node deployments |
 | `unity` | ✓ | Unity Catalog integration: the UC REST catalog source and (with `admin`) the UC-shaped `credentials` / `external-locations` admin routes |
-| `admin` | ✓ | The provider admin API: `ProviderService` implements `opensharing-api`'s generated `ShareHandler` / `RecipientHandler`, authorized by an `AdminPolicy` |
-| `bin` | | The `sharing-server` binary (implies `postgres`, `unity` and `admin`) |
+| `admin` | ✓ | The provider admin API: `ProviderService` implements `opensharing-admin-api`'s generated `ShareHandler` / `RecipientHandler`, authorized by an `AdminPolicy` |
+| `bin` | | The `sharing-server` binary (implies `postgres`, `sqlite`, `unity` and `admin`) |
 
 ### Without Unity Catalog
 
-With `default-features = false` (optionally plus `postgres`) the crate uses no
+With `default-features = false` (optionally plus `postgres` or `sqlite`) the crate uses no
 catalog's models: the store, recipient tokens and activation, sealed secrets,
 the static source and storage access remain, and `admin` adds the share /
-recipient admin API ([`opensharing-admin`](../admin) models). Credential minting, object stores
+recipient admin API ([`opensharing-admin-api`](../admin-api)). Credential minting, object stores
 and presigning come from the catalog-independent trestle crates
 (`olai-credential-vending`, `olai-vended-store`, `olai-storage-credentials`). A catalog that already has discovery and an admin surface
 implements `CatalogSource` (or the `opensharing-api` ports directly),
-provisions shares and recipients through the `ShareStore`
+provisions shares and recipients through the `SharingStore`
 (`recipients::issue_token` issues tokens), and serves `embed::router`. See
-`tests/custom_mount.rs`. To serve the admin API over its own request context
-instead, it mounts `opensharing_api::admin::admin_router` with a
-`ProviderService` and its own `AdminPolicy`.
+`tests/custom_mount.rs`. A catalog that keeps shares and recipients in its own
+store implements only the read-only `store::ShareReader` and
+`store::TokenReader` views and assembles the protocol router from
+`StoreCatalog` and `StoreAuthenticator` (`tests/custom_store.rs`). To serve the
+admin API over its own request context instead, it mounts
+`opensharing_admin_api::admin_router` with a `ProviderService` and its own
+`AdminPolicy`.
+
+### Stores
+
+The state is split into targeted traits rather than one generic resource store:
+
+- `ShareStore` holds shares and grants; its read-only view is `ShareReader`.
+- `RecipientStore` holds recipients and tokens; its read-only view is
+  `TokenReader`.
+- `CredentialStore` holds sealed storage credentials and external locations.
+- `SharingStore` bundles all three.
+
+There are memory, Postgres and SQLite implementations. All of them pass the
+same conformance suite (`tests/store/conformance.rs`).
 
 ## Running
 
@@ -88,6 +106,15 @@ sources:
 Give the server its own database: its migrator keeps its own
 `_sqlx_migrations` table.
 
+For a single node, SQLite needs no database server (feature `sqlite`, included
+in `bin`). A `DATABASE_URL` starting with `sqlite:` selects it too:
+
+```yaml
+database:
+  type: sqlite
+  url: sqlite:///var/lib/sharing/sharing.db   # created if missing
+```
+
 ### Sharing a table
 
 ```sh
@@ -106,6 +133,7 @@ that the `delta-sharing` clients read directly.
 
 `cargo test -p opensharing-server` runs the end-to-end suite on the
 in-memory store; `--no-default-features` runs the catalog-free host test
-(`tests/custom_mount.rs`). The Postgres store test runs when
-`SHARING_SERVER_TEST_DATABASE_URL` points at a disposable database (see
-`tests/postgres.rs`).
+(`tests/custom_mount.rs`, `tests/custom_store.rs`). The store conformance suite
+runs on the memory store, on SQLite (feature `sqlite`, a temporary file), and on
+Postgres when `SHARING_SERVER_TEST_DATABASE_URL` points at a disposable
+database (see `tests/postgres.rs`).

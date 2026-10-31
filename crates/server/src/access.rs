@@ -42,8 +42,9 @@ use url::Url;
 
 use crate::secrets::Secrets;
 use crate::source::{AccessMode, SourceRegistry};
-use crate::store::ShareStore;
+use crate::store::CredentialStore;
 use crate::{Error, Result};
+use opensharing_api::Result as ApiResult;
 
 /// Re-vend this long before a cached delegated credential expires.
 const REFRESH_MARGIN: TimeDelta = TimeDelta::seconds(60);
@@ -68,7 +69,7 @@ enum AssetKindKey {
 impl SourceStorageAccess {
     pub fn new(
         sources: SourceRegistry,
-        store: Arc<dyn ShareStore>,
+        store: Arc<dyn CredentialStore>,
         secrets: Secrets,
         presign_ttl: Duration,
         aws_region: Option<String>,
@@ -157,7 +158,7 @@ fn scope(asset: &SharedAsset) -> Result<StorageScope> {
 
 #[async_trait]
 impl StorageAccess<Recipient> for SourceStorageAccess {
-    async fn table_storage(&self, asset: &SharedAsset, _cx: &Recipient) -> Result<TableStorage> {
+    async fn table_storage(&self, asset: &SharedAsset, _cx: &Recipient) -> ApiResult<TableStorage> {
         let credential = self.credential(asset).await?;
         // A store serves one query, which never outlives its credential: no re-vend.
         let store = build_store(
@@ -186,7 +187,7 @@ impl StorageAccess<Recipient> for SourceStorageAccess {
         &self,
         asset: &SharedAsset,
         _cx: &Recipient,
-    ) -> Result<SharingTemporaryCredentials> {
+    ) -> ApiResult<SharingTemporaryCredentials> {
         let credential = self.credential(asset).await?;
         let mut credentials = to_sharing_credentials(&credential)?;
         // Name the location as the catalog spelled it: emulator and endpoint URLs do
@@ -216,7 +217,7 @@ struct VendedSigner {
 
 #[async_trait]
 impl FileSigner for VendedSigner {
-    async fn sign(&self, files: &[Url]) -> Result<Vec<SignedFile>> {
+    async fn sign(&self, files: &[Url]) -> ApiResult<Vec<SignedFile>> {
         let locations = files
             .iter()
             .map(StorageLocation::parse)
@@ -307,7 +308,7 @@ pub(crate) fn vending_error(e: olai_credential_vending::Error) -> Error {
 /// Resolves a location's credential from the store's external locations and
 /// sealed credentials, re-wrapping credentials sealed under a retired key.
 pub(crate) struct StoreCredentialResolver {
-    store: Arc<dyn ShareStore>,
+    store: Arc<dyn CredentialStore>,
     secrets: Secrets,
 }
 
@@ -324,7 +325,7 @@ impl StoreCredentialResolver {
 /// Credentials sealed as a full Unity Catalog `Credential` document (as the admin
 /// API stored them before) open too: the metadata keys are ignored.
 pub(crate) async fn open_credential(
-    store: &dyn ShareStore,
+    store: &dyn CredentialStore,
     secrets: &Secrets,
     name: &str,
 ) -> Result<RegisteredCredential> {

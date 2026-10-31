@@ -1,4 +1,4 @@
-//! An in-memory [`ShareStore`], for tests and ephemeral demos.
+//! An in-memory [`SharingStore`](super::SharingStore), for tests and ephemeral demos.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
@@ -6,8 +6,8 @@ use std::sync::Mutex;
 use async_trait::async_trait;
 
 use super::{
-    ExternalLocationRecord, RecipientRecord, SealedCredential, ShareObject, ShareRecord,
-    ShareStore, TokenRecord, now_millis,
+    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, SealedCredential,
+    ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord, now_millis,
 };
 use crate::{Error, Result};
 
@@ -31,7 +31,7 @@ impl State {
     }
 }
 
-/// An in-memory [`ShareStore`]. Nothing survives a restart.
+/// An in-memory [`SharingStore`](super::SharingStore). Nothing survives a restart.
 #[derive(Default)]
 pub struct InMemoryStore {
     state: Mutex<State>,
@@ -52,6 +52,38 @@ fn exists(what: &str, name: &str) -> Error {
 }
 
 #[async_trait]
+impl ShareReader for InMemoryStore {
+    async fn get_share(&self, name: &str) -> Result<ShareRecord> {
+        self.state()
+            .shares
+            .get(name)
+            .cloned()
+            .ok_or(Error::NotFound)
+    }
+
+    async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>> {
+        let state = self.state();
+        let recipient = state.recipient_by_id(recipient_id)?.name.clone();
+        Ok(state
+            .grants
+            .iter()
+            .filter(|(_, r)| *r == recipient)
+            .filter_map(|(s, _)| state.shares.get(s).cloned())
+            .collect())
+    }
+
+    async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool> {
+        let state = self.state();
+        let Ok(recipient) = state.recipient_by_id(recipient_id) else {
+            return Ok(false);
+        };
+        Ok(state
+            .grants
+            .contains(&(share.to_string(), recipient.name.clone())))
+    }
+}
+
+#[async_trait]
 impl ShareStore for InMemoryStore {
     async fn create_share(&self, name: &str, comment: Option<String>) -> Result<ShareRecord> {
         let mut state = self.state();
@@ -69,14 +101,6 @@ impl ShareStore for InMemoryStore {
         };
         state.shares.insert(name.to_string(), share.clone());
         Ok(share)
-    }
-
-    async fn get_share(&self, name: &str) -> Result<ShareRecord> {
-        self.state()
-            .shares
-            .get(name)
-            .cloned()
-            .ok_or(Error::NotFound)
     }
 
     async fn list_shares(&self) -> Result<Vec<ShareRecord>> {
@@ -104,6 +128,51 @@ impl ShareStore for InMemoryStore {
         Ok(())
     }
 
+    async fn grant(&self, share: &str, recipient: &str) -> Result<()> {
+        let mut state = self.state();
+        if !state.shares.contains_key(share) || !state.recipients.contains_key(recipient) {
+            return Err(Error::NotFound);
+        }
+        state
+            .grants
+            .insert((share.to_string(), recipient.to_string()));
+        Ok(())
+    }
+
+    async fn revoke(&self, share: &str, recipient: &str) -> Result<()> {
+        self.state()
+            .grants
+            .remove(&(share.to_string(), recipient.to_string()));
+        Ok(())
+    }
+
+    async fn recipients_of(&self, share: &str) -> Result<Vec<String>> {
+        Ok(self
+            .state()
+            .grants
+            .iter()
+            .filter(|(s, _)| s == share)
+            .map(|(_, r)| r.clone())
+            .collect())
+    }
+}
+
+#[async_trait]
+impl TokenReader for InMemoryStore {
+    async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)> {
+        let state = self.state();
+        let token = state
+            .tokens
+            .iter()
+            .find(|t| t.token_hash == token_hash)
+            .ok_or(Error::NotFound)?;
+        let recipient = state.recipient_by_id(&token.recipient_id)?;
+        Ok((token.clone(), recipient.clone()))
+    }
+}
+
+#[async_trait]
+impl RecipientStore for InMemoryStore {
     async fn create_recipient(
         &self,
         name: &str,
@@ -157,17 +226,6 @@ impl ShareStore for InMemoryStore {
     async fn insert_token(&self, token: TokenRecord) -> Result<()> {
         self.state().tokens.push(token);
         Ok(())
-    }
-
-    async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)> {
-        let state = self.state();
-        let token = state
-            .tokens
-            .iter()
-            .find(|t| t.token_hash == token_hash)
-            .ok_or(Error::NotFound)?;
-        let recipient = state.recipient_by_id(&token.recipient_id)?;
-        Ok((token.clone(), recipient.clone()))
     }
 
     async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord> {
@@ -230,56 +288,10 @@ impl ShareStore for InMemoryStore {
         token.sealed_token = Some(sealed);
         Ok(())
     }
+}
 
-    async fn grant(&self, share: &str, recipient: &str) -> Result<()> {
-        let mut state = self.state();
-        if !state.shares.contains_key(share) || !state.recipients.contains_key(recipient) {
-            return Err(Error::NotFound);
-        }
-        state
-            .grants
-            .insert((share.to_string(), recipient.to_string()));
-        Ok(())
-    }
-
-    async fn revoke(&self, share: &str, recipient: &str) -> Result<()> {
-        self.state()
-            .grants
-            .remove(&(share.to_string(), recipient.to_string()));
-        Ok(())
-    }
-
-    async fn recipients_of(&self, share: &str) -> Result<Vec<String>> {
-        Ok(self
-            .state()
-            .grants
-            .iter()
-            .filter(|(s, _)| s == share)
-            .map(|(_, r)| r.clone())
-            .collect())
-    }
-
-    async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>> {
-        let state = self.state();
-        let recipient = state.recipient_by_id(recipient_id)?.name.clone();
-        Ok(state
-            .grants
-            .iter()
-            .filter(|(_, r)| *r == recipient)
-            .filter_map(|(s, _)| state.shares.get(s).cloned())
-            .collect())
-    }
-
-    async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool> {
-        let state = self.state();
-        let Ok(recipient) = state.recipient_by_id(recipient_id) else {
-            return Ok(false);
-        };
-        Ok(state
-            .grants
-            .contains(&(share.to_string(), recipient.name.clone())))
-    }
-
+#[async_trait]
+impl CredentialStore for InMemoryStore {
     async fn put_credential(&self, credential: SealedCredential) -> Result<()> {
         self.state()
             .credentials

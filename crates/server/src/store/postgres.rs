@@ -1,4 +1,4 @@
-//! A Postgres [`ShareStore`] (sqlx), with embedded migrations.
+//! A Postgres [`SharingStore`](super::SharingStore) (sqlx), with embedded migrations.
 //!
 //! Migrations run only through [`migrate`] (the `migrate` subcommand), never on
 //! startup; [`ensure_schema_current`] makes `serve` refuse to start on a schema
@@ -14,14 +14,15 @@ use async_trait::async_trait;
 use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
 use sqlx::{Row, migrate::Migrator};
 
+use super::sql::{APPLIED_MIGRATIONS, AppliedMigration, check_applied};
 use super::{
-    ExternalLocationRecord, RecipientRecord, SealedCredential, ShareObject, ShareRecord,
-    ShareStore, TokenRecord, now_millis,
+    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, SealedCredential,
+    ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord, now_millis,
 };
 use crate::{Error, Result};
 
 /// The embedded migrations.
-pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations/postgres");
 
 /// Connect a pool to `url`.
 pub async fn connect(url: &str, max_connections: u32) -> Result<PgPool> {
@@ -42,54 +43,17 @@ pub async fn migrate(pool: &PgPool) -> Result<()> {
 
 /// Fail unless the database schema is exactly what this binary expects.
 pub async fn ensure_schema_current(pool: &PgPool) -> Result<()> {
-    let applied: Vec<(i64, Vec<u8>, bool)> = match sqlx::query_as(
-        "SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version",
-    )
-    .fetch_all(pool)
-    .await
-    {
-        Ok(rows) => rows,
-        Err(sqlx::Error::Database(e)) if e.code().as_deref() == Some("42P01") => Vec::new(),
-        Err(e) => return Err(db(e)),
-    };
-    if let Some((version, _, _)) = applied.iter().find(|(_, _, ok)| !ok) {
-        return Err(Error::generic(format!(
-            "migration {version} is dirty (failed part-way); repair it and re-run `migrate`"
-        )));
-    }
-    let expected: Vec<_> = MIGRATOR
-        .iter()
-        .filter(|m| !m.migration_type.is_down_migration())
-        .collect();
-    for migration in &expected {
-        match applied.iter().find(|(v, _, _)| *v == migration.version) {
-            None => {
-                return Err(Error::generic(format!(
-                    "migration {} ({}) is pending; run `sharing-server migrate`",
-                    migration.version, migration.description
-                )));
-            }
-            Some((_, checksum, _)) if checksum.as_slice() != &*migration.checksum => {
-                return Err(Error::generic(format!(
-                    "migration {} was modified after it was applied",
-                    migration.version
-                )));
-            }
-            Some(_) => {}
-        }
-    }
-    if let Some((version, _, _)) = applied
-        .iter()
-        .find(|(v, _, _)| !expected.iter().any(|m| m.version == *v))
-    {
-        return Err(Error::generic(format!(
-            "the database has migration {version}, unknown to this binary (is it newer?)"
-        )));
-    }
-    Ok(())
+    let applied: Vec<AppliedMigration> =
+        match sqlx::query_as(APPLIED_MIGRATIONS).fetch_all(pool).await {
+            Ok(rows) => rows,
+            // No migrations table yet: nothing is applied.
+            Err(sqlx::Error::Database(e)) if e.code().as_deref() == Some("42P01") => Vec::new(),
+            Err(e) => return Err(db(e)),
+        };
+    check_applied(&MIGRATOR, &applied)
 }
 
-/// A Postgres [`ShareStore`].
+/// A Postgres [`SharingStore`](super::SharingStore).
 #[derive(Clone)]
 pub struct PostgresStore {
     pool: PgPool,
@@ -168,6 +132,52 @@ fn token(row: &PgRow) -> Result<TokenRecord> {
 }
 
 #[async_trait]
+impl ShareReader for PostgresStore {
+    async fn get_share(&self, name: &str) -> Result<ShareRecord> {
+        let row = sqlx::query(&format!(
+            "SELECT {SHARE_COLUMNS} FROM sharing_shares WHERE name = $1"
+        ))
+        .bind(name)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(db)?;
+        share(row)
+    }
+
+    async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>> {
+        sqlx::query(&format!(
+            "SELECT {} FROM sharing_shares s JOIN sharing_grants g ON g.share_id = s.id \
+             WHERE g.recipient_id = $1 ORDER BY s.name",
+            SHARE_COLUMNS
+                .split(", ")
+                .map(|c| format!("s.{c}"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ))
+        .bind(recipient_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(db)?
+        .into_iter()
+        .map(share)
+        .collect()
+    }
+
+    async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool> {
+        let row = sqlx::query(
+            "SELECT EXISTS (SELECT 1 FROM sharing_grants g JOIN sharing_shares s ON s.id = g.share_id \
+             WHERE s.name = $1 AND g.recipient_id = $2) AS granted",
+        )
+        .bind(share)
+        .bind(recipient_id)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(db)?;
+        row.try_get("granted").map_err(db)
+    }
+}
+
+#[async_trait]
 impl ShareStore for PostgresStore {
     async fn create_share(&self, name: &str, comment: Option<String>) -> Result<ShareRecord> {
         let now = now_millis();
@@ -179,17 +189,6 @@ impl ShareStore for PostgresStore {
         .bind(name)
         .bind(comment)
         .bind(now)
-        .fetch_one(&self.pool)
-        .await
-        .map_err(db)?;
-        share(row)
-    }
-
-    async fn get_share(&self, name: &str) -> Result<ShareRecord> {
-        let row = sqlx::query(&format!(
-            "SELECT {SHARE_COLUMNS} FROM sharing_shares WHERE name = $1"
-        ))
-        .bind(name)
         .fetch_one(&self.pool)
         .await
         .map_err(db)?;
@@ -237,6 +236,80 @@ impl ShareStore for PostgresStore {
         affected(done.rows_affected())
     }
 
+    async fn grant(&self, share: &str, recipient: &str) -> Result<()> {
+        let done = sqlx::query(
+            "INSERT INTO sharing_grants (share_id, recipient_id) \
+             SELECT s.id, r.id FROM sharing_shares s, sharing_recipients r \
+             WHERE s.name = $1 AND r.name = $2 ON CONFLICT DO NOTHING",
+        )
+        .bind(share)
+        .bind(recipient)
+        .execute(&self.pool)
+        .await
+        .map_err(db)?;
+        if done.rows_affected() == 0 {
+            // Either already granted, or the share / recipient does not exist.
+            self.get_share(share).await?;
+            self.get_recipient(recipient).await?;
+        }
+        Ok(())
+    }
+
+    async fn revoke(&self, share: &str, recipient: &str) -> Result<()> {
+        sqlx::query(
+            "DELETE FROM sharing_grants g USING sharing_shares s, sharing_recipients r \
+             WHERE g.share_id = s.id AND g.recipient_id = r.id AND s.name = $1 AND r.name = $2",
+        )
+        .bind(share)
+        .bind(recipient)
+        .execute(&self.pool)
+        .await
+        .map_err(db)?;
+        Ok(())
+    }
+
+    async fn recipients_of(&self, share: &str) -> Result<Vec<String>> {
+        let rows = sqlx::query(
+            "SELECT r.name FROM sharing_grants g \
+             JOIN sharing_shares s ON s.id = g.share_id \
+             JOIN sharing_recipients r ON r.id = g.recipient_id \
+             WHERE s.name = $1 ORDER BY r.name",
+        )
+        .bind(share)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(db)?;
+        rows.iter()
+            .map(|row| row.try_get("name").map_err(db))
+            .collect()
+    }
+}
+
+#[async_trait]
+impl TokenReader for PostgresStore {
+    async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)> {
+        let row = sqlx::query(&format!(
+            "SELECT {TOKEN_COLUMNS}, r.name, r.comment, r.created_at AS recipient_created_at \
+             FROM sharing_recipient_tokens t JOIN sharing_recipients r ON r.id = t.recipient_id \
+             WHERE t.token_hash = $1"
+        ))
+        .bind(token_hash)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(db)?;
+        let t = token(&row)?;
+        let r = RecipientRecord {
+            id: t.recipient_id.clone(),
+            name: row.try_get("name").map_err(db)?,
+            comment: row.try_get("comment").map_err(db)?,
+            created_at: row.try_get("recipient_created_at").map_err(db)?,
+        };
+        Ok((t, r))
+    }
+}
+
+#[async_trait]
+impl RecipientStore for PostgresStore {
     async fn create_recipient(
         &self,
         name: &str,
@@ -323,26 +396,6 @@ impl ShareStore for PostgresStore {
         Ok(())
     }
 
-    async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)> {
-        let row = sqlx::query(&format!(
-            "SELECT {TOKEN_COLUMNS}, r.name, r.comment, r.created_at AS recipient_created_at \
-             FROM sharing_recipient_tokens t JOIN sharing_recipients r ON r.id = t.recipient_id \
-             WHERE t.token_hash = $1"
-        ))
-        .bind(token_hash)
-        .fetch_one(&self.pool)
-        .await
-        .map_err(db)?;
-        let t = token(&row)?;
-        let r = RecipientRecord {
-            id: t.recipient_id.clone(),
-            name: row.try_get("name").map_err(db)?,
-            comment: row.try_get("comment").map_err(db)?,
-            created_at: row.try_get("recipient_created_at").map_err(db)?,
-        };
-        Ok((t, r))
-    }
-
     async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord> {
         let row = sqlx::query(&format!(
             "SELECT {TOKEN_COLUMNS} FROM sharing_recipient_tokens t WHERE t.activation_code = $1"
@@ -411,87 +464,10 @@ impl ShareStore for PostgresStore {
                 .map_err(db)?;
         affected(done.rows_affected())
     }
+}
 
-    async fn grant(&self, share: &str, recipient: &str) -> Result<()> {
-        let done = sqlx::query(
-            "INSERT INTO sharing_grants (share_id, recipient_id) \
-             SELECT s.id, r.id FROM sharing_shares s, sharing_recipients r \
-             WHERE s.name = $1 AND r.name = $2 ON CONFLICT DO NOTHING",
-        )
-        .bind(share)
-        .bind(recipient)
-        .execute(&self.pool)
-        .await
-        .map_err(db)?;
-        if done.rows_affected() == 0 {
-            // Either already granted, or the share / recipient does not exist.
-            self.get_share(share).await?;
-            self.get_recipient(recipient).await?;
-        }
-        Ok(())
-    }
-
-    async fn revoke(&self, share: &str, recipient: &str) -> Result<()> {
-        sqlx::query(
-            "DELETE FROM sharing_grants g USING sharing_shares s, sharing_recipients r \
-             WHERE g.share_id = s.id AND g.recipient_id = r.id AND s.name = $1 AND r.name = $2",
-        )
-        .bind(share)
-        .bind(recipient)
-        .execute(&self.pool)
-        .await
-        .map_err(db)?;
-        Ok(())
-    }
-
-    async fn recipients_of(&self, share: &str) -> Result<Vec<String>> {
-        let rows = sqlx::query(
-            "SELECT r.name FROM sharing_grants g \
-             JOIN sharing_shares s ON s.id = g.share_id \
-             JOIN sharing_recipients r ON r.id = g.recipient_id \
-             WHERE s.name = $1 ORDER BY r.name",
-        )
-        .bind(share)
-        .fetch_all(&self.pool)
-        .await
-        .map_err(db)?;
-        rows.iter()
-            .map(|row| row.try_get("name").map_err(db))
-            .collect()
-    }
-
-    async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>> {
-        sqlx::query(&format!(
-            "SELECT {} FROM sharing_shares s JOIN sharing_grants g ON g.share_id = s.id \
-             WHERE g.recipient_id = $1 ORDER BY s.name",
-            SHARE_COLUMNS
-                .split(", ")
-                .map(|c| format!("s.{c}"))
-                .collect::<Vec<_>>()
-                .join(", ")
-        ))
-        .bind(recipient_id)
-        .fetch_all(&self.pool)
-        .await
-        .map_err(db)?
-        .into_iter()
-        .map(share)
-        .collect()
-    }
-
-    async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool> {
-        let row = sqlx::query(
-            "SELECT EXISTS (SELECT 1 FROM sharing_grants g JOIN sharing_shares s ON s.id = g.share_id \
-             WHERE s.name = $1 AND g.recipient_id = $2) AS granted",
-        )
-        .bind(share)
-        .bind(recipient_id)
-        .fetch_one(&self.pool)
-        .await
-        .map_err(db)?;
-        row.try_get("granted").map_err(db)
-    }
-
+#[async_trait]
+impl CredentialStore for PostgresStore {
     async fn put_credential(&self, c: SealedCredential) -> Result<()> {
         sqlx::query(
             "INSERT INTO sharing_credentials (name, sealed) VALUES ($1, $2) \

@@ -19,10 +19,10 @@ use opensharing_admin::models::shares::v1::{
     GetShareRequest, ListSharesRequest, ListSharesResponse, Share, UpdatePermissionsRequest,
     UpdatePermissionsResponse, UpdateShareRequest,
 };
-use opensharing_api::admin::{
+use opensharing_admin_api::{
     ADMIN_PREFIX, RecipientHandler, ShareHandler, admin_router, shares_router,
 };
-use opensharing_api::{Error, Result};
+use opensharing_admin_api::{Error, Result};
 use serde_json::{Value, json};
 use tower::ServiceExt;
 

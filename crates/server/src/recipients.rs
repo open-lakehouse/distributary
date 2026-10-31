@@ -15,34 +15,36 @@ use opensharing_api::auth::{Recipient, RecipientAuthenticator};
 use serde::Serialize;
 
 use crate::secrets::Secrets;
-use crate::store::{RecipientRecord, ShareStore, TokenRecord, now_millis};
-use crate::tokens::{random_secret, token_hash};
+use crate::store::{RecipientRecord, RecipientStore, TokenReader, TokenRecord, now_millis};
+use crate::tokens::random_secret;
+pub use crate::tokens::token_hash;
 use crate::{Error, Result};
+use opensharing_api::{Error as ApiError, Result as ApiResult};
 
 /// Where activation links are served, under the server's public URL.
 pub const ACTIVATION_PATH: &str = "/api/1.0/opensharing/activations";
 
 /// Authenticates recipient bearer tokens against the store.
 pub struct StoreAuthenticator {
-    store: Arc<dyn ShareStore>,
+    store: Arc<dyn TokenReader>,
 }
 
 impl StoreAuthenticator {
-    pub fn new(store: Arc<dyn ShareStore>) -> Self {
+    pub fn new(store: Arc<dyn TokenReader>) -> Self {
         Self { store }
     }
 }
 
 #[async_trait]
 impl RecipientAuthenticator for StoreAuthenticator {
-    async fn authenticate(&self, token: &str) -> Result<Recipient> {
+    async fn authenticate(&self, token: &str) -> ApiResult<Recipient> {
         let (token, recipient) = match self.store.token_by_hash(&token_hash(token)).await {
             Ok(found) => found,
-            Err(Error::NotFound) => return Err(Error::Unauthenticated),
-            Err(e) => return Err(e),
+            Err(Error::NotFound) => return Err(ApiError::Unauthenticated),
+            Err(e) => return Err(e.into()),
         };
         if token.expires_at.is_some_and(|at| at <= now_millis()) {
-            return Err(Error::Unauthenticated);
+            return Err(ApiError::Unauthenticated);
         }
         Ok(Recipient {
             id: recipient.id,
@@ -59,7 +61,7 @@ fn token_aad(token_id: &str) -> String {
 /// Issue a new token for `recipient`. The returned record carries the activation
 /// code; [`activation_url`] turns it into the link handed to the recipient.
 pub async fn issue_token(
-    store: &dyn ShareStore,
+    store: &dyn RecipientStore,
     secrets: &Secrets,
     recipient: &RecipientRecord,
     expires_at: Option<i64>,
@@ -101,7 +103,7 @@ pub struct SharingProfile {
 
 /// Consume an activation code, returning the recipient's sharing profile.
 pub async fn activate(
-    store: &dyn ShareStore,
+    store: &dyn RecipientStore,
     secrets: &Secrets,
     public_url: &str,
     code: &str,
@@ -128,7 +130,7 @@ pub async fn activate(
 /// What the activation route needs.
 #[derive(Clone)]
 struct Activation {
-    store: Arc<dyn ShareStore>,
+    store: Arc<dyn RecipientStore>,
     secrets: Secrets,
     public_url: String,
 }
@@ -137,7 +139,7 @@ struct Activation {
 /// return the recipient's sharing profile. Needs no credential; the code is the
 /// secret. `public_url` is the base URL the profile's endpoint points at.
 pub fn activation_router(
-    store: Arc<dyn ShareStore>,
+    store: Arc<dyn RecipientStore>,
     secrets: Secrets,
     public_url: impl Into<String>,
 ) -> Router {
@@ -153,7 +155,7 @@ pub fn activation_router(
 async fn activation(
     State(state): State<Activation>,
     Path(code): Path<String>,
-) -> Result<Json<SharingProfile>> {
+) -> ApiResult<Json<SharingProfile>> {
     Ok(Json(
         activate(
             state.store.as_ref(),
@@ -166,7 +168,7 @@ async fn activation(
 }
 
 /// Re-wrap every token awaiting activation under the active key.
-pub async fn rewrap_tokens(store: &dyn ShareStore, secrets: &Secrets) -> Result<usize> {
+pub async fn rewrap_tokens(store: &dyn RecipientStore, secrets: &Secrets) -> Result<usize> {
     let mut rewrapped = 0;
     for token in store.sealed_tokens().await? {
         let Some(sealed) = &token.sealed_token else {

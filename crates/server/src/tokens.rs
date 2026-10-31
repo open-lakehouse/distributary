@@ -12,8 +12,10 @@ pub(crate) fn random_secret() -> String {
     URL_SAFE_NO_PAD.encode(bytes)
 }
 
-/// The digest a token is stored and looked up by.
-pub(crate) fn token_hash(token: &str) -> Vec<u8> {
+/// The digest a token is stored and looked up by (sha256): what
+/// [`TokenReader::token_by_hash`](crate::store::TokenReader::token_by_hash)
+/// receives.
+pub fn token_hash(token: &str) -> Vec<u8> {
     Sha256::digest(token.as_bytes()).to_vec()
 }
 

@@ -31,17 +31,11 @@
 //! - [`service`] — [`SharingService`], the composition root.
 //! - [`handler`] — the handler traits, implemented by [`SharingService`].
 //! - [`router`] — the axum routers for the Delta Sharing + OpenSharing surfaces.
-//! - [`auth`] — the [`RecipientAuthenticator`](auth::RecipientAuthenticator) and
-//!   [`ProviderAuthenticator`](auth::ProviderAuthenticator) ports and their
-//!   bearer-token layers.
-//! - `admin` (feature `admin`) — the provider admin API: the generated
-//!   `ShareHandler` / `RecipientHandler` / `ProviderHandler` traits and their
-//!   routers.
+//! - [`auth`] — the [`RecipientAuthenticator`](auth::RecipientAuthenticator)
+//!   port and its bearer-token layer.
 //! - [`error`] — the error contract.
 
 pub mod access;
-#[cfg(feature = "admin")]
-pub mod admin;
 #[cfg(feature = "axum")]
 pub mod auth;
 pub mod catalog;
@@ -57,7 +51,7 @@ pub mod service;
 #[cfg(feature = "testing")]
 pub mod testing;
 
-/// The default context type for the generated sharing and admin handler traits.
+/// The default context type for the generated sharing handler traits.
 ///
 /// The traits are generic over a context `Cx`; this crate-neutral alias is the
 /// default so the portable crate does not name any server's context type. A

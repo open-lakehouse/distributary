@@ -74,7 +74,7 @@ request context `Cx`, which becomes the authenticated recipient.
 | Port | Responsibility | First implementations | Later |
 |---|---|---|---|
 | `RecipientAuthenticator` | bearer token → `Cx` (recipient, granted shares) | Postgres, sha256-hashed tokens | OIDC / JWT |
-| `ShareStore` | shares (UC `shares/v1` `Share` / `DataObject`), recipients, grants, tokens | Postgres (sqlx) | — |
+| Store traits (`ShareStore: ShareReader`, `RecipientStore: TokenReader`, `CredentialStore`) | shares (UC `shares/v1` `Share` / `DataObject`) and grants, recipients and tokens, sealed credentials | Postgres and SQLite (sqlx), memory | — |
 | `CatalogSource` | resolve a `DataObject` (`catalog.schema.table`; `SCHEMA` objects expand) to a `SourceAsset { url, format, id, … }`, paged | UC REST (`olai-uc-client`: our UC or Databricks), static | Iceberg REST, UC-Delta API, in-process UC store |
 | `StorageAccess` | the server's own log reads, `presign(url, ttl)`, `vend(url, op)` | delegated (catalog-vended), local (own credentials) | — |
 | `TableFormat` | version / metadata / query / changes as protocol actions | Delta (kernel) | Iceberg |
@@ -199,11 +199,11 @@ service crate:
   configured. Recipient creation issues a token and an activation URL, and
   `GET /api/1.0/opensharing/activations/{code}` returns the profile. The
   activation route belongs to the protocol router, so tokens provisioned
-  straight through the `ShareStore` activate too.
+  straight through the `RecipientStore` activate too.
 
 The admin API is built the same way as the protocol. Trestle generates the
 `ShareHandler<Cx>`, `RecipientHandler<Cx>` and `ProviderHandler<Cx>` traits and
-their route functions into `opensharing-api` (feature `admin`, from
+their route functions into `opensharing-admin-api` (from
 `trestle.admin.yaml`). The hand-written routers there (`shares_router`,
 `recipients_router`, `providers_router`, `admin_router`) bind them, and the
 request context `Cx` is extracted per request. `opensharing-server`
@@ -254,6 +254,56 @@ gates the real bundle on both limits. If it gets tight, the next levers are:
 2. per-cloud `object_store` features;
 3. trimmed parquet codecs.
 
+### Protocol and admin API separation
+
+Added 2026-10-31. The recipient-facing protocol and the provider admin API are
+separate crates that share no code:
+
+| | Protocol | Admin API |
+|---|---|---|
+| Models | `opensharing-common` | `opensharing-admin` |
+| Server surface | `opensharing-api` | `opensharing-admin-api` |
+| Auth seam | `RecipientAuthenticator`: the bearer tokens we hand to third parties | `ProviderAuthenticator`, or any layer plus `Cx` extractor (OIDC, sessions, a gateway) |
+| Error contract | `opensharing_api::Error` | `opensharing_admin_api::Error` |
+
+Both surfaces follow one pattern: handler traits generic over the request
+context `Cx`, generated where the protos define the RPCs and hand-written where
+they don't (the NDJSON query path). Routers extract `Cx` per request and pass
+it to the handler. The two kinds of caller authenticate in unrelated ways, so
+each surface owns its seam and its 401 semantics.
+
+`opensharing-server` has its own error type, which converts into both
+contracts. Each route returns its own surface's error.
+
+A Unity Catalog server (mangrove) can take the sharing slot in two ways:
+
+1. Implement the `opensharing-api` ports (`ShareCatalog`, `StorageAccess`,
+   `RecipientAuthenticator`) over its own backend, and mount `sharing_router`
+   (`crates/api/tests/mount.rs`).
+2. Reuse `opensharing-server`'s protocol side by implementing only the
+   read-only `ShareReader` and `TokenReader` on its own store, then compose
+   `StoreCatalog`, `StoreAuthenticator` and `SharingService`
+   (`crates/server/tests/custom_store.rs`).
+
+Either way, the admin API is mounted separately or not at all.
+
+### Stores
+
+The server's state is split into targeted traits instead of a generic resource
+store, because the set of resources is small and fixed:
+
+- `ShareStore` holds shares and grants.
+- `RecipientStore` holds recipients and tokens.
+- `CredentialStore` holds sealed storage credentials and external locations.
+- `SharingStore` bundles all three.
+
+The read-only views `ShareReader` and `TokenReader` are all the protocol needs.
+There are memory, Postgres and SQLite implementations, each with its own SQL
+and embedded migrations (`migrations/{postgres,sqlite}`). All of them run the
+same conformance suite. SQLite serves single-node deployments that should
+survive a restart without a database server. Postgres (Neon) stays the hosted
+backend.
+
 ### Catalog independence
 
 The sharing crates live in their own repository, and any catalog should be able
@@ -267,7 +317,7 @@ to host them. The layering:
   `RegisteredCredential` / `VendedCredential` for vending.
 - The provider admin API for shares, permissions and recipients needs no
   catalog, and it is optional (feature `admin`). Its traits and routers are
-  generated into `opensharing-api` (feature `admin`). Its models come from `opensharing-admin` (`proto/opensharing/{shares,recipients,providers}`,
+  generated into `opensharing-admin-api`. Its models come from `opensharing-admin` (`proto/opensharing/{shares,recipients,providers}`,
   moved from mangrove's `unitycatalog.*` packages with an unchanged wire format,
   2026-10-30).
 - Unity Catalog comes in only through the `unity` feature (`src/unity/`): the UC
