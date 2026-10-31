@@ -9,9 +9,10 @@ composable sharing server that maps shares onto any catalog.
 |---|---|---|
 | [`crates/common`](crates/common) | `opensharing-common` | Wire models, NDJSON query lines, capabilities, axum extractors |
 | [`crates/client`](crates/client) | `opensharing-client` | HTTP client for the sharing protocol |
-| [`crates/api`](crates/api) | `opensharing-api` | Protocol ports (`ShareCatalog`, `StorageAccess`, `TableFormat`), handlers and router; the generated admin handler traits and routers (feature `admin`) |
+| [`crates/api`](crates/api) | `opensharing-api` | Protocol ports (`ShareCatalog`, `StorageAccess`, `TableFormat`), handlers, router and recipient auth |
 | [`crates/admin`](crates/admin) | `opensharing-admin` | Provider admin API models: shares, permissions, recipients, providers |
-| [`crates/server`](crates/server) | `opensharing-server` | A complete server: share store, recipients, sealed secrets, catalog sources, admin API (feature `admin`), `sharing-server` binary |
+| [`crates/admin-api`](crates/admin-api) | `opensharing-admin-api` | Provider admin API server surface: generated handler traits, routers, provider auth |
+| [`crates/server`](crates/server) | `opensharing-server` | A complete server: share, recipient and credential stores (memory, Postgres, SQLite), sealed secrets, catalog sources, admin API (feature `admin`), `sharing-server` binary |
 | [`crates/neon`](crates/neon) | `opensharing-neon` | The server as a Neon Function (deployment artifact, not published) |
 
 The protocol is defined in [`proto/opensharing/v1`](proto/opensharing/v1),

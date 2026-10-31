@@ -12,7 +12,7 @@ The commit message contract and the signing flow are machine-wide (see
   share message names with the protocol (`Share`, `ListSharesRequest`, …), and a
   single trestle run over both cross-wires the generated protocol client.
   The admin run emits the models into `crates/admin` and the handler traits and
-  route functions into `crates/api/src/admin/codegen` (feature `admin`).
+  route functions into `crates/admin-api/src/codegen`.
 - Run `buf generate` **before** `trestle generate`. Raw buffa output carries
   camelCase JSON names, and trestle rewrites them to the snake_case wire names.
   `just generate` runs both, in order.
