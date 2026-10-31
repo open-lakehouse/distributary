@@ -105,9 +105,7 @@ impl<Cx: Clone + Send + Sync + 'static> ShareHandler<Cx> for SharingService<Cx> 
             .catalog
             .list_shares(
                 PageRequest {
-                    max_results: request
-                        .max_results
-                        .map(|n| usize::try_from(n).unwrap_or_default()),
+                    max_results: request.max_results,
                     page_token: request.page_token,
                 },
                 &context,

@@ -171,7 +171,7 @@ impl<Cx: RecipientIdentity> ShareCatalog<Cx> for StoreCatalog {
         };
         paginate(
             shares.iter().map(info).collect(),
-            page.max_results.map(|n| n.min(i32::MAX as usize) as i32),
+            page.max_results,
             page.page_token.as_deref(),
         )
     }

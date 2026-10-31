@@ -105,7 +105,7 @@ impl<Cx: Send + Sync + 'static> ShareCatalog<Cx> for InMemoryShareCatalog {
     async fn list_shares(&self, page: PageRequest, _cx: &Cx) -> Result<Page<Share>> {
         paginate(
             self.shares.values().map(info).collect(),
-            page.max_results.map(|n| n as i32),
+            page.max_results,
             page.page_token.as_deref(),
         )
     }

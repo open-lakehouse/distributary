@@ -228,3 +228,38 @@ async fn list_schemas_paginates() {
     assert_eq!(second.items[0].name, "schema2");
     assert_eq!(second.next_page_token, None);
 }
+
+#[tokio::test]
+async fn list_shares_rejects_non_positive_page_sizes() {
+    let b = backend();
+    for max_results in [0, -1] {
+        let err = ShareHandler::<()>::list_shares(
+            &b,
+            ListSharesRequest {
+                max_results: Some(max_results),
+                ..Default::default()
+            },
+            (),
+        )
+        .await
+        .unwrap_err();
+        assert!(matches!(err, Error::InvalidArgument(_)), "{max_results}");
+    }
+}
+
+#[tokio::test]
+async fn list_shares_paginates() {
+    let b = backend();
+    let page = ShareHandler::<()>::list_shares(
+        &b,
+        ListSharesRequest {
+            max_results: Some(i32::MAX),
+            ..Default::default()
+        },
+        (),
+    )
+    .await
+    .unwrap();
+    assert_eq!(page.items.len(), 1);
+    assert_eq!(page.next_page_token, None);
+}

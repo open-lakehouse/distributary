@@ -176,7 +176,7 @@ impl SharedAsset {
 /// A page request: the requested maximum size and the continuation token.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PageRequest {
-    pub max_results: Option<usize>,
+    pub max_results: Option<i32>,
     pub page_token: Option<String>,
 }
 
