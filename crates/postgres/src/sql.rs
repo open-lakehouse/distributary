@@ -3,7 +3,7 @@
 
 use sqlx::migrate::Migrator;
 
-use crate::{Error, Result};
+use opensharing_provider::{Error, Result};
 
 /// One row of sqlx's `_sqlx_migrations`: version, checksum, success.
 pub(crate) type AppliedMigration = (i64, Vec<u8>, bool);

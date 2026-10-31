@@ -6,11 +6,10 @@
 //!
 //! ```sh
 //! SHARING_SERVER_TEST_DATABASE_URL=<connection url> \
-//!   cargo test -p opensharing-server --test postgres
+//!   cargo test -p opensharing-postgres --test store
 //! ```
-#![cfg(feature = "postgres")]
 
-use opensharing_server::store::postgres::{PostgresStore, connect, ensure_schema_current, migrate};
+use opensharing_postgres::{PostgresStore, connect, ensure_schema_current, migrate};
 
 use opensharing_provider::testing::round_trips;
 

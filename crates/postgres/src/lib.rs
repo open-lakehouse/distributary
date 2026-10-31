@@ -1,55 +1,42 @@
-//! A SQLite [`SharingStore`](super::SharingStore) (sqlx), with embedded
-//! migrations.
+//! A Postgres [`SharingStore`](opensharing_provider::store::SharingStore) (sqlx), with embedded migrations.
 //!
-//! For single-node deployments, demos and tests that want state to survive a
-//! restart without running Postgres. As with Postgres, migrations run only
-//! through [`migrate`] (the `migrate` subcommand), and
-//! [`ensure_schema_current`] makes `serve` refuse to start on a schema that
-//! does not match this binary.
+//! Migrations run only through [`migrate`] (the `migrate` subcommand), never on
+//! startup; [`ensure_schema_current`] makes `serve` refuse to start on a schema
+//! that is behind, ahead of, or diverged from this binary. Both hold a session
+//! advisory lock, so on a transaction-pooled endpoint (PgBouncer, Neon's pooled
+//! URL) point them at the direct, unpooled connection string.
 //!
-//! [`connect`] creates the database file if it is missing, enables foreign
-//! keys (the schema cascades deletes through them) and uses WAL journaling. An
-//! in-memory URL (`sqlite::memory:`) gives each pooled connection its own
-//! database, so use a file.
-
-use std::str::FromStr;
-use std::time::Duration;
+//! The migrator records applied migrations in `_sqlx_migrations`, so give the
+//! sharing server its own database (or Neon branch) rather than sharing one with
+//! another sqlx-migrated service.
 
 use async_trait::async_trait;
-use sqlx::error::ErrorKind;
-use sqlx::sqlite::{
-    SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqlitePoolOptions, SqliteRow,
-};
+use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
 use sqlx::{Row, migrate::Migrator};
 
-use super::sql::{APPLIED_MIGRATIONS, AppliedMigration, check_applied};
-use super::{
+use crate::sql::{APPLIED_MIGRATIONS, AppliedMigration, check_applied};
+use opensharing_provider::store::{
     CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, SealedCredential,
     ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord, now_millis,
 };
-use crate::{Error, Result};
+use opensharing_provider::{Error, Result};
+
+mod sql;
 
 /// The embedded migrations.
-pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations/sqlite");
+pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
-/// Connect a pool to `url` (`sqlite://path/to/sharing.db`), creating the
-/// database file if needed.
-pub async fn connect(url: &str, max_connections: u32) -> Result<SqlitePool> {
-    let options = SqliteConnectOptions::from_str(url)
-        .map_err(|e| Error::invalid_argument(format!("invalid sqlite url: {e}")))?
-        .create_if_missing(true)
-        .foreign_keys(true)
-        .journal_mode(SqliteJournalMode::Wal)
-        .busy_timeout(Duration::from_secs(5));
-    SqlitePoolOptions::new()
+/// Connect a pool to `url`.
+pub async fn connect(url: &str, max_connections: u32) -> Result<PgPool> {
+    PgPoolOptions::new()
         .max_connections(max_connections)
-        .connect_with(options)
+        .connect(url)
         .await
-        .map_err(|e| Error::generic(format!("connecting to sqlite: {e}")))
+        .map_err(|e| Error::generic(format!("connecting to postgres: {e}")))
 }
 
 /// Apply all pending migrations.
-pub async fn migrate(pool: &SqlitePool) -> Result<()> {
+pub async fn migrate(pool: &PgPool) -> Result<()> {
     MIGRATOR
         .run(pool)
         .await
@@ -57,29 +44,29 @@ pub async fn migrate(pool: &SqlitePool) -> Result<()> {
 }
 
 /// Fail unless the database schema is exactly what this binary expects.
-pub async fn ensure_schema_current(pool: &SqlitePool) -> Result<()> {
+pub async fn ensure_schema_current(pool: &PgPool) -> Result<()> {
     let applied: Vec<AppliedMigration> =
         match sqlx::query_as(APPLIED_MIGRATIONS).fetch_all(pool).await {
             Ok(rows) => rows,
             // No migrations table yet: nothing is applied.
-            Err(sqlx::Error::Database(e)) if e.message().contains("no such table") => Vec::new(),
+            Err(sqlx::Error::Database(e)) if e.code().as_deref() == Some("42P01") => Vec::new(),
             Err(e) => return Err(db(e)),
         };
     check_applied(&MIGRATOR, &applied)
 }
 
-/// A SQLite [`SharingStore`](super::SharingStore).
+/// A Postgres [`SharingStore`](opensharing_provider::store::SharingStore).
 #[derive(Clone)]
-pub struct SqliteStore {
-    pool: SqlitePool,
+pub struct PostgresStore {
+    pool: PgPool,
 }
 
-impl SqliteStore {
-    pub fn new(pool: SqlitePool) -> Self {
+impl PostgresStore {
+    pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }
 
-    pub fn pool(&self) -> &SqlitePool {
+    pub fn pool(&self) -> &PgPool {
         &self.pool
     }
 }
@@ -88,10 +75,10 @@ impl SqliteStore {
 fn db(e: sqlx::Error) -> Error {
     match &e {
         sqlx::Error::RowNotFound => Error::NotFound,
-        sqlx::Error::Database(d) if d.kind() == ErrorKind::UniqueViolation => {
+        sqlx::Error::Database(d) if d.code().as_deref() == Some("23505") => {
             Error::invalid_argument("the resource already exists")
         }
-        sqlx::Error::Database(d) if d.kind() == ErrorKind::ForeignKeyViolation => {
+        sqlx::Error::Database(d) if d.code().as_deref() == Some("23503") => {
             Error::invalid_argument(format!(
                 "a referenced resource does not exist: {}",
                 d.message()
@@ -111,19 +98,19 @@ fn affected(rows: u64) -> Result<()> {
 
 const SHARE_COLUMNS: &str = "id, name, comment, objects, created_at, updated_at";
 
-fn share(row: SqliteRow) -> Result<ShareRecord> {
-    let objects: String = row.try_get("objects").map_err(db)?;
+fn share(row: PgRow) -> Result<ShareRecord> {
+    let objects: serde_json::Value = row.try_get("objects").map_err(db)?;
     Ok(ShareRecord {
         id: row.try_get("id").map_err(db)?,
         name: row.try_get("name").map_err(db)?,
         comment: row.try_get("comment").map_err(db)?,
-        objects: serde_json::from_str(&objects)?,
+        objects: serde_json::from_value(objects)?,
         created_at: row.try_get("created_at").map_err(db)?,
         updated_at: row.try_get("updated_at").map_err(db)?,
     })
 }
 
-fn recipient(row: &SqliteRow) -> Result<RecipientRecord> {
+fn recipient(row: &PgRow) -> Result<RecipientRecord> {
     Ok(RecipientRecord {
         id: row.try_get("id").map_err(db)?,
         name: row.try_get("name").map_err(db)?,
@@ -134,7 +121,7 @@ fn recipient(row: &SqliteRow) -> Result<RecipientRecord> {
 
 const TOKEN_COLUMNS: &str = "t.id, t.recipient_id, t.token_hash, t.sealed_token, t.activation_code, t.expires_at, t.created_at";
 
-fn token(row: &SqliteRow) -> Result<TokenRecord> {
+fn token(row: &PgRow) -> Result<TokenRecord> {
     Ok(TokenRecord {
         id: row.try_get("id").map_err(db)?,
         recipient_id: row.try_get("recipient_id").map_err(db)?,
@@ -147,10 +134,10 @@ fn token(row: &SqliteRow) -> Result<TokenRecord> {
 }
 
 #[async_trait]
-impl ShareReader for SqliteStore {
+impl ShareReader for PostgresStore {
     async fn get_share(&self, name: &str) -> Result<ShareRecord> {
         let row = sqlx::query(&format!(
-            "SELECT {SHARE_COLUMNS} FROM sharing_shares WHERE name = ?"
+            "SELECT {SHARE_COLUMNS} FROM sharing_shares WHERE name = $1"
         ))
         .bind(name)
         .fetch_one(&self.pool)
@@ -162,7 +149,7 @@ impl ShareReader for SqliteStore {
     async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>> {
         sqlx::query(&format!(
             "SELECT {} FROM sharing_shares s JOIN sharing_grants g ON g.share_id = s.id \
-             WHERE g.recipient_id = ? ORDER BY s.name",
+             WHERE g.recipient_id = $1 ORDER BY s.name",
             SHARE_COLUMNS
                 .split(", ")
                 .map(|c| format!("s.{c}"))
@@ -181,7 +168,7 @@ impl ShareReader for SqliteStore {
     async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool> {
         let row = sqlx::query(
             "SELECT EXISTS (SELECT 1 FROM sharing_grants g JOIN sharing_shares s ON s.id = g.share_id \
-             WHERE s.name = ? AND g.recipient_id = ?) AS granted",
+             WHERE s.name = $1 AND g.recipient_id = $2) AS granted",
         )
         .bind(share)
         .bind(recipient_id)
@@ -193,12 +180,12 @@ impl ShareReader for SqliteStore {
 }
 
 #[async_trait]
-impl ShareStore for SqliteStore {
+impl ShareStore for PostgresStore {
     async fn create_share(&self, name: &str, comment: Option<String>) -> Result<ShareRecord> {
         let now = now_millis();
         let row = sqlx::query(&format!(
             "INSERT INTO sharing_shares (id, name, comment, objects, created_at, updated_at) \
-             VALUES (?1, ?2, ?3, '[]', ?4, ?4) RETURNING {SHARE_COLUMNS}"
+             VALUES ($1, $2, $3, '[]'::jsonb, $4, $4) RETURNING {SHARE_COLUMNS}"
         ))
         .bind(uuid::Uuid::new_v4().to_string())
         .bind(name)
@@ -229,11 +216,11 @@ impl ShareStore for SqliteStore {
         comment: Option<String>,
     ) -> Result<ShareRecord> {
         let row = sqlx::query(&format!(
-            "UPDATE sharing_shares SET objects = ?2, comment = ?3, updated_at = ?4 \
-             WHERE name = ?1 RETURNING {SHARE_COLUMNS}"
+            "UPDATE sharing_shares SET objects = $2, comment = $3, updated_at = $4 \
+             WHERE name = $1 RETURNING {SHARE_COLUMNS}"
         ))
         .bind(name)
-        .bind(serde_json::to_string(&objects)?)
+        .bind(serde_json::to_value(&objects)?)
         .bind(comment)
         .bind(now_millis())
         .fetch_one(&self.pool)
@@ -243,7 +230,7 @@ impl ShareStore for SqliteStore {
     }
 
     async fn delete_share(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM sharing_shares WHERE name = ?")
+        let done = sqlx::query("DELETE FROM sharing_shares WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await
@@ -253,9 +240,9 @@ impl ShareStore for SqliteStore {
 
     async fn grant(&self, share: &str, recipient: &str) -> Result<()> {
         let done = sqlx::query(
-            "INSERT OR IGNORE INTO sharing_grants (share_id, recipient_id) \
+            "INSERT INTO sharing_grants (share_id, recipient_id) \
              SELECT s.id, r.id FROM sharing_shares s, sharing_recipients r \
-             WHERE s.name = ? AND r.name = ?",
+             WHERE s.name = $1 AND r.name = $2 ON CONFLICT DO NOTHING",
         )
         .bind(share)
         .bind(recipient)
@@ -272,9 +259,8 @@ impl ShareStore for SqliteStore {
 
     async fn revoke(&self, share: &str, recipient: &str) -> Result<()> {
         sqlx::query(
-            "DELETE FROM sharing_grants \
-             WHERE share_id = (SELECT id FROM sharing_shares WHERE name = ?) \
-             AND recipient_id = (SELECT id FROM sharing_recipients WHERE name = ?)",
+            "DELETE FROM sharing_grants g USING sharing_shares s, sharing_recipients r \
+             WHERE g.share_id = s.id AND g.recipient_id = r.id AND s.name = $1 AND r.name = $2",
         )
         .bind(share)
         .bind(recipient)
@@ -289,7 +275,7 @@ impl ShareStore for SqliteStore {
             "SELECT r.name FROM sharing_grants g \
              JOIN sharing_shares s ON s.id = g.share_id \
              JOIN sharing_recipients r ON r.id = g.recipient_id \
-             WHERE s.name = ? ORDER BY r.name",
+             WHERE s.name = $1 ORDER BY r.name",
         )
         .bind(share)
         .fetch_all(&self.pool)
@@ -302,12 +288,12 @@ impl ShareStore for SqliteStore {
 }
 
 #[async_trait]
-impl TokenReader for SqliteStore {
+impl TokenReader for PostgresStore {
     async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)> {
         let row = sqlx::query(&format!(
             "SELECT {TOKEN_COLUMNS}, r.name, r.comment, r.created_at AS recipient_created_at \
              FROM sharing_recipient_tokens t JOIN sharing_recipients r ON r.id = t.recipient_id \
-             WHERE t.token_hash = ?"
+             WHERE t.token_hash = $1"
         ))
         .bind(token_hash)
         .fetch_one(&self.pool)
@@ -325,7 +311,7 @@ impl TokenReader for SqliteStore {
 }
 
 #[async_trait]
-impl RecipientStore for SqliteStore {
+impl RecipientStore for PostgresStore {
     async fn create_recipient(
         &self,
         name: &str,
@@ -333,7 +319,7 @@ impl RecipientStore for SqliteStore {
     ) -> Result<RecipientRecord> {
         let row = sqlx::query(
             "INSERT INTO sharing_recipients (id, name, comment, created_at) \
-             VALUES (?, ?, ?, ?) RETURNING id, name, comment, created_at",
+             VALUES ($1, $2, $3, $4) RETURNING id, name, comment, created_at",
         )
         .bind(uuid::Uuid::new_v4().to_string())
         .bind(name)
@@ -347,7 +333,7 @@ impl RecipientStore for SqliteStore {
 
     async fn get_recipient(&self, name: &str) -> Result<RecipientRecord> {
         let row = sqlx::query(
-            "SELECT id, name, comment, created_at FROM sharing_recipients WHERE name = ?",
+            "SELECT id, name, comment, created_at FROM sharing_recipients WHERE name = $1",
         )
         .bind(name)
         .fetch_one(&self.pool)
@@ -372,7 +358,7 @@ impl RecipientStore for SqliteStore {
         comment: Option<String>,
     ) -> Result<RecipientRecord> {
         let row = sqlx::query(
-            "UPDATE sharing_recipients SET comment = ?2 WHERE name = ?1 \
+            "UPDATE sharing_recipients SET comment = $2 WHERE name = $1 \
              RETURNING id, name, comment, created_at",
         )
         .bind(name)
@@ -385,7 +371,7 @@ impl RecipientStore for SqliteStore {
 
     async fn delete_recipient(&self, name: &str) -> Result<()> {
         // Tokens and grants cascade.
-        let done = sqlx::query("DELETE FROM sharing_recipients WHERE name = ?")
+        let done = sqlx::query("DELETE FROM sharing_recipients WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await
@@ -397,7 +383,7 @@ impl RecipientStore for SqliteStore {
         sqlx::query(
             "INSERT INTO sharing_recipient_tokens \
              (id, recipient_id, token_hash, sealed_token, activation_code, expires_at, created_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?)",
+             VALUES ($1, $2, $3, $4, $5, $6, $7)",
         )
         .bind(t.id)
         .bind(t.recipient_id)
@@ -414,7 +400,7 @@ impl RecipientStore for SqliteStore {
 
     async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord> {
         let row = sqlx::query(&format!(
-            "SELECT {TOKEN_COLUMNS} FROM sharing_recipient_tokens t WHERE t.activation_code = ?"
+            "SELECT {TOKEN_COLUMNS} FROM sharing_recipient_tokens t WHERE t.activation_code = $1"
         ))
         .bind(code)
         .fetch_one(&self.pool)
@@ -426,7 +412,7 @@ impl RecipientStore for SqliteStore {
     async fn mark_activated(&self, token_id: &str) -> Result<()> {
         let done = sqlx::query(
             "UPDATE sharing_recipient_tokens SET sealed_token = NULL, activation_code = NULL \
-             WHERE id = ?",
+             WHERE id = $1",
         )
         .bind(token_id)
         .execute(&self.pool)
@@ -438,7 +424,7 @@ impl RecipientStore for SqliteStore {
     async fn tokens_for_recipient(&self, recipient_id: &str) -> Result<Vec<TokenRecord>> {
         sqlx::query(&format!(
             "SELECT {TOKEN_COLUMNS} FROM sharing_recipient_tokens t \
-             WHERE t.recipient_id = ? ORDER BY t.created_at DESC"
+             WHERE t.recipient_id = $1 ORDER BY t.created_at DESC"
         ))
         .bind(recipient_id)
         .fetch_all(&self.pool)
@@ -450,7 +436,7 @@ impl RecipientStore for SqliteStore {
     }
 
     async fn delete_tokens(&self, recipient_id: &str) -> Result<()> {
-        sqlx::query("DELETE FROM sharing_recipient_tokens WHERE recipient_id = ?")
+        sqlx::query("DELETE FROM sharing_recipient_tokens WHERE recipient_id = $1")
             .bind(recipient_id)
             .execute(&self.pool)
             .await
@@ -472,7 +458,7 @@ impl RecipientStore for SqliteStore {
 
     async fn update_sealed_token(&self, token_id: &str, sealed: Vec<u8>) -> Result<()> {
         let done =
-            sqlx::query("UPDATE sharing_recipient_tokens SET sealed_token = ?2 WHERE id = ?1")
+            sqlx::query("UPDATE sharing_recipient_tokens SET sealed_token = $2 WHERE id = $1")
                 .bind(token_id)
                 .bind(sealed)
                 .execute(&self.pool)
@@ -483,11 +469,11 @@ impl RecipientStore for SqliteStore {
 }
 
 #[async_trait]
-impl CredentialStore for SqliteStore {
+impl CredentialStore for PostgresStore {
     async fn put_credential(&self, c: SealedCredential) -> Result<()> {
         sqlx::query(
-            "INSERT INTO sharing_credentials (name, sealed) VALUES (?, ?) \
-             ON CONFLICT (name) DO UPDATE SET sealed = excluded.sealed",
+            "INSERT INTO sharing_credentials (name, sealed) VALUES ($1, $2) \
+             ON CONFLICT (name) DO UPDATE SET sealed = EXCLUDED.sealed",
         )
         .bind(c.name)
         .bind(c.sealed)
@@ -498,7 +484,7 @@ impl CredentialStore for SqliteStore {
     }
 
     async fn get_credential(&self, name: &str) -> Result<SealedCredential> {
-        let row = sqlx::query("SELECT name, sealed FROM sharing_credentials WHERE name = ?")
+        let row = sqlx::query("SELECT name, sealed FROM sharing_credentials WHERE name = $1")
             .bind(name)
             .fetch_one(&self.pool)
             .await
@@ -525,7 +511,7 @@ impl CredentialStore for SqliteStore {
     }
 
     async fn delete_credential(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM sharing_credentials WHERE name = ?")
+        let done = sqlx::query("DELETE FROM sharing_credentials WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await
@@ -535,8 +521,8 @@ impl CredentialStore for SqliteStore {
 
     async fn put_external_location(&self, l: ExternalLocationRecord) -> Result<()> {
         sqlx::query(
-            "INSERT INTO sharing_external_locations (name, url, credential_name) VALUES (?, ?, ?) \
-             ON CONFLICT (name) DO UPDATE SET url = excluded.url, credential_name = excluded.credential_name",
+            "INSERT INTO sharing_external_locations (name, url, credential_name) VALUES ($1, $2, $3) \
+             ON CONFLICT (name) DO UPDATE SET url = EXCLUDED.url, credential_name = EXCLUDED.credential_name",
         )
         .bind(l.name)
         .bind(l.url)
@@ -566,7 +552,7 @@ impl CredentialStore for SqliteStore {
     }
 
     async fn delete_external_location(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM sharing_external_locations WHERE name = ?")
+        let done = sqlx::query("DELETE FROM sharing_external_locations WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await

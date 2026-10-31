@@ -91,6 +91,18 @@ changelog_path = "crates/provider/CHANGELOG.md"
 release = false
 
 [[package]]
+name = "opensharing-postgres"
+changelog_path = "crates/postgres/CHANGELOG.md"
+# Bootstrap gate (see top), after opensharing-provider.
+release = false
+
+[[package]]
+name = "opensharing-sqlite"
+changelog_path = "crates/sqlite/CHANGELOG.md"
+# Bootstrap gate (see top), after opensharing-provider.
+release = false
+
+[[package]]
 name = "opensharing-server"
 changelog_path = "crates/server/CHANGELOG.md"
 # Bootstrap gate (see top), after opensharing-api and
@@ -126,5 +138,5 @@ commit_parsers = [
 # Strip the redundant "(scope)" from each rendered line — each crate's changelog
 # is already crate-scoped.
 commit_preprocessors = [
-  { pattern = '\((common|admin|admin-api|client|api|engine|provider|server|neon)\)', replace = "" },
+  { pattern = '\((common|admin|admin-api|client|api|engine|provider|postgres|sqlite|server|neon)\)', replace = "" },
 ]

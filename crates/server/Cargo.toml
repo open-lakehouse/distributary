@@ -18,13 +18,13 @@ required-features = ["bin"]
 
 [dependencies]
 # local dependencies in alphabetical order
-# The provider admin API models and server surface (feature `admin`).
-opensharing-admin = { path = "../admin", version = "0.0.1", optional = true }
+# The provider admin API server surface (feature `admin`).
 opensharing-admin-api = { path = "../admin-api", version = "0.0.1", optional = true }
 opensharing-api = { path = "../api", version = "0.0.1" }
 opensharing-engine = { path = "../engine", version = "0.0.1" }
+opensharing-postgres = { path = "../postgres", version = "0.0.1", optional = true }
 opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false }
-opensharing-common = { path = "../common", version = "0.0.1" }
+opensharing-sqlite = { path = "../sqlite", version = "0.0.1", optional = true }
 # The Unity Catalog source and the UC-shaped credential admin routes (feature `unity`).
 unitycatalog-client = { workspace = true, optional = true }
 unitycatalog-common = { workspace = true, optional = true, features = [
@@ -36,34 +36,20 @@ unitycatalog-common = { workspace = true, optional = true, features = [
 async-trait = { workspace = true }
 axum = { workspace = true }
 base64 = "0.22"
-chrono = { workspace = true }
 futures = { workspace = true, optional = true }
-# Storage primitives, over catalog-independent credential types: minting from
-# stored credentials, and building stores / presigning from a vended credential.
-olai-credential-vending = { workspace = true }
-olai-storage-credentials = { workspace = true, features = ["sharing"] }
-olai-vended-store = { workspace = true, features = ["aws", "azure", "gcp", "fs"] }
+# The UC credential admin routes and the UC source convert UC credentials into
+# the catalog-independent credential types (feature `unity`).
+olai-credential-vending = { workspace = true, optional = true }
+olai-storage-credentials = { workspace = true, optional = true, features = ["sharing"] }
 # Envelope encryption for secrets at rest.
 olai-store = { workspace = true, features = ["encryption"] }
-object_store = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde_yml = { workspace = true }
-# Recipient tokens are stored as sha256 digests only.
-sha2 = "0.10"
-# The SQL stores; `postgres` / `sqlite` add the backend.
-sqlx = { workspace = true, optional = true, features = [
-  "chrono",
-  "json",
-  "runtime-tokio-rustls",
-  "migrate",
-  "macros",
-] }
-thiserror = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros", "signal", "net"] }
 tracing = { workspace = true }
 url = { workspace = true }
-uuid = { workspace = true, features = ["v4"] }
+uuid = { workspace = true, optional = true }
 
 clap = { version = "4.5", features = ["derive", "env"], optional = true }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"], optional = true }
@@ -74,24 +60,32 @@ name = "e2e"
 required-features = ["admin"]
 
 [dev-dependencies]
+chrono = { workspace = true }
+olai-storage-credentials = { workspace = true }
 opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false, features = ["testing"] }
-tempfile = "3"
 tower = { workspace = true }
 
 [features]
 default = ["postgres", "unity", "admin"]
-# The Postgres store (sqlx, with embedded migrations).
-postgres = ["dep:sqlx", "sqlx/postgres"]
-# The SQLite store (sqlx, with embedded migrations), for single-node deployments.
-sqlite = ["dep:sqlx", "sqlx/sqlite"]
+# The Postgres store (`opensharing-postgres`).
+postgres = ["dep:opensharing-postgres"]
+# The SQLite store (`opensharing-sqlite`), for single-node deployments.
+sqlite = ["dep:opensharing-sqlite"]
 # Unity Catalog integration: the UC REST catalog source and the UC-shaped
 # credential / external-location admin routes. Without it the crate depends on
 # no catalog's models (the share and recipient admin API remains, with `admin`).
-unity = ["dep:futures", "dep:unitycatalog-client", "dep:unitycatalog-common"]
+unity = [
+  "dep:futures",
+  "dep:olai-credential-vending",
+  "dep:olai-storage-credentials",
+  "dep:unitycatalog-client",
+  "dep:unitycatalog-common",
+  "dep:uuid",
+]
 # The provider admin API (shares, permissions, recipients, activation links;
 # with `unity` also credentials and external locations), on the handler traits
 # `opensharing-admin-api` generates. Without it the server serves only the protocol,
 # and shares and recipients are provisioned through the `ShareStore`.
-admin = ["dep:opensharing-admin", "dep:opensharing-admin-api", "opensharing-provider/admin"]
+admin = ["dep:opensharing-admin-api", "opensharing-provider/admin"]
 # The `sharing-server` binary.
 bin = ["postgres", "sqlite", "unity", "admin", "dep:clap", "dep:tracing-subscriber"]

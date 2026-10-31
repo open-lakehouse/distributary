@@ -15,7 +15,9 @@ composable sharing server that maps shares onto any catalog.
 | [`crates/admin`](crates/admin) | `opensharing-admin` | Provider admin API models: shares, permissions, recipients, providers |
 | [`crates/admin-api`](crates/admin-api) | `opensharing-admin-api` | Provider admin API server surface: generated handler traits, routers, provider auth |
 | [`crates/provider`](crates/provider) | `opensharing-provider` | The provider domain: share, recipient, token and credential stores (memory), grants, sealed secrets, the admin API service, and the catalog, policy and context they plug into the protocol |
-| [`crates/server`](crates/server) | `opensharing-server` | The batteries-included server: the SQL stores (Postgres, SQLite), configuration, Unity Catalog integration (feature `unity`), `sharing-server` binary |
+| [`crates/postgres`](crates/postgres) | `opensharing-postgres` | The Postgres store (sqlx, embedded migrations) |
+| [`crates/sqlite`](crates/sqlite) | `opensharing-sqlite` | The SQLite store (sqlx, embedded migrations), for single-node deployments |
+| [`crates/server`](crates/server) | `opensharing-server` | The batteries-included server: store selection, configuration, Unity Catalog integration (feature `unity`), `sharing-server` binary |
 | [`crates/neon`](crates/neon) | `opensharing-neon` | The server as a Neon Function (deployment artifact, not published) |
 
 The protocol is defined in [`proto/opensharing/v1`](proto/opensharing/v1),

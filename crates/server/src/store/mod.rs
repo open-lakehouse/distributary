@@ -1,18 +1,15 @@
-//! The SQL implementations of the provider's store traits.
+//! The provider's stores, as the server selects them.
 //!
 //! The traits, the records and the in-memory store come from
-//! [`opensharing_provider::store`], re-exported here. This module adds:
+//! [`opensharing_provider::store`], re-exported here, plus:
 //!
-//! - `postgres::PostgresStore` (feature `postgres`);
-//! - `sqlite::SqliteStore` (feature `sqlite`), for single-node deployments.
-//!
-//! The SQL stores embed their own migrations (`migrations/{postgres,sqlite}`).
+//! - `postgres` (feature `postgres`): `opensharing-postgres`;
+//! - `sqlite` (feature `sqlite`): `opensharing-sqlite`, for single-node
+//!   deployments.
 
 pub use opensharing_provider::store::*;
 
 #[cfg(feature = "postgres")]
-pub mod postgres;
-#[cfg(any(feature = "postgres", feature = "sqlite"))]
-mod sql;
+pub use opensharing_postgres as postgres;
 #[cfg(feature = "sqlite")]
-pub mod sqlite;
+pub use opensharing_sqlite as sqlite;

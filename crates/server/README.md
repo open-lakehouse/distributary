@@ -39,8 +39,8 @@ configuration, Unity Catalog integration and the `sharing-server` binary. See
 
 | Feature | Default | What |
 |---|---|---|
-| `postgres` | ✓ | The Postgres store (sqlx, embedded migrations) |
-| `sqlite` | | The SQLite store (sqlx, embedded migrations), for single-node deployments |
+| `postgres` | ✓ | The Postgres store (`opensharing-postgres`) |
+| `sqlite` | | The SQLite store (`opensharing-sqlite`), for single-node deployments |
 | `unity` | ✓ | Unity Catalog integration: the UC REST catalog source and (with `admin`) the UC-shaped `credentials` / `external-locations` admin routes |
 | `admin` | ✓ | The provider admin API: `ProviderService` implements `opensharing-admin-api`'s generated `ShareHandler` / `RecipientHandler`, authorized by an `AdminPolicy` |
 | `bin` | | The `sharing-server` binary (implies `postgres`, `sqlite`, `unity` and `admin`) |
@@ -61,9 +61,10 @@ mapping, grants and tokens over a host's own store and request context.
 
 ### Stores
 
-`store` re-exports the provider's store traits and in-memory store, and adds
-the Postgres (`store::postgres`) and SQLite (`store::sqlite`) implementations,
-with their embedded migrations. All of them pass the provider's conformance
+`store` re-exports the provider's store traits and in-memory store, and the
+Postgres ([`opensharing-postgres`](../postgres), `store::postgres`) and SQLite
+([`opensharing-sqlite`](../sqlite), `store::sqlite`) implementations, with their
+embedded migrations. All of them pass the provider's conformance
 suite (`opensharing_provider::testing::round_trips`).
 
 ## Running
@@ -125,7 +126,4 @@ that the `delta-sharing` clients read directly.
 
 `cargo test -p opensharing-server` runs the end-to-end suite on the
 in-memory store; `--no-default-features` runs the catalog-free host test
-(`tests/custom_mount.rs`). The store conformance suite runs on SQLite (feature
-`sqlite`, a temporary file), and on Postgres when
-`SHARING_SERVER_TEST_DATABASE_URL` points at a disposable database (see
-`tests/postgres.rs`).
+(`tests/custom_mount.rs`). The store conformance suite runs in the store crates.

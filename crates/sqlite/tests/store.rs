@@ -1,7 +1,6 @@
 //! The SQLite store, on a fresh database file.
-#![cfg(feature = "sqlite")]
 
-use opensharing_server::store::sqlite::{SqliteStore, connect, ensure_schema_current, migrate};
+use opensharing_sqlite::{SqliteStore, connect, ensure_schema_current, migrate};
 
 use opensharing_provider::testing::round_trips;
 
@@ -21,7 +20,7 @@ async fn sqlite_store_round_trips() {
 
 #[tokio::test]
 async fn sqlite_state_survives_reconnecting() {
-    use opensharing_server::store::{ShareReader, ShareStore};
+    use opensharing_provider::store::{ShareReader, ShareStore};
 
     let dir = tempfile::tempdir().unwrap();
     let url = format!("sqlite://{}", dir.path().join("sharing.db").display());
