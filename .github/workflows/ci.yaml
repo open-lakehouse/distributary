@@ -73,9 +73,13 @@ jobs:
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
-  # OpenSharing must stay mountable without Unity Catalog. Guard the boundaries:
-  # - opensharing-api (protocol) and opensharing-admin (admin API models)
-  #   depend on no olai-uc-* crate at all;
+  # OpenSharing must stay mountable without Unity Catalog, and the protocol and
+  # the admin API stay separate. Guard the boundaries:
+  # - opensharing-api (protocol), opensharing-admin (admin API models) and
+  #   opensharing-admin-api (admin API server surface) depend on no olai-uc-*
+  #   crate at all;
+  # - opensharing-api depends on no admin crate, and opensharing-admin-api on
+  #   no protocol crate;
   # - opensharing-server without `unity` depends on no olai-uc-* crate either:
   #   its storage access comes from the catalog-independent trestle vending
   #   crates (olai-storage-credentials, olai-vended-store, olai-credential-vending),
@@ -115,6 +119,12 @@ jobs:
             '^olai-uc-' -p opensharing-api --all-features
           deny "opensharing-admin must not depend on olai-uc-* crates" \
             '^olai-uc-' -p opensharing-admin --all-features
+          deny "opensharing-admin-api must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p opensharing-admin-api --all-features
+          deny "opensharing-api must not depend on the admin crates" \
+            '^opensharing-admin' -p opensharing-api --all-features
+          deny "opensharing-admin-api must not depend on the protocol crates" \
+            '^opensharing-(api|common|client) ' -p opensharing-admin-api --all-features
           deny "opensharing-server (no unity) must not depend on olai-uc-* crates" \
             '^olai-uc-' -p opensharing-server --no-default-features --features postgres,admin
           deny "opensharing-server (no admin) must not depend on opensharing-admin" \
@@ -125,14 +135,18 @@ jobs:
           cargo check --locked --all-targets -p opensharing-api --no-default-features
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres,admin
+          cargo check --locked --all-targets -p opensharing-server --no-default-features --features sqlite
+          cargo check --locked --all-targets -p opensharing-server --no-default-features --features sqlite,admin
 
       # The share / recipient admin API must work end to end without `unity`
-      # (tests/e2e.rs), and the store-provisioned host without `admin` either
-      # (tests/custom_mount.rs).
+      # (tests/e2e.rs), the store-provisioned host without `admin` either
+      # (tests/custom_mount.rs, tests/custom_store.rs), and on the SQLite store
+      # (tests/sqlite.rs).
       - name: Test without Unity Catalog
         run: |
           cargo test --locked -p opensharing-server --no-default-features --features postgres,admin
           cargo test --locked -p opensharing-server --no-default-features --features postgres
+          cargo test --locked -p opensharing-server --no-default-features --features sqlite,admin
 
   test:
     name: test
