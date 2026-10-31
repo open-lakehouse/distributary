@@ -48,7 +48,6 @@ pub mod embed;
 pub mod error;
 pub mod recipients;
 pub mod secrets;
-pub mod source;
 pub mod store;
 mod tokens;
 #[cfg(feature = "unity")]

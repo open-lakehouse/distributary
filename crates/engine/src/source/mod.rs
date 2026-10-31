@@ -8,15 +8,15 @@
 //! access), so the sharing server stores no storage secrets.
 //!
 //! Implementations: [`fixed::StaticSource`] (assets declared in config) and,
-//! with the `unity` feature, `unity::source::UnitySource` (a Unity Catalog REST
-//! server — this one or Databricks). Iceberg REST and other catalogs plug in
+//! in `opensharing-server`'s `unity` feature, `UnitySource` (a Unity Catalog REST
+//! server — mangrove or Databricks). Iceberg REST and other catalogs plug in
 //! here.
 
 use std::sync::Arc;
 
+use crate::catalog::DataFormat;
 use async_trait::async_trait;
 use olai_storage_credentials::VendedCredential;
-use opensharing_engine::catalog::DataFormat;
 
 use crate::{Error, Result};
 
@@ -124,8 +124,8 @@ impl SourceRegistry {
     }
 }
 
-/// Split a dotted full name into exactly `N` parts.
-pub(crate) fn split_name<const N: usize>(full_name: &str) -> Result<[&str; N]> {
+/// Split a dotted full name into exactly `N` non-empty parts.
+pub fn split_name<const N: usize>(full_name: &str) -> Result<[&str; N]> {
     let parts: Vec<_> = full_name.split('.').collect();
     parts
         .try_into()

@@ -21,7 +21,11 @@ bytes = { workspace = true }
 chrono = { workspace = true }
 delta_kernel = { workspace = true }
 delta_kernel_default_engine = { workspace = true, optional = true }
+http = { version = "1", optional = true }
 object_store = { workspace = true }
+olai-credential-vending = { workspace = true, optional = true }
+olai-storage-credentials = { workspace = true, optional = true, features = ["sharing"] }
+olai-vended-store = { workspace = true, optional = true, features = ["aws", "azure", "gcp", "fs"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["rt"] }
@@ -60,9 +64,18 @@ name = "policy"
 required-features = ["testing"]
 
 [features]
-default = ["delta"]
+default = ["delta", "vending"]
 # The kernel-backed Delta table format (`format::delta`).
 delta = ["dep:delta_kernel_default_engine", "dep:uuid"]
+# Catalog sources (`source`) and `vending::SourceStorageAccess`: storage access
+# delegated to the source catalog or minted locally, over the catalog-independent
+# trestle credential vending crates.
+vending = [
+  "dep:http",
+  "dep:olai-credential-vending",
+  "dep:olai-storage-credentials",
+  "dep:olai-vended-store",
+]
 # In-memory port implementations (`testing`) for exercising the sharing logic
 # (discovery, query, asset serving) without a real host. Downstream hosts can
 # enable it to test their own wiring.

@@ -13,10 +13,10 @@ use opensharing_admin_api::ShareHandler;
 
 use super::{AdminAction, ProviderService, identifier};
 use crate::catalog::shared_as;
-use crate::source::split_name;
 use crate::store::{ShareObject, ShareRecord, now_millis};
 use crate::{Error, Result};
 use opensharing_admin_api::{Error as AdminError, Result as AdminResult};
+use opensharing_engine::source::split_name;
 
 /// The only privilege a share grants.
 const SELECT: &str = "SELECT";

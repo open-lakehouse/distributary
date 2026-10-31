@@ -11,14 +11,16 @@ use opensharing_api::sharing_router;
 use opensharing_engine::SharingService;
 
 use crate::Result;
-use crate::access::{SourceStorageAccess, open_credential};
+use opensharing_engine::vending::SourceStorageAccess;
+
+use crate::access::{StoreCredentialResolver, open_credential};
 use crate::catalog::{GrantPolicy, StoreCatalog};
 use crate::config::{Config, DatabaseConfig, EncryptionConfig};
 use crate::recipients::{Recipient, StoreAuthenticator, activation_router, rewrap_tokens};
 use crate::secrets::Secrets;
-use crate::source::SourceRegistry;
 use crate::store::SharingStore;
 use crate::store::memory::InMemoryStore;
+use opensharing_engine::source::SourceRegistry;
 
 /// Everything the routes need, besides the store.
 #[derive(Clone)]
@@ -62,8 +64,7 @@ pub fn router(
     let catalog = Arc::new(StoreCatalog::new(store.clone(), sources.clone()));
     let access = Arc::new(SourceStorageAccess::new(
         sources,
-        store.clone(),
-        secrets.clone(),
+        StoreCredentialResolver::new(store.clone(), secrets.clone()),
         settings.presign_ttl,
         settings.aws_region,
     ));

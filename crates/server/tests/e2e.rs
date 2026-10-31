@@ -14,15 +14,15 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use olai_storage_credentials::{AccessLevel, StorageCredentials, VendedCredential};
 use opensharing_admin_api::auth::Provider;
+use opensharing_engine::source::fixed::{StaticSource, StaticTable};
+use opensharing_engine::source::{
+    AccessMode, CatalogSource, RegisteredSource, SourceRegistry, SourceTable, SourceVolume,
+};
 use opensharing_server::Result;
 use opensharing_server::admin::{self, AdminAction, AdminPolicy, ProviderService, ProviderTokens};
 use opensharing_server::config::{ConfigValue, EncryptionConfig, KeyConfig, KeyProviderKind};
 use opensharing_server::embed::{self, Settings};
 use opensharing_server::secrets::Secrets;
-use opensharing_server::source::fixed::{StaticSource, StaticTable};
-use opensharing_server::source::{
-    AccessMode, CatalogSource, RegisteredSource, SourceRegistry, SourceTable, SourceVolume,
-};
 use opensharing_server::store::memory::InMemoryStore;
 use opensharing_server::store::{CredentialStore, SharingStore};
 use serde_json::{Value, json};
@@ -412,7 +412,7 @@ struct VendingCatalog {
 
 #[async_trait]
 impl CatalogSource for VendingCatalog {
-    async fn get_table(&self, full_name: &str) -> Result<SourceTable> {
+    async fn get_table(&self, full_name: &str) -> opensharing_engine::Result<SourceTable> {
         Ok(SourceTable {
             full_name: full_name.to_string(),
             name: full_name.rsplit('.').next().unwrap().to_string(),
@@ -422,15 +422,22 @@ impl CatalogSource for VendingCatalog {
         })
     }
 
-    async fn list_tables(&self, _catalog: &str, _schema: &str) -> Result<Vec<SourceTable>> {
+    async fn list_tables(
+        &self,
+        _catalog: &str,
+        _schema: &str,
+    ) -> opensharing_engine::Result<Vec<SourceTable>> {
         Ok(Vec::new())
     }
 
-    async fn get_volume(&self, _full_name: &str) -> Result<SourceVolume> {
-        Err(opensharing_server::Error::NotFound)
+    async fn get_volume(&self, _full_name: &str) -> opensharing_engine::Result<SourceVolume> {
+        Err(opensharing_engine::Error::NotFound)
     }
 
-    async fn vend_table(&self, table: &SourceTable) -> Result<VendedCredential> {
+    async fn vend_table(
+        &self,
+        table: &SourceTable,
+    ) -> opensharing_engine::Result<VendedCredential> {
         self.vends.fetch_add(1, Ordering::SeqCst);
         let scope = table.location.parse().expect("table location parses");
         Ok(

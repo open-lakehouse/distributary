@@ -15,14 +15,11 @@ use axum::http::{Request, StatusCode};
 use opensharing_api::auth::require_bearer;
 use opensharing_api::sharing_router;
 use opensharing_engine::SharingService;
-use opensharing_server::access::SourceStorageAccess;
+use opensharing_engine::source::fixed::{StaticSource, StaticTable};
+use opensharing_engine::source::{AccessMode, RegisteredSource, SourceRegistry};
+use opensharing_engine::vending::{NoCredentials, SourceStorageAccess};
 use opensharing_server::catalog::{GrantPolicy, StoreCatalog};
-use opensharing_server::config::EncryptionConfig;
 use opensharing_server::recipients::{Recipient, StoreAuthenticator, token_hash};
-use opensharing_server::secrets::Secrets;
-use opensharing_server::source::fixed::{StaticSource, StaticTable};
-use opensharing_server::source::{AccessMode, RegisteredSource, SourceRegistry};
-use opensharing_server::store::memory::InMemoryStore;
 use opensharing_server::store::{
     RecipientRecord, ShareObject, ShareObjectKind, ShareReader, ShareRecord, TokenReader,
     TokenRecord,
@@ -126,13 +123,11 @@ fn sources() -> SourceRegistry {
 
 /// The host's sharing router, assembled from the server's protocol pieces.
 fn router(host: Arc<HostStore>) -> Router {
-    let secrets = Secrets::new(EncryptionConfig::insecure_dev().build().unwrap());
     let catalog = Arc::new(StoreCatalog::new(host.clone(), sources()));
     // The host stores no storage credentials; local access reads the table directly.
     let access = Arc::new(SourceStorageAccess::new(
         sources(),
-        Arc::new(InMemoryStore::new()),
-        secrets,
+        NoCredentials,
         Duration::from_secs(300),
         None,
     ));

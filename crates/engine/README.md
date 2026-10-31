@@ -16,6 +16,15 @@ surface (volumes, agent skills) — and expresses them over narrow ports:
   and reads tables through `delta_kernel` directly, so no query engine is
   involved.
 
+With the `vending` feature (on by default) the crate also implements
+`StorageAccess` itself: `vending::SourceStorageAccess` resolves shared assets
+through `CatalogSource`s (`source`: a static source here, Unity Catalog in
+`opensharing-server`) and either delegates to a catalog that vends credentials
+or mints them locally, from credentials a `CredentialResolver` finds. It uses the
+catalog-independent trestle vending crates, so query responses get presigned URLs
+and the `temporary-*-credentials` endpoints get vended credentials from one
+implementation.
+
 `SharingService` composes one implementation of each port and implements every
 `opensharing-api` handler trait. `opensharing_api::sharing_router` serves it
 under `/api/v1/delta-sharing` (Delta Sharing) and `/api/1.0/opensharing`

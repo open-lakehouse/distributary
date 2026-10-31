@@ -30,10 +30,10 @@ use opensharing_engine::policy::{SharingAction, SharingPolicy};
 use opensharing_engine::service::paginate;
 
 use crate::recipients::Recipient;
-use crate::source::{SourceRegistry, split_name};
 use crate::store::{ShareObject, ShareObjectKind, ShareReader, ShareRecord};
 use crate::{Error, Result};
 use opensharing_api::{Error as ApiError, Result as ApiResult};
+use opensharing_engine::source::{SourceRegistry, split_name};
 
 /// A shared object, with the source-catalog name it resolves through.
 #[derive(Debug, Clone)]
