@@ -13,8 +13,9 @@ use opensharing_common::models::opensharing::v1::{
     Schema, Share as SharingShare, SharingSkill, SharingVolume, Table, *,
 };
 
-use crate::catalog::{AssetKind, AssetRef, PageRequest, SharedAsset, SharedObject, SharingAction};
+use crate::catalog::{AssetKind, AssetRef, PageRequest, SharedAsset, SharedObject};
 use crate::format::{QuerySpec, TableResponse, VersionSpec};
+use crate::policy::SharingAction;
 use crate::service::{SharingService, paginate};
 use crate::{Error, Result};
 use opensharing_api::SharingQueryHandler;
@@ -25,7 +26,7 @@ use opensharing_api::codegen::sharing_volume::SharingVolumeHandler;
 impl<Cx: Clone + Send + Sync + 'static> SharingService<Cx> {
     /// Authorize reading `share`.
     async fn authorize_share(&self, share: &str, cx: &Cx) -> Result<()> {
-        self.catalog
+        self.policy
             .authorize(SharingAction::ReadShare { share }, cx)
             .await
     }
@@ -99,7 +100,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingHandler<Cx> for SharingService<Cx
         request: ListSharesRequest,
         context: Cx,
     ) -> Result<ListSharesResponse> {
-        self.catalog
+        self.policy
             .authorize(SharingAction::ListShares, &context)
             .await?;
         let page = self

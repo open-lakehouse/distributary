@@ -12,7 +12,7 @@ use opensharing_engine::SharingService;
 
 use crate::Result;
 use crate::access::{SourceStorageAccess, open_credential};
-use crate::catalog::StoreCatalog;
+use crate::catalog::{GrantPolicy, StoreCatalog};
 use crate::config::{Config, DatabaseConfig, EncryptionConfig};
 use crate::recipients::{StoreAuthenticator, activation_router, rewrap_tokens};
 use crate::secrets::Secrets;
@@ -67,7 +67,8 @@ pub fn router(
         settings.presign_ttl,
         settings.aws_region,
     ));
-    let service = SharingService::<Recipient>::new(catalog, access);
+    let policy = Arc::new(GrantPolicy::new(store.clone()));
+    let service = SharingService::<Recipient>::new(catalog, access, policy);
     let sharing = require_recipient(
         sharing_router::<SharingService<Recipient>, Recipient>(service),
         Arc::new(StoreAuthenticator::new(store.clone())),

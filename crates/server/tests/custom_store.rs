@@ -1,7 +1,7 @@
 //! A catalog that keeps shares and recipients in its own store and reuses the
 //! server's protocol side on top of it. It implements only the read-only
 //! [`ShareReader`] and [`TokenReader`] views and builds the sharing router
-//! itself, from [`StoreCatalog`], [`StoreAuthenticator`] and
+//! itself, from [`StoreCatalog`], [`GrantPolicy`], [`StoreAuthenticator`] and
 //! [`SourceStorageAccess`]. Runs without any feature.
 
 use std::path::Path;
@@ -16,7 +16,7 @@ use opensharing_api::auth::{Recipient, require_recipient};
 use opensharing_api::sharing_router;
 use opensharing_engine::SharingService;
 use opensharing_server::access::SourceStorageAccess;
-use opensharing_server::catalog::StoreCatalog;
+use opensharing_server::catalog::{GrantPolicy, StoreCatalog};
 use opensharing_server::config::EncryptionConfig;
 use opensharing_server::recipients::{StoreAuthenticator, token_hash};
 use opensharing_server::secrets::Secrets;
@@ -136,7 +136,8 @@ fn router(host: Arc<HostStore>) -> Router {
         Duration::from_secs(300),
         None,
     ));
-    let service = SharingService::<Recipient>::new(catalog, access);
+    let policy = Arc::new(GrantPolicy::new(host.clone()));
+    let service = SharingService::<Recipient>::new(catalog, access, policy);
     require_recipient(
         sharing_router::<SharingService<Recipient>, Recipient>(service),
         Arc::new(StoreAuthenticator::new(host)),

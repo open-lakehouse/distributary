@@ -11,6 +11,7 @@
 //!   shared object lives (backed by any source catalog);
 //! - [`StorageAccess`]: the server's own reads of a shared asset, presigned file
 //!   URLs and temporary credentials for recipients;
+//! - [`SharingPolicy`]: whether the caller may perform an action;
 //! - [`TableFormat`]: serving one table format. Delta (via `delta_kernel`, no
 //!   query engine) is built in behind the `delta` feature.
 //!
@@ -26,6 +27,7 @@
 //! # Layout
 //! - [`catalog`]: the [`ShareCatalog`] port and the share / asset types.
 //! - [`access`]: the [`StorageAccess`] port and [`FileSigner`](access::FileSigner).
+//! - [`policy`]: the [`SharingPolicy`] port and [`AllowAll`](policy::AllowAll).
 //! - [`format`](mod@format): the [`TableFormat`] port, the format registry, the Delta format
 //!   and predicate-hint translation.
 //! - [`service`]: [`SharingService`], the composition root, and the handler
@@ -37,6 +39,7 @@ pub mod format;
 mod handler;
 #[cfg(feature = "delta")]
 mod kernel;
+pub mod policy;
 pub mod service;
 #[cfg(feature = "testing")]
 pub mod testing;
@@ -45,4 +48,5 @@ pub use access::StorageAccess;
 pub use catalog::ShareCatalog;
 pub use format::TableFormat;
 pub use opensharing_api::{Error, Result};
+pub use policy::SharingPolicy;
 pub use service::SharingService;

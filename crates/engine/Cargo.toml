@@ -55,6 +55,10 @@ required-features = ["testing"]
 name = "mount"
 required-features = ["testing"]
 
+[[test]]
+name = "policy"
+required-features = ["testing"]
+
 [features]
 default = ["delta"]
 # The kernel-backed Delta table format (`format::delta`).

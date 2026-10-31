@@ -26,8 +26,9 @@ use opensharing_common::models::opensharing::v1::{
 use crate::access::{StorageAccess, TableStorage, UnsignedUrls};
 use crate::catalog::{
     AssetKind, AssetRef, DataFormat, Page, PageRequest, ResolvedLocation, ShareCatalog, ShareInfo,
-    SharedAsset, SharedObject, SharingAction,
+    SharedAsset, SharedObject,
 };
+use crate::policy::AllowAll;
 use crate::service::{SharingService, paginate};
 use crate::{Error, Result};
 
@@ -100,10 +101,6 @@ fn info(share: &FixtureShare) -> ShareInfo {
 
 #[async_trait]
 impl<Cx: Send + Sync + 'static> ShareCatalog<Cx> for InMemoryShareCatalog {
-    async fn authorize(&self, _action: SharingAction<'_>, _cx: &Cx) -> Result<()> {
-        Ok(())
-    }
-
     async fn list_shares(&self, page: PageRequest, _cx: &Cx) -> Result<Page<ShareInfo>> {
         paginate(
             self.shares.values().map(info).collect(),
@@ -200,5 +197,6 @@ pub fn in_memory_service<Cx: Clone + Send + Sync + 'static>(
     SharingService::new(
         Arc::new(InMemoryShareCatalog::new(shares)),
         Arc::new(LocalStorageAccess),
+        Arc::new(AllowAll),
     )
 }

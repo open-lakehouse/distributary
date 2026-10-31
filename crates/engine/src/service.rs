@@ -1,7 +1,8 @@
 //! [`SharingService`]: the composition root of the sharing surface.
 //!
 //! A service is assembled from one implementation of each port — a
-//! [`ShareCatalog`], a [`StorageAccess`] and a [`FormatRegistry`] — and
+//! [`ShareCatalog`], a [`StorageAccess`], a [`SharingPolicy`] and a
+//! [`FormatRegistry`] — and
 //! implements every `opensharing-api` handler trait on top of them. Hosts build
 //! one, hand it to a router, and never re-implement any protocol semantics.
 
@@ -10,12 +11,14 @@ use std::sync::Arc;
 use crate::access::StorageAccess;
 use crate::catalog::{Page, ShareCatalog};
 use crate::format::FormatRegistry;
+use crate::policy::SharingPolicy;
 use crate::{Error, Result};
 
 /// The sharing service. Cheap to clone (all ports are behind [`Arc`]s).
 pub struct SharingService<Cx = opensharing_api::DefaultContext> {
     pub(crate) catalog: Arc<dyn ShareCatalog<Cx>>,
     pub(crate) access: Arc<dyn StorageAccess<Cx>>,
+    pub(crate) policy: Arc<dyn SharingPolicy<Cx>>,
     pub(crate) formats: Arc<FormatRegistry>,
 }
 
@@ -24,18 +27,27 @@ impl<Cx> Clone for SharingService<Cx> {
         Self {
             catalog: self.catalog.clone(),
             access: self.access.clone(),
+            policy: self.policy.clone(),
             formats: self.formats.clone(),
         }
     }
 }
 
 impl<Cx: Send + Sync + 'static> SharingService<Cx> {
-    /// A service over `catalog` and `access`, serving the
-    /// [built-in](FormatRegistry::builtin) table formats.
-    pub fn new(catalog: Arc<dyn ShareCatalog<Cx>>, access: Arc<dyn StorageAccess<Cx>>) -> Self {
+    /// A service over `catalog` and `access`, authorized by `policy`, serving
+    /// the [built-in](FormatRegistry::builtin) table formats.
+    ///
+    /// There is no default policy, so a service never allows everything by
+    /// accident. Pass [`AllowAll`](crate::policy::AllowAll) to do so on purpose.
+    pub fn new(
+        catalog: Arc<dyn ShareCatalog<Cx>>,
+        access: Arc<dyn StorageAccess<Cx>>,
+        policy: Arc<dyn SharingPolicy<Cx>>,
+    ) -> Self {
         Self {
             catalog,
             access,
+            policy,
             formats: Arc::new(FormatRegistry::builtin()),
         }
     }
@@ -54,6 +66,11 @@ impl<Cx: Send + Sync + 'static> SharingService<Cx> {
     /// The storage access.
     pub fn access(&self) -> &Arc<dyn StorageAccess<Cx>> {
         &self.access
+    }
+
+    /// The sharing policy.
+    pub fn policy(&self) -> &Arc<dyn SharingPolicy<Cx>> {
+        &self.policy
     }
 }
 

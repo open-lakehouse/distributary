@@ -10,10 +10,11 @@
 //!
 //! # Authorization contract
 //!
-//! Authorization goes through **one** hook, [`ShareCatalog::authorize`], which the
-//! service calls with a [`SharingAction`] before every recipient-facing operation.
-//! The data methods are pure data access and must not perform their own
-//! caller-facing authorization.
+//! The catalog does not authorize. The service asks the
+//! [`SharingPolicy`](crate::policy::SharingPolicy) before every
+//! recipient-facing operation, and calls the catalog only once that allows it.
+//! The one caller-dependent answer is [`ShareCatalog::list_shares`], which
+//! returns the shares the caller sees.
 
 use async_trait::async_trait;
 use delta_kernel::Version;
@@ -191,16 +192,6 @@ impl SharedAsset {
     }
 }
 
-/// The action the service authorizes before an operation. Scoped to the share;
-/// the concrete object is checked when it is resolved.
-#[derive(Debug, Clone)]
-pub enum SharingAction<'a> {
-    /// List shares accessible to the caller.
-    ListShares,
-    /// Read a specific share (discovery, listing, querying its objects).
-    ReadShare { share: &'a str },
-}
-
 /// A page request: the requested maximum size and the continuation token.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PageRequest {
@@ -218,9 +209,6 @@ pub struct Page<T> {
 /// The recipient-facing share catalog port. See the module docs.
 #[async_trait]
 pub trait ShareCatalog<Cx = opensharing_api::DefaultContext>: Send + Sync + 'static {
-    /// Authorize an action before the service performs it.
-    async fn authorize(&self, action: SharingAction<'_>, cx: &Cx) -> Result<()>;
-
     /// The shares visible to the caller, one page at a time.
     async fn list_shares(&self, page: PageRequest, cx: &Cx) -> Result<Page<ShareInfo>>;
 

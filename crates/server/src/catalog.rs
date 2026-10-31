@@ -16,8 +16,8 @@
 //! Like the Databricks API, non-table objects take their alias from
 //! `string_shared_as`; `shared_as` is still honoured for them as a fallback.
 //!
-//! A recipient sees only the shares granted to it; any other share is reported
-//! as not found.
+//! A recipient sees only the shares granted to it: [`StoreCatalog`] lists just
+//! those, and [`GrantPolicy`] reports any other share as not found.
 
 use std::sync::Arc;
 
@@ -25,8 +25,9 @@ use async_trait::async_trait;
 use opensharing_api::auth::Recipient;
 use opensharing_engine::catalog::{
     AssetKind, AssetRef, Page, PageRequest, ResolvedLocation, ShareCatalog, ShareInfo, SharedAsset,
-    SharedObject, SharingAction,
+    SharedObject,
 };
+use opensharing_engine::policy::{SharingAction, SharingPolicy};
 use opensharing_engine::service::paginate;
 
 use crate::source::{SourceRegistry, split_name};
@@ -125,10 +126,23 @@ fn info(share: &ShareRecord) -> ShareInfo {
     }
 }
 
+/// The recipient-facing [`SharingPolicy`] over the store's grants: a recipient
+/// may read exactly the shares granted to it.
+pub struct GrantPolicy {
+    store: Arc<dyn ShareReader>,
+}
+
+impl GrantPolicy {
+    pub fn new(store: Arc<dyn ShareReader>) -> Self {
+        Self { store }
+    }
+}
+
 #[async_trait]
-impl ShareCatalog<Recipient> for StoreCatalog {
+impl SharingPolicy<Recipient> for GrantPolicy {
     async fn authorize(&self, action: SharingAction<'_>, cx: &Recipient) -> ApiResult<()> {
         match action {
+            // The catalog lists only the caller's shares.
             SharingAction::ListShares => Ok(()),
             SharingAction::ReadShare { share } => {
                 if self.store.is_granted(share, &cx.id).await? {
@@ -140,7 +154,10 @@ impl ShareCatalog<Recipient> for StoreCatalog {
             }
         }
     }
+}
 
+#[async_trait]
+impl ShareCatalog<Recipient> for StoreCatalog {
     async fn list_shares(&self, page: PageRequest, cx: &Recipient) -> ApiResult<Page<ShareInfo>> {
         let shares = self.store.shares_of(&cx.id).await?;
         paginate(
