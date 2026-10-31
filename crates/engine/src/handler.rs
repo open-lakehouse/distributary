@@ -9,9 +9,7 @@
 use bytes::Bytes;
 use chrono::DateTime;
 
-use opensharing_common::models::opensharing::v1::{
-    Schema, Share as SharingShare, Skill, Table, Volume, *,
-};
+use opensharing_common::models::opensharing::v1::{Schema, Share, Skill, Table, Volume, *};
 
 use crate::catalog::{AssetKind, AssetRef, PageRequest, SharedAsset, SharedObject};
 use crate::format::{QuerySpec, TableResponse, VersionSpec};
@@ -107,28 +105,22 @@ impl<Cx: Clone + Send + Sync + 'static> ShareHandler<Cx> for SharingService<Cx> 
             .catalog
             .list_shares(
                 PageRequest {
-                    max_results: request
-                        .max_results
-                        .map(|n| usize::try_from(n).unwrap_or_default()),
+                    max_results: request.max_results,
                     page_token: request.page_token,
                 },
                 &context,
             )
             .await?;
         Ok(ListSharesResponse {
-            items: page.items.into_iter().map(SharingShare::from).collect(),
+            items: page.items,
             next_page_token: page.next_page_token,
             ..Default::default()
         })
     }
 
-    async fn get_share(&self, request: GetShareRequest, context: Cx) -> Result<SharingShare> {
+    async fn get_share(&self, request: GetShareRequest, context: Cx) -> Result<Share> {
         self.authorize_share(&request.name, &context).await?;
-        Ok(self
-            .catalog
-            .get_share(&request.name, &context)
-            .await?
-            .into())
+        self.catalog.get_share(&request.name, &context).await
     }
 
     async fn list_schemas(

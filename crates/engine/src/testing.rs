@@ -25,7 +25,7 @@ use opensharing_common::models::opensharing::v1::{
 
 use crate::access::{StorageAccess, TableStorage, UnsignedUrls};
 use crate::catalog::{
-    AssetKind, AssetRef, DataFormat, Page, PageRequest, ResolvedLocation, ShareCatalog, ShareInfo,
+    AssetKind, AssetRef, DataFormat, Page, PageRequest, ResolvedLocation, Share, ShareCatalog,
     SharedAsset, SharedObject,
 };
 use crate::policy::AllowAll;
@@ -91,25 +91,26 @@ impl InMemoryShareCatalog {
     }
 }
 
-fn info(share: &FixtureShare) -> ShareInfo {
-    ShareInfo {
+fn info(share: &FixtureShare) -> Share {
+    Share {
         name: share.name.clone(),
         id: share.id.clone(),
         comment: share.comment.clone(),
+        ..Default::default()
     }
 }
 
 #[async_trait]
 impl<Cx: Send + Sync + 'static> ShareCatalog<Cx> for InMemoryShareCatalog {
-    async fn list_shares(&self, page: PageRequest, _cx: &Cx) -> Result<Page<ShareInfo>> {
+    async fn list_shares(&self, page: PageRequest, _cx: &Cx) -> Result<Page<Share>> {
         paginate(
             self.shares.values().map(info).collect(),
-            page.max_results.map(|n| n as i32),
+            page.max_results,
             page.page_token.as_deref(),
         )
     }
 
-    async fn get_share(&self, share: &str, _cx: &Cx) -> Result<ShareInfo> {
+    async fn get_share(&self, share: &str, _cx: &Cx) -> Result<Share> {
         Ok(info(self.share(share)?))
     }
 

@@ -4,7 +4,6 @@ package opensharing.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
-import "opensharing/v1/protocol.proto";
 
 // Get the version of a table.
 message GetTableVersionRequest {
@@ -60,96 +59,6 @@ message GetTableMetadataRequest {
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
-}
-
-// Response for a query against a table.
-message QueryResponse {
-  oneof response {
-    // Parquet response format
-    ParquetResponse parquet = 1;
-    // Delta response format
-    DeltaResponse delta = 2;
-  }
-}
-
-// Response for a query against a table in Parquet format.
-message ParquetResponse {
-  repeated ParquetLogMessage entries = 1;
-}
-
-// Log message for Parquet response.
-message ParquetLogMessage {
-  oneof entry {
-    ProtocolParquet protocol = 1;
-    MetadataParquet metadata = 2;
-  }
-}
-
-// Protocol for Parquet response.
-message ProtocolParquet {
-  // The minimum version of the protocol that a client must implement
-  // in order to correctly read a Delta Lake table.
-  int32 min_reader_version = 1;
-}
-
-// Metadata for Parquet response.
-message MetadataParquet {
-  // Unique identifier for this table
-  string id = 1;
-
-  // User-provided identifier for this table
-  optional string name = 2;
-
-  // User-provided description for this table
-  optional string description = 3;
-
-  // Specification of the encoding for the files stored in the table
-  Format format = 4;
-
-  // Schema of the table
-  string schema_string = 5;
-
-  // An array containing the names of columns by which the data should be partitioned
-  repeated string partition_columns = 6;
-}
-
-// Response for a query against a table in Delta format.
-message DeltaResponse {
-  repeated DeltaLogMessage entries = 1;
-}
-
-// Log message for Delta response.
-message DeltaLogMessage {
-  oneof entry {
-    ProtocolDelta protocol = 1;
-    MetadataDelta metadata = 2;
-  }
-}
-
-// Protocol for Delta response.
-message ProtocolDelta {
-  // The minimum version of the protocol that a client must implement
-  // in order to correctly read a Delta Lake table.
-  int32 min_reader_version = 1;
-
-  int32 min_writer_version = 2;
-}
-
-// Metadata for Delta response.
-message MetadataDelta {
-  // Metadata from Delta protocol
-  Metadata delta_metadata = 1;
-
-  // The table version the metadata corresponds to, returned when querying
-  // table data with a version or timestamp parameter, or cdf query
-  // with includeHistoricalMetadata set to true.
-  optional int64 version = 2;
-
-  // The size of the table in bytes, will be returned if available in the delta log.
-  optional int64 size = 3;
-
-  // The number of files in the table, will be returned if available in the delta log.
-  optional int64 num_files = 4;
 }
 
 // A structured predicate used as a query hint to prune files.

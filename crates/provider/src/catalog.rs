@@ -23,7 +23,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use opensharing_engine::catalog::{
-    AssetKind, AssetRef, Page, PageRequest, ResolvedLocation, ShareCatalog, ShareInfo, SharedAsset,
+    AssetKind, AssetRef, Page, PageRequest, ResolvedLocation, Share, ShareCatalog, SharedAsset,
     SharedObject,
 };
 use opensharing_engine::policy::{SharingAction, SharingPolicy};
@@ -118,11 +118,12 @@ pub fn shared_as(object: &ShareObject) -> Result<(String, String)> {
     Ok((schema.to_string(), name.to_string()))
 }
 
-fn info(share: &ShareRecord) -> ShareInfo {
-    ShareInfo {
+fn info(share: &ShareRecord) -> Share {
+    Share {
         name: share.name.clone(),
         id: Some(share.id.clone()),
         comment: share.comment.clone(),
+        ..Default::default()
     }
 }
 
@@ -163,19 +164,19 @@ impl<Cx: RecipientIdentity> SharingPolicy<Cx> for GrantPolicy {
 
 #[async_trait]
 impl<Cx: RecipientIdentity> ShareCatalog<Cx> for StoreCatalog {
-    async fn list_shares(&self, page: PageRequest, cx: &Cx) -> ApiResult<Page<ShareInfo>> {
+    async fn list_shares(&self, page: PageRequest, cx: &Cx) -> ApiResult<Page<Share>> {
         let shares = match cx.recipient_id() {
             Some(recipient) => self.store.shares_of(recipient).await?,
             None => Vec::new(),
         };
         paginate(
             shares.iter().map(info).collect(),
-            page.max_results.map(|n| n.min(i32::MAX as usize) as i32),
+            page.max_results,
             page.page_token.as_deref(),
         )
     }
 
-    async fn get_share(&self, share: &str, _cx: &Cx) -> ApiResult<ShareInfo> {
+    async fn get_share(&self, share: &str, _cx: &Cx) -> ApiResult<Share> {
         Ok(info(&self.store.get_share(share).await?))
     }
 
