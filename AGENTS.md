@@ -52,14 +52,18 @@ for the design.
 
 ## Toolchain
 
-CI pins Rust 1.97. Run clippy with `cargo +1.97` locally, because newer stable
-toolchains report false positives on thiserror derives.
+CI and `rust-toolchain.toml` pin Rust 1.99, the same as the other
+open-lakehouse repos (mangrove, headwaters). The minimum supported Rust is the
+workspace `rust-version` (1.95.0, set by the dependency tree). It is separate
+from the pin, so bumping the pin never raises it. With 1.99, keep
+`async-trait` ≥ 0.1.92 and `thiserror` ≥ 2.0.21: older versions of their
+macros trip clippy's `double_must_use` and `redundant_field_names`.
 
 ## Pre-push check (mimics CI)
 
 ```bash
 cargo fmt --all --check \
-  && cargo +1.97 clippy --workspace --all-targets --all-features -- -D warnings \
+  && cargo clippy --workspace --all-targets --all-features -- -D warnings \
   && cargo nextest run --workspace --all-features \
   && cargo test --workspace --all-features --doc
 ```

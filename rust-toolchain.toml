@@ -1,6 +1,6 @@
-# Matches the CI toolchain pin (.github/workflows/ci.yaml). Newer stable toolchains
-# report clippy false positives on thiserror derives, which `just fix` would
-# otherwise try (and fail) to apply.
+# Matches the CI toolchain pin (.github/workflows/ci.yaml) and the other
+# open-lakehouse repos. The workspace's minimum supported Rust is the separate,
+# lower `rust-version` in Cargo.toml.
 [toolchain]
-channel = "1.97"
+channel = "1.99"
 components = ["rustfmt", "clippy"]
