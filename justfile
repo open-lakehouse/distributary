@@ -83,3 +83,8 @@ fix:
 [group('dev')]
 migrate:
     cargo run -p opensharing-server --features bin -- migrate
+
+# build the server Docker image (distributary); context = repo root
+[group('build')]
+build-docker:
+    docker build -f crates/server/Dockerfile -t distributary:dev .

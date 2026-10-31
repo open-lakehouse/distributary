@@ -1,0 +1,32 @@
+# The server image (crates/server/Dockerfile) only needs the workspace sources;
+# everything below is irrelevant to that build and only bloats the build context.
+
+# Rust build artifacts.
+target/
+
+# Local-only cargo config (e.g. the `just configure-trestle-deps` path patches):
+# the image resolves the olai-* crates from crates.io, like CI.
+.cargo/
+
+# The image pins the same toolchain by digest; with this file in the context
+# rustup would download a second copy of it (plus rustfmt/clippy).
+rust-toolchain.toml
+
+# The Neon Function bundle (crates/neon): node deps and build output.
+**/node_modules/
+crates/neon/function/dist/
+crates/neon/*.zip
+
+# Transient codegen output and local env.
+descriptors.bin
+admin-descriptors.bin
+.env
+
+# VCS and editor/agent noise.
+.git/
+.github/
+.isaac/
+.claude/
+.idea/
+.vscode/
+.zed

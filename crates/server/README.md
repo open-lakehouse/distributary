@@ -108,6 +108,23 @@ database:
   url: sqlite:///var/lib/sharing/sharing.db   # created if missing
 ```
 
+### Docker
+
+`just build-docker` builds the `distributary:dev` image from
+[`Dockerfile`](Dockerfile): a distroless, nonroot image with `sharing-server`
+as its entrypoint and `serve` as the default command, listening on port 8080.
+Its `HEALTHCHECK` runs `sharing-server healthcheck`. With no configuration it
+serves an in-memory store. Pass any other subcommand to run that instead, for
+example migrations before the first `serve` against a new database:
+
+```sh
+docker run --rm -p 8080:8080 distributary:dev
+docker run --rm -e DATABASE_URL distributary:dev migrate
+docker run -d -p 8080:8080 -v ./config.yaml:/app/config.yaml:ro \
+  -e SHARING_SERVER_CONFIG=/app/config.yaml -e DATABASE_URL -e SHARING_KEK_V1 \
+  distributary:dev
+```
+
 ### Sharing a table
 
 ```sh
