@@ -116,6 +116,13 @@ source of truth. Fields we honor:
 - `history_data_sharing_status` gates version/timestamp reads.
 - `partitions` restricts which partitions are shared. This is a follow-up.
 
+A skill's metadata (description, license, compatibility, allowed tools and the
+metadata map) is not modelled by the share store or the source catalog. It is
+read from the YAML frontmatter of the skill's `SKILL.md`, so it always matches
+what an agent loads. The engine fetches the file's first 64 KiB in one range
+read, since request latency dominates the cost of the extra bytes, and caches
+the parsed result by location.
+
 ### Storage access: delegated or local
 
 Every mode serves the same recipient surface: `/query` with presigned URLs and

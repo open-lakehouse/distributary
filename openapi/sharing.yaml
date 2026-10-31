@@ -1014,7 +1014,7 @@ components:
           description: The fully qualified storage location of the skill's directory.
         description:
           type: string
-          description: A human-readable description of what the skill does.
+          description: "What the skill does and when to use it, as declared in its SKILL.md.\n\n The server reads this and the fields below from the skill's `SKILL.md`\n frontmatter, so they always match what an agent loads."
         license:
           type: string
           description: SPDX license identifier or free-form license text for the skill.
@@ -1028,6 +1028,9 @@ components:
           additionalProperties:
             type: string
           description: Arbitrary additional metadata declared by the skill.
+        compatibility:
+          type: string
+          description: "The environment the skill requires (products, system packages, network\n access, \u2026), as declared in its SKILL.md."
       description: "An agent skill shared as a storage-backed asset.\n\n A skill is a directory of files (a required `SKILL.md` plus optional\n `scripts/`, `references/`, and `assets/`) that an agent loads and executes.\n It is backed by its own storage location; the recipient reads its files via\n credentials from the `temporary-skill-credentials` endpoint."
     Status:
       type: object

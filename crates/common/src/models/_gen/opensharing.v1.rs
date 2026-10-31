@@ -1664,7 +1664,10 @@ pub struct Skill {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub storage_location: ::core::option::Option<::buffa::alloc::string::String>,
-    /// A human-readable description of what the skill does.
+    /// What the skill does and when to use it, as declared in its SKILL.md.
+    ///
+    /// The server reads this and the fields below from the skill's `SKILL.md`
+    /// frontmatter, so they always match what an agent loads.
     ///
     /// Field 7: `description`
     #[serde(
@@ -1699,6 +1702,15 @@ pub struct Skill {
         ::buffa::alloc::string::String,
         ::buffa::alloc::string::String,
     >,
+    /// The environment the skill requires (products, system packages, network
+    /// access, …), as declared in its SKILL.md.
+    ///
+    /// Field 11: `compatibility`
+    #[serde(
+        rename = "compatibility",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub compatibility: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -1716,6 +1728,7 @@ impl ::core::fmt::Debug for Skill {
             .field("license", &self.license)
             .field("allowed_tools", &self.allowed_tools)
             .field("metadata", &self.metadata)
+            .field("compatibility", &self.compatibility)
             .finish()
     }
 }
@@ -1772,6 +1785,16 @@ impl Skill {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.license = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::compatibility`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_compatibility(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.compatibility = Some(value.into());
         self
     }
 }
@@ -1832,6 +1855,9 @@ impl ::buffa::Message for Skill {
             size
                 += 1u32 + ::buffa::encoding::varint_len(entry_size as u64) as u32
                     + entry_size;
+        }
+        if let Some(ref v) = self.compatibility {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
         }
         size += self.__buffa_unknown_fields.encoded_len() as u32;
         size
@@ -1932,6 +1958,14 @@ impl ::buffa::Message for Skill {
             ::buffa::types::encode_string(k, buf);
             ::buffa::encoding::Tag::new(
                     2u32,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )
+                .encode(buf);
+            ::buffa::types::encode_string(v, buf);
+        }
+        if let Some(ref v) = self.compatibility {
+            ::buffa::encoding::Tag::new(
+                    11u32,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )
                 .encode(buf);
@@ -2124,6 +2158,21 @@ impl ::buffa::Message for Skill {
                 }
                 self.metadata.insert(key, val);
             }
+            11u32 => {
+                if tag.wire_type() != ::buffa::encoding::WireType::LengthDelimited {
+                    return ::core::result::Result::Err(::buffa::DecodeError::WireTypeMismatch {
+                        field_number: 11u32,
+                        expected: 2u8,
+                        actual: tag.wire_type() as u8,
+                    });
+                }
+                ::buffa::types::merge_string(
+                    self
+                        .compatibility
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, depth)?);
@@ -2142,6 +2191,7 @@ impl ::buffa::Message for Skill {
         self.license = ::core::option::Option::None;
         self.allowed_tools.clear();
         self.metadata.clear();
+        self.compatibility = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -11667,7 +11717,10 @@ pub mod __buffa {
             ///
             /// Field 6: `storage_location`
             pub storage_location: ::core::option::Option<&'a str>,
-            /// A human-readable description of what the skill does.
+            /// What the skill does and when to use it, as declared in its SKILL.md.
+            ///
+            /// The server reads this and the fields below from the skill's `SKILL.md`
+            /// frontmatter, so they always match what an agent loads.
             ///
             /// Field 7: `description`
             pub description: ::core::option::Option<&'a str>,
@@ -11683,6 +11736,11 @@ pub mod __buffa {
             ///
             /// Field 10: `metadata` (map)
             pub metadata: ::buffa::MapView<'a, &'a str, &'a str>,
+            /// The environment the skill requires (products, system packages, network
+            /// access, …), as declared in its SKILL.md.
+            ///
+            /// Field 11: `compatibility`
+            pub compatibility: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> SkillView<'a> {
@@ -11823,6 +11881,20 @@ pub mod __buffa {
                             }
                             view.license = Some(::buffa::types::borrow_str(&mut cur)?);
                         }
+                        11u32 => {
+                            if tag.wire_type()
+                                != ::buffa::encoding::WireType::LengthDelimited
+                            {
+                                return ::core::result::Result::Err(::buffa::DecodeError::WireTypeMismatch {
+                                    field_number: 11u32,
+                                    expected: 2u8,
+                                    actual: tag.wire_type() as u8,
+                                });
+                            }
+                            view.compatibility = Some(
+                                ::buffa::types::borrow_str(&mut cur)?,
+                            );
+                        }
                         9u32 => {
                             if tag.wire_type()
                                 != ::buffa::encoding::WireType::LengthDelimited
@@ -11944,6 +12016,7 @@ pub mod __buffa {
                         .iter()
                         .map(|(k, v)| (k.to_string(), v.to_string()))
                         .collect(),
+                    compatibility: self.compatibility.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()
@@ -11997,6 +12070,9 @@ pub mod __buffa {
                     size
                         += 1u32 + ::buffa::encoding::varint_len(entry_size as u64) as u32
                             + entry_size;
+                }
+                if let Some(ref v) = self.compatibility {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
                 }
                 size += self.__buffa_unknown_fields.encoded_len() as u32;
                 size
@@ -12104,6 +12180,14 @@ pub mod __buffa {
                         .encode(buf);
                     ::buffa::types::encode_string(v, buf);
                 }
+                if let Some(ref v) = self.compatibility {
+                    ::buffa::encoding::Tag::new(
+                            11u32,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )
+                        .encode(buf);
+                    ::buffa::types::encode_string(v, buf);
+                }
                 self.__buffa_unknown_fields.write_to(buf);
             }
         }
@@ -12171,6 +12255,9 @@ pub mod __buffa {
                         }
                     }
                     __map.serialize_entry("metadata", &_WM(&self.metadata))?;
+                }
+                if let ::core::option::Option::Some(__v) = self.compatibility {
+                    __map.serialize_entry("compatibility", __v)?;
                 }
                 __map.end()
             }
@@ -12313,7 +12400,10 @@ pub mod __buffa {
             pub fn storage_location(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().storage_location
             }
-            /// A human-readable description of what the skill does.
+            /// What the skill does and when to use it, as declared in its SKILL.md.
+            ///
+            /// The server reads this and the fields below from the skill's `SKILL.md`
+            /// frontmatter, so they always match what an agent loads.
             ///
             /// Field 7: `description`
             #[must_use]
@@ -12340,6 +12430,14 @@ pub mod __buffa {
             #[must_use]
             pub fn metadata(&self) -> &::buffa::MapView<'_, &'_ str, &'_ str> {
                 &self.0.reborrow().metadata
+            }
+            /// The environment the skill requires (products, system packages, network
+            /// access, …), as declared in its SKILL.md.
+            ///
+            /// Field 11: `compatibility`
+            #[must_use]
+            pub fn compatibility(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().compatibility
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<SkillView<'static>>>

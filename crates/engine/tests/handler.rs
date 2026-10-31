@@ -263,3 +263,186 @@ async fn list_shares_paginates() {
     assert_eq!(page.items.len(), 1);
     assert_eq!(page.next_page_token, None);
 }
+
+const SKILL_MD: &str = "---
+name: pdf-processing
+description: Extract text and tables from PDF files.
+license: Apache-2.0
+compatibility: Requires poppler-utils
+allowed-tools: Bash(pdftotext:*) Read
+metadata:
+  author: example-org
+---
+
+# PDF processing
+";
+
+/// A share with two skills on local storage: `good`, whose directory holds a
+/// SKILL.md, and `broken`, whose directory does not.
+fn skill_backend() -> (tempfile::TempDir, SharingService<()>) {
+    let dir = tempfile::tempdir().unwrap();
+    let good = dir.path().join("good");
+    std::fs::create_dir_all(&good).unwrap();
+    std::fs::write(good.join("SKILL.md"), SKILL_MD).unwrap();
+    std::fs::create_dir_all(dir.path().join("broken")).unwrap();
+    let location = |name: &str| {
+        url::Url::from_directory_path(dir.path().join(name))
+            .unwrap()
+            .to_string()
+    };
+    let service = in_memory_service(vec![FixtureShare {
+        name: "share1".to_string(),
+        id: Some("share1-id".to_string()),
+        comment: None,
+        objects: vec![
+            FixtureObject::new(AssetKind::AgentSkill, "schema1", "good", &location("good")),
+            FixtureObject::new(
+                AssetKind::AgentSkill,
+                "schema1",
+                "broken",
+                &location("broken"),
+            ),
+        ],
+    }]);
+    (dir, service)
+}
+
+fn get_skill_request(name: &str) -> GetSkillRequest {
+    GetSkillRequest {
+        share: "share1".to_string(),
+        schema: "schema1".to_string(),
+        name: name.to_string(),
+        ..Default::default()
+    }
+}
+
+fn assert_declared(skill: &Skill) {
+    assert_eq!(
+        skill.description.as_deref(),
+        Some("Extract text and tables from PDF files.")
+    );
+    assert_eq!(skill.license.as_deref(), Some("Apache-2.0"));
+    assert_eq!(
+        skill.compatibility.as_deref(),
+        Some("Requires poppler-utils")
+    );
+    assert_eq!(skill.allowed_tools, vec!["Bash(pdftotext:*)", "Read"]);
+    assert_eq!(
+        skill.metadata.get("author").map(String::as_str),
+        Some("example-org")
+    );
+}
+
+#[tokio::test]
+async fn get_skill_serves_skill_md_metadata() {
+    let (_dir, b) = skill_backend();
+    let skill = SkillHandler::<()>::get_skill(&b, get_skill_request("good"), ())
+        .await
+        .unwrap();
+    assert_eq!(skill.name, "good");
+    assert_eq!(skill.share_id.as_deref(), Some("share1-id"));
+    assert!(skill.storage_location.is_some());
+    assert_declared(&skill);
+}
+
+#[tokio::test]
+async fn get_skill_without_skill_md_fails() {
+    let (_dir, b) = skill_backend();
+    let err = SkillHandler::<()>::get_skill(&b, get_skill_request("broken"), ())
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("SKILL.md"), "{err}");
+}
+
+#[tokio::test]
+async fn list_skills_serves_metadata_and_keeps_broken_skills() {
+    let (_dir, b) = skill_backend();
+    let listed = SkillHandler::<()>::list_skills(
+        &b,
+        ListSkillsRequest {
+            share: "share1".to_string(),
+            schema: "schema1".to_string(),
+            ..Default::default()
+        },
+        (),
+    )
+    .await
+    .unwrap();
+    let all = SkillHandler::<()>::list_all_skills(
+        &b,
+        ListAllSkillsRequest {
+            share: "share1".to_string(),
+            ..Default::default()
+        },
+        (),
+    )
+    .await
+    .unwrap();
+    for items in [listed.items, all.items] {
+        let names: Vec<_> = items.iter().map(|s| s.name.as_str()).collect();
+        assert_eq!(names, ["good", "broken"]);
+        assert_declared(&items[0]);
+        assert_eq!(items[1].description, None);
+        assert!(items[1].storage_location.is_some());
+        assert!(
+            items
+                .iter()
+                .all(|s| s.share_id.as_deref() == Some("share1-id"))
+        );
+    }
+}
+
+#[tokio::test]
+async fn list_skills_paginates_over_objects() {
+    let (_dir, b) = skill_backend();
+    let first = SkillHandler::<()>::list_all_skills(
+        &b,
+        ListAllSkillsRequest {
+            share: "share1".to_string(),
+            max_results: Some(1),
+            ..Default::default()
+        },
+        (),
+    )
+    .await
+    .unwrap();
+    assert_eq!(first.items.len(), 1);
+    assert_declared(&first.items[0]);
+    let second = SkillHandler::<()>::list_all_skills(
+        &b,
+        ListAllSkillsRequest {
+            share: "share1".to_string(),
+            max_results: Some(1),
+            page_token: first.next_page_token,
+            ..Default::default()
+        },
+        (),
+    )
+    .await
+    .unwrap();
+    assert_eq!(second.items.len(), 1);
+    assert_eq!(second.items[0].name, "broken");
+    assert_eq!(second.next_page_token, None);
+}
+
+#[tokio::test]
+async fn skill_metadata_is_cached_until_its_ttl() {
+    let (dir, b) = skill_backend();
+    let rewritten = SKILL_MD.replace("Apache-2.0", "MIT");
+    let read = |b: &SharingService<()>| {
+        let b = b.clone();
+        async move {
+            SkillHandler::<()>::get_skill(&b, get_skill_request("good"), ())
+                .await
+                .unwrap()
+                .license
+        }
+    };
+
+    assert_eq!(read(&b).await.as_deref(), Some("Apache-2.0"));
+    std::fs::write(dir.path().join("good/SKILL.md"), &rewritten).unwrap();
+    assert_eq!(read(&b).await.as_deref(), Some("Apache-2.0"));
+
+    let uncached = b.with_skill_manifest_ttl(std::time::Duration::ZERO);
+    assert_eq!(read(&uncached).await.as_deref(), Some("MIT"));
+}

@@ -14,7 +14,7 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use olai_storage_credentials::{AccessLevel, StorageCredentials, VendedCredential};
 use opensharing_admin_api::auth::Provider;
-use opensharing_engine::source::fixed::{StaticSource, StaticTable};
+use opensharing_engine::source::fixed::{StaticSource, StaticTable, StaticVolume};
 use opensharing_engine::source::{
     AccessMode, CatalogSource, RegisteredSource, SourceRegistry, SourceTable, SourceVolume,
 };
@@ -373,6 +373,65 @@ async fn schemas_expand_to_their_tables() {
         .await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(files(&lines).len(), 6);
+}
+
+#[tokio::test]
+async fn shared_skills_carry_their_skill_md_metadata() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/data/pdf-skill")
+        .canonicalize()
+        .unwrap();
+    let mut source = StaticSource::default();
+    source.volumes.insert(
+        "demo.agents.pdf".to_string(),
+        StaticVolume {
+            location: url::Url::from_directory_path(dir).unwrap().to_string(),
+        },
+    );
+    let sources = SourceRegistry::new(vec![RegisteredSource {
+        name: "static".to_string(),
+        catalogs: vec!["demo".to_string()],
+        access: AccessMode::Local,
+        source: Arc::new(source),
+    }]);
+    let client = app(
+        Arc::new(InMemoryStore::new()),
+        secrets(key("v1", 1), vec![]),
+        sources,
+    );
+    let token = client
+        .provision(
+            "tools",
+            json!({"name": "demo.agents.pdf", "data_object_type": "AGENT_SKILL"}),
+            "acme",
+        )
+        .await;
+
+    let base = "/api/1.0/opensharing/shares/tools";
+    let (status, skill) = client
+        .call(
+            "GET",
+            &format!("{base}/schemas/agents/skills/pdf"),
+            Some(&token),
+            None,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{skill}");
+    let (status, listed) = client
+        .call("GET", &format!("{base}/all-skills"), Some(&token), None)
+        .await;
+    assert_eq!(status, StatusCode::OK, "{listed}");
+    for skill in [&skill, &listed["items"][0]] {
+        assert_eq!(skill["name"], "pdf", "{skill}");
+        assert_eq!(
+            skill["description"],
+            "Extract text and tables from PDF files."
+        );
+        assert_eq!(skill["license"], "Apache-2.0");
+        assert_eq!(skill["compatibility"], "Requires poppler-utils");
+        assert_eq!(skill["allowed_tools"], json!(["Bash(pdftotext:*)", "Read"]));
+        assert_eq!(skill["metadata"], json!({"author": "example-org"}));
+    }
 }
 
 #[tokio::test]

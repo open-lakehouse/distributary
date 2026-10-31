@@ -6,8 +6,12 @@
 //! JSON-only handlers do not model — are all implemented here in terms of the
 //! service's ports. This is the only place protocol semantics live.
 
+use std::sync::Arc;
+
 use bytes::Bytes;
 use chrono::DateTime;
+use futures::stream::{self, StreamExt};
+use tracing::warn;
 
 use opensharing_common::models::opensharing::v1::{Schema, Share, Skill, Table, Volume, *};
 
@@ -15,6 +19,7 @@ use crate::catalog::{AssetKind, AssetRef, PageRequest, SharedAsset, SharedObject
 use crate::format::{QuerySpec, TableResponse, VersionSpec};
 use crate::policy::SharingAction;
 use crate::service::{SharingService, paginate};
+use crate::skill::{self, SkillManifest};
 use crate::{Error, Result};
 use opensharing_api::SharingQueryHandler;
 use opensharing_api::codegen::shares::ShareHandler;
@@ -317,6 +322,66 @@ fn volume(object: SharedObject, share: &str, share_id: Option<&str>) -> Volume {
 // Assets: agent skills
 // ---------------------------------------------------------------------------
 
+/// How many listed skills have their `SKILL.md` read at once.
+const SKILL_READ_CONCURRENCY: usize = 8;
+
+impl<Cx: Clone + Send + Sync + 'static> SharingService<Cx> {
+    /// The manifest of a resolved skill, from the cache or its `SKILL.md`.
+    async fn skill_manifest(&self, asset: &SharedAsset, cx: &Cx) -> Result<Arc<SkillManifest>> {
+        if let Some(manifest) = self.skills.get(&asset.location.raw) {
+            return Ok(manifest);
+        }
+        let storage = self.access.table_storage(asset, cx).await?;
+        let manifest = Arc::new(skill::read(storage.store.as_ref(), &storage.root).await?);
+        self.skills
+            .insert(asset.location.raw.clone(), manifest.clone());
+        Ok(manifest)
+    }
+
+    /// One page of a share's skills, each with the metadata from its
+    /// `SKILL.md`.
+    ///
+    /// A skill that cannot be resolved or read is still listed, without that
+    /// metadata, so one broken skill does not hide the others.
+    async fn listed_skills(
+        &self,
+        share: &Share,
+        objects: Vec<SharedObject>,
+        cx: &Cx,
+    ) -> Vec<Skill> {
+        stream::iter(objects)
+            .map(|object| async move {
+                let reference =
+                    AssetRef::new(&share.name, &object.schema, &object.name, object.kind);
+                let asset = match self.catalog.resolve(&reference, cx).await {
+                    Ok(asset) => asset,
+                    Err(error) => {
+                        warn!(skill = %full_name(&reference), %error, "cannot resolve shared skill");
+                        return Skill {
+                            name: object.name,
+                            schema: object.schema,
+                            share: share.name.clone(),
+                            id: object.id,
+                            share_id: share.id.clone(),
+                            ..Default::default()
+                        };
+                    }
+                };
+                let manifest = self
+                    .skill_manifest(&asset, cx)
+                    .await
+                    .inspect_err(|error| {
+                        warn!(skill = %full_name(&reference), %error, "cannot read shared skill's SKILL.md");
+                    })
+                    .ok();
+                skill(asset, share.id.clone(), manifest.as_deref())
+            })
+            .buffered(SKILL_READ_CONCURRENCY)
+            .collect()
+            .await
+    }
+}
+
 #[async_trait::async_trait]
 impl<Cx: Clone + Send + Sync + 'static> SkillHandler<Cx> for SharingService<Cx> {
     async fn list_skills(
@@ -326,20 +391,17 @@ impl<Cx: Clone + Send + Sync + 'static> SkillHandler<Cx> for SharingService<Cx> 
     ) -> Result<ListSkillsResponse> {
         self.authorize_share(&request.share, &context).await?;
         let share = self.catalog.get_share(&request.share, &context).await?;
-        let skills = self
+        let objects = self
             .objects(
                 &request.share,
                 AssetKind::AgentSkill,
                 Some(&request.schema),
                 &context,
             )
-            .await?
-            .into_iter()
-            .map(|o| skill(o, &share.name, share.id.as_deref()))
-            .collect();
-        let page = paginate(skills, request.max_results, request.page_token.as_deref())?;
+            .await?;
+        let page = paginate(objects, request.max_results, request.page_token.as_deref())?;
         Ok(ListSkillsResponse {
-            items: page.items,
+            items: self.listed_skills(&share, page.items, &context).await,
             next_page_token: page.next_page_token,
             ..Default::default()
         })
@@ -352,15 +414,12 @@ impl<Cx: Clone + Send + Sync + 'static> SkillHandler<Cx> for SharingService<Cx> 
     ) -> Result<ListAllSkillsResponse> {
         self.authorize_share(&request.share, &context).await?;
         let share = self.catalog.get_share(&request.share, &context).await?;
-        let skills = self
+        let objects = self
             .objects(&request.share, AssetKind::AgentSkill, None, &context)
-            .await?
-            .into_iter()
-            .map(|o| skill(o, &share.name, share.id.as_deref()))
-            .collect();
-        let page = paginate(skills, request.max_results, request.page_token.as_deref())?;
+            .await?;
+        let page = paginate(objects, request.max_results, request.page_token.as_deref())?;
         Ok(ListAllSkillsResponse {
-            items: page.items,
+            items: self.listed_skills(&share, page.items, &context).await,
             next_page_token: page.next_page_token,
             ..Default::default()
         })
@@ -376,14 +435,9 @@ impl<Cx: Clone + Send + Sync + 'static> SkillHandler<Cx> for SharingService<Cx> 
                 &context,
             )
             .await?;
-        Ok(Skill {
-            name: request.name,
-            schema: request.schema,
-            share: request.share,
-            id: asset.id,
-            storage_location: Some(asset.location.raw),
-            ..Default::default()
-        })
+        let share = self.catalog.get_share(&request.share, &context).await?;
+        let manifest = self.skill_manifest(&asset, &context).await?;
+        Ok(skill(asset, share.id, Some(&manifest)))
     }
 
     async fn generate_temporary_skill_credentials(
@@ -404,15 +458,32 @@ impl<Cx: Clone + Send + Sync + 'static> SkillHandler<Cx> for SharingService<Cx> 
     }
 }
 
-fn skill(object: SharedObject, share: &str, share_id: Option<&str>) -> Skill {
-    Skill {
-        name: object.name,
-        schema: object.schema,
-        share: share.to_string(),
-        id: object.id,
-        share_id: share_id.map(ToString::to_string),
+/// A resolved skill, with the metadata its `SKILL.md` declares (when read).
+fn skill(asset: SharedAsset, share_id: Option<String>, manifest: Option<&SkillManifest>) -> Skill {
+    let mut skill = Skill {
+        name: asset.reference.name,
+        schema: asset.reference.schema,
+        share: asset.reference.share,
+        id: asset.id,
+        share_id,
+        storage_location: Some(asset.location.raw),
         ..Default::default()
+    };
+    if let Some(manifest) = manifest {
+        skill.description = Some(manifest.description.clone());
+        skill.license = manifest.license.clone();
+        skill.compatibility = manifest.compatibility.clone();
+        skill.allowed_tools = manifest.allowed_tools.clone();
+        skill.metadata = manifest.metadata.clone().into_iter().collect();
     }
+    skill
+}
+
+fn full_name(reference: &AssetRef) -> String {
+    format!(
+        "{}.{}.{}",
+        reference.share, reference.schema, reference.name
+    )
 }
 
 // ---------------------------------------------------------------------------

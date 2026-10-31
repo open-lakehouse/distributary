@@ -37,6 +37,7 @@
 //!   and predicate-hint translation.
 //! - [`service`]: [`SharingService`], the composition root, and the handler
 //!   implementations.
+//! - [`skill`]: agent skill manifests, read from a skill's `SKILL.md`.
 //! - `source` (feature `vending`): the `CatalogSource` port shared assets are
 //!   resolved through, a static source and the source registry.
 //! - `vending` (feature `vending`): `SourceStorageAccess`.
@@ -49,6 +50,7 @@ mod handler;
 mod kernel;
 pub mod policy;
 pub mod service;
+pub mod skill;
 #[cfg(feature = "vending")]
 pub mod source;
 #[cfg(feature = "testing")]
