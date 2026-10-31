@@ -30,7 +30,6 @@ use olai_storage_credentials::{
     AccessLevel, StorageLocation, StorageProvider, StorageScope, VendedCredential,
 };
 use olai_vended_store::{CredentialSource, StoreOptions, build_store, presign};
-use opensharing_api::auth::Recipient;
 use opensharing_common::models::opensharing::v1::{
     SharingAwsCredentials, SharingAzureUserDelegationSas, SharingGcpOauthToken,
     SharingR2Credentials, SharingTemporaryCredentials,
@@ -40,6 +39,7 @@ use opensharing_engine::access::{FileSigner, SignedFile, StorageAccess, TableSto
 use opensharing_engine::catalog::{AssetKind, SharedAsset};
 use url::Url;
 
+use crate::recipients::Recipient;
 use crate::secrets::Secrets;
 use crate::source::{AccessMode, SourceRegistry};
 use crate::store::CredentialStore;

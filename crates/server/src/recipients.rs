@@ -8,10 +8,11 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use axum::extract::{Path, State};
+use axum::extract::{FromRequestParts, Path, State};
+use axum::http::request::Parts;
 use axum::routing::get;
 use axum::{Json, Router};
-use opensharing_api::auth::{Recipient, RecipientAuthenticator};
+use opensharing_api::auth::{BearerAuthenticator, authenticated};
 use serde::Serialize;
 
 use crate::secrets::Secrets;
@@ -23,6 +24,25 @@ use opensharing_api::{Error as ApiError, Result as ApiResult};
 
 /// Where activation links are served, under the server's public URL.
 pub const ACTIVATION_PATH: &str = "/api/1.0/opensharing/activations";
+
+/// An authenticated sharing recipient: the request context of the protocol
+/// routes, put there by [`StoreAuthenticator`] behind
+/// [`require_bearer`](opensharing_api::auth::require_bearer).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Recipient {
+    /// The recipient's stable identifier.
+    pub id: String,
+    /// The recipient's name.
+    pub name: String,
+}
+
+impl<S: Send + Sync> FromRequestParts<S> for Recipient {
+    type Rejection = ApiError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> ApiResult<Self> {
+        authenticated(parts)
+    }
+}
 
 /// Authenticates recipient bearer tokens against the store.
 pub struct StoreAuthenticator {
@@ -36,7 +56,7 @@ impl StoreAuthenticator {
 }
 
 #[async_trait]
-impl RecipientAuthenticator for StoreAuthenticator {
+impl BearerAuthenticator<Recipient> for StoreAuthenticator {
     async fn authenticate(&self, token: &str) -> ApiResult<Recipient> {
         let (token, recipient) = match self.store.token_by_hash(&token_hash(token)).await {
             Ok(found) => found,

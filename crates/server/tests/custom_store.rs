@@ -12,13 +12,13 @@ use async_trait::async_trait;
 use axum::Router;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
-use opensharing_api::auth::{Recipient, require_recipient};
+use opensharing_api::auth::require_bearer;
 use opensharing_api::sharing_router;
 use opensharing_engine::SharingService;
 use opensharing_server::access::SourceStorageAccess;
 use opensharing_server::catalog::{GrantPolicy, StoreCatalog};
 use opensharing_server::config::EncryptionConfig;
-use opensharing_server::recipients::{StoreAuthenticator, token_hash};
+use opensharing_server::recipients::{Recipient, StoreAuthenticator, token_hash};
 use opensharing_server::secrets::Secrets;
 use opensharing_server::source::fixed::{StaticSource, StaticTable};
 use opensharing_server::source::{AccessMode, RegisteredSource, SourceRegistry};
@@ -138,7 +138,7 @@ fn router(host: Arc<HostStore>) -> Router {
     ));
     let policy = Arc::new(GrantPolicy::new(host.clone()));
     let service = SharingService::<Recipient>::new(catalog, access, policy);
-    require_recipient(
+    require_bearer(
         sharing_router::<SharingService<Recipient>, Recipient>(service),
         Arc::new(StoreAuthenticator::new(host)),
     )

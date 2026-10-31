@@ -1,12 +1,34 @@
-//! Recipient authentication: the [`RecipientAuthenticator`] port and the layer
-//! that runs it in front of the sharing routes.
+//! Bearer-token authentication in front of the sharing routes.
 //!
-//! Delta Sharing / OpenSharing recipients authenticate with a bearer token from
-//! their sharing profile. [`require_recipient`] wraps a router so every request
-//! must carry `Authorization: Bearer <token>`; the token is resolved to a
-//! [`Recipient`] by the host's authenticator and stored in the request
-//! extensions, where the [`Recipient`] extractor — the request context `Cx` of
-//! the sharing handlers — picks it up. Requests without a valid token get `401`.
+//! Delta Sharing / OpenSharing recipients authenticate with the bearer token
+//! from their sharing profile. That mechanism is the spec's; who the token
+//! belongs to is the host's. [`require_bearer`] wraps a router so every request
+//! must carry `Authorization: Bearer <token>`. The host's
+//! [`BearerAuthenticator`] resolves the token to the request context `Cx` of the
+//! sharing handlers, which goes into the request extensions. Requests without a
+//! valid token get `401`.
+//!
+//! The handlers extract `Cx` per request, so `Cx` implements
+//! [`FromRequestParts`]. [`authenticated`] is the whole of that impl:
+//!
+//! ```
+//! use axum::extract::FromRequestParts;
+//! use axum::http::request::Parts;
+//! use opensharing_api::auth::authenticated;
+//!
+//! #[derive(Clone)]
+//! struct Caller {
+//!     id: String,
+//! }
+//!
+//! impl<S: Send + Sync> FromRequestParts<S> for Caller {
+//!     type Rejection = opensharing_api::Error;
+//!
+//!     async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, Self::Rejection> {
+//!         authenticated(parts)
+//!     }
+//! }
+//! ```
 //!
 //! Recipient tokens are what a provider hands to third parties. The provider
 //! admin API authenticates its callers separately (`opensharing-admin-api`).
@@ -14,44 +36,53 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use axum::extract::{FromRequestParts, Request, State};
+use axum::extract::{Request, State};
 use axum::http::header::AUTHORIZATION;
 use axum::http::request::Parts;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 
+#[cfg(doc)]
+use axum::extract::FromRequestParts;
+
 use crate::error::{Error, Result};
 
-/// An authenticated sharing recipient.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Recipient {
-    /// The recipient's stable identifier.
-    pub id: String,
-    /// The recipient's name.
-    pub name: String,
-}
-
-/// Resolves a bearer token to the [`Recipient`] it belongs to.
+/// Resolves a bearer token to the request context `Cx` of the caller it
+/// belongs to.
 #[async_trait]
-pub trait RecipientAuthenticator: Send + Sync + 'static {
-    /// The recipient `token` was issued to. An unknown, expired or revoked token
-    /// → [`Error::Unauthenticated`].
-    async fn authenticate(&self, token: &str) -> Result<Recipient>;
+pub trait BearerAuthenticator<Cx>: Send + Sync + 'static {
+    /// The context of the caller `token` was issued to. An unknown, expired or
+    /// revoked token → [`Error::Unauthenticated`].
+    async fn authenticate(&self, token: &str) -> Result<Cx>;
 }
 
-/// Require a valid recipient bearer token on every route of `router`.
-pub fn require_recipient(
+/// Require a valid bearer token on every route of `router`, and put the
+/// caller's context in the request extensions.
+pub fn require_bearer<Cx>(
     router: axum::Router,
-    authenticator: Arc<dyn RecipientAuthenticator>,
-) -> axum::Router {
+    authenticator: Arc<dyn BearerAuthenticator<Cx>>,
+) -> axum::Router
+where
+    Cx: Clone + Send + Sync + 'static,
+{
     router.layer(axum::middleware::from_fn_with_state(
         authenticator,
-        authenticate,
+        authenticate::<Cx>,
     ))
 }
 
-async fn authenticate(
-    State(authenticator): State<Arc<dyn RecipientAuthenticator>>,
+/// The context [`require_bearer`] stored for this request. Missing →
+/// [`Error::Unauthenticated`].
+pub fn authenticated<Cx: Clone + Send + Sync + 'static>(parts: &Parts) -> Result<Cx> {
+    parts
+        .extensions
+        .get::<Cx>()
+        .cloned()
+        .ok_or(Error::Unauthenticated)
+}
+
+async fn authenticate<Cx: Clone + Send + Sync + 'static>(
+    State(authenticator): State<Arc<dyn BearerAuthenticator<Cx>>>,
     mut request: Request,
     next: Next,
 ) -> Response {
@@ -59,8 +90,8 @@ async fn authenticate(
         return Error::Unauthenticated.into_response();
     };
     match authenticator.authenticate(token).await {
-        Ok(recipient) => {
-            request.extensions_mut().insert(recipient);
+        Ok(cx) => {
+            request.extensions_mut().insert(cx);
             next.run(request).await
         }
         Err(err) => err.into_response(),
@@ -81,18 +112,6 @@ fn bearer_token(value: &str) -> Option<&str> {
     let (scheme, token) = value.split_once(' ')?;
     let token = token.trim();
     (scheme.eq_ignore_ascii_case("bearer") && !token.is_empty()).then_some(token)
-}
-
-impl<S: Send + Sync> FromRequestParts<S> for Recipient {
-    type Rejection = Error;
-
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self> {
-        parts
-            .extensions
-            .get::<Recipient>()
-            .cloned()
-            .ok_or(Error::Unauthenticated)
-    }
 }
 
 #[cfg(test)]

@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use axum::Router;
 use axum::routing::get;
-use opensharing_api::auth::{Recipient, require_recipient};
+use opensharing_api::auth::require_bearer;
 use opensharing_api::sharing_router;
 use opensharing_engine::SharingService;
 
@@ -14,7 +14,7 @@ use crate::Result;
 use crate::access::{SourceStorageAccess, open_credential};
 use crate::catalog::{GrantPolicy, StoreCatalog};
 use crate::config::{Config, DatabaseConfig, EncryptionConfig};
-use crate::recipients::{StoreAuthenticator, activation_router, rewrap_tokens};
+use crate::recipients::{Recipient, StoreAuthenticator, activation_router, rewrap_tokens};
 use crate::secrets::Secrets;
 use crate::source::SourceRegistry;
 use crate::store::SharingStore;
@@ -69,7 +69,7 @@ pub fn router(
     ));
     let policy = Arc::new(GrantPolicy::new(store.clone()));
     let service = SharingService::<Recipient>::new(catalog, access, policy);
-    let sharing = require_recipient(
+    let sharing = require_bearer(
         sharing_router::<SharingService<Recipient>, Recipient>(service),
         Arc::new(StoreAuthenticator::new(store.clone())),
     );

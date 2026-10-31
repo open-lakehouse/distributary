@@ -10,7 +10,9 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use tower::ServiceExt;
 
-use opensharing_api::auth::{Recipient, RecipientAuthenticator, require_recipient};
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
+use opensharing_api::auth::{BearerAuthenticator, authenticated, require_bearer};
 use opensharing_api::{Error, Result, sharing_router};
 use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
 use opensharing_engine::SharingService;
@@ -18,15 +20,29 @@ use opensharing_engine::testing::{FixtureObject, FixtureShare, in_memory_service
 
 const TOKEN: &str = "recipient-token";
 
+/// The host's request context: the authenticated recipient.
+#[derive(Debug, Clone)]
+struct Recipient {
+    #[allow(dead_code)]
+    id: String,
+}
+
+impl<S: Send + Sync> FromRequestParts<S> for Recipient {
+    type Rejection = Error;
+
+    async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self> {
+        authenticated(parts)
+    }
+}
+
 struct OneToken;
 
 #[async_trait]
-impl RecipientAuthenticator for OneToken {
+impl BearerAuthenticator<Recipient> for OneToken {
     async fn authenticate(&self, token: &str) -> Result<Recipient> {
         if token == TOKEN {
             Ok(Recipient {
                 id: "r1".to_string(),
-                name: "recipient one".to_string(),
             })
         } else {
             Err(Error::Unauthenticated)
@@ -45,7 +61,7 @@ fn app() -> axum::Router {
         objects: vec![FixtureObject::table("schema1", "letters", &location)],
         ..Default::default()
     }]);
-    require_recipient(
+    require_bearer(
         sharing_router::<SharingService<Recipient>, Recipient>(service),
         Arc::new(OneToken),
     )

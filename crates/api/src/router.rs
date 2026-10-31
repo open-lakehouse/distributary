@@ -5,7 +5,7 @@
 //! Sharing asset routes (volumes, agent skills, temporary table credentials).
 //! [`sharing_router`] mounts both under their protocol prefixes
 //! ([`DELTA_SHARING_PREFIX`], [`OPENSHARING_PREFIX`]), which is what a host
-//! normally serves — wrapped in [`require_recipient`](crate::auth::require_recipient).
+//! normally serves — wrapped in [`require_bearer`](crate::auth::require_bearer).
 //!
 //! # Response formats
 //!

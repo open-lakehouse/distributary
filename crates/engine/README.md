@@ -5,10 +5,11 @@ An **OpenSharing** / **Delta Sharing** implementation over pluggable ports.
 [`opensharing-api`](../api) defines the protocol surface. This crate owns the
 sharing *semantics* behind it — share / schema / asset discovery,
 the table query path (version / metadata / query) and the storage-backed asset
-surface (volumes, agent skills) — and expresses them over three narrow ports:
+surface (volumes, agent skills) — and expresses them over narrow ports:
 
 - `ShareCatalog`: which shares and objects a recipient sees, and where a shared
   object lives (backed by any source catalog);
+- `SharingPolicy`: whether the caller may perform an action;
 - `StorageAccess`: the server's own reads of a shared asset, plus presigned file
   URLs and temporary credentials for recipients;
 - `TableFormat`: serving one table format. Delta is built in (feature `delta`)
@@ -24,10 +25,11 @@ under `/api/v1/delta-sharing` (Delta Sharing) and `/api/1.0/opensharing`
 ## Integrating
 
 The crate depends on no catalog (no Unity Catalog crates). To serve sharing from
-an existing catalog, implement `ShareCatalog`, `StorageAccess` and a
-`RecipientAuthenticator` over the catalog's own discovery, grants and credential
-vending, then mount `opensharing_api::sharing_router` behind
-`opensharing_api::auth::require_recipient`. Map your own errors onto
+an existing catalog, implement `ShareCatalog`, `SharingPolicy` and
+`StorageAccess` over the catalog's own discovery, grants and credential vending,
+with the catalog's own request context as `Cx`. Then mount
+`opensharing_api::sharing_router` behind `opensharing_api::auth::require_bearer`
+and a `BearerAuthenticator<Cx>`. Map your own errors onto
 `opensharing_api::Error`, which renders the `{ "errorCode", "message" }`
 envelope. [`opensharing-server`](../server) is a complete host built this way.
 
