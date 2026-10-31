@@ -49,8 +49,8 @@ serde_json = { workspace = true }
 serde_yml = { workspace = true }
 # Recipient tokens are stored as sha256 digests only.
 sha2 = "0.10"
+# The SQL stores; `postgres` / `sqlite` add the backend.
 sqlx = { workspace = true, optional = true, features = [
-  "postgres",
   "chrono",
   "json",
   "runtime-tokio-rustls",
@@ -77,8 +77,10 @@ tower = { workspace = true }
 
 [features]
 default = ["postgres", "unity", "admin"]
-# The Postgres `ShareStore` (sqlx, with embedded migrations).
-postgres = ["dep:sqlx"]
+# The Postgres store (sqlx, with embedded migrations).
+postgres = ["dep:sqlx", "sqlx/postgres"]
+# The SQLite store (sqlx, with embedded migrations), for single-node deployments.
+sqlite = ["dep:sqlx", "sqlx/sqlite"]
 # Unity Catalog integration: the UC REST catalog source and the UC-shaped
 # credential / external-location admin routes. Without it the crate depends on
 # no catalog's models (the share and recipient admin API remains, with `admin`).
@@ -89,4 +91,4 @@ unity = ["dep:futures", "dep:unitycatalog-client", "dep:unitycatalog-common"]
 # and shares and recipients are provisioned through the `ShareStore`.
 admin = ["dep:opensharing-admin", "dep:opensharing-admin-api"]
 # The `sharing-server` binary.
-bin = ["postgres", "unity", "admin", "dep:clap", "dep:tracing-subscriber"]
+bin = ["postgres", "sqlite", "unity", "admin", "dep:clap", "dep:tracing-subscriber"]

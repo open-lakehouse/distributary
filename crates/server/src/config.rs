@@ -133,6 +133,33 @@ pub enum DatabaseConfig {
         #[serde(default = "default_max_connections")]
         max_connections: u32,
     },
+    /// SQLite, in one database file. For single-node deployments.
+    Sqlite {
+        /// The database URL (`sqlite://path/to/sharing.db`). The file is
+        /// created if missing.
+        url: ConfigValue,
+        #[serde(default = "default_max_connections")]
+        max_connections: u32,
+    },
+}
+
+impl DatabaseConfig {
+    /// The database a connection URL names: SQLite for a `sqlite:` URL,
+    /// otherwise Postgres, with `migration_url` as its unpooled URL.
+    pub fn from_url(url: String, migration_url: Option<String>, max_connections: u32) -> Self {
+        if url.starts_with("sqlite:") {
+            DatabaseConfig::Sqlite {
+                url: ConfigValue::Value(url),
+                max_connections,
+            }
+        } else {
+            DatabaseConfig::Postgres {
+                url: ConfigValue::Value(url),
+                migration_url: migration_url.map(ConfigValue::Value),
+                max_connections,
+            }
+        }
+    }
 }
 
 fn default_max_connections() -> u32 {
@@ -270,20 +297,20 @@ impl Config {
 
     fn apply_env(&mut self) {
         if let Ok(url) = std::env::var("DATABASE_URL") {
-            let migration_url = std::env::var("DATABASE_URL_UNPOOLED")
-                .ok()
-                .map(ConfigValue::Value);
             let max_connections = match &self.database {
                 DatabaseConfig::Postgres {
+                    max_connections, ..
+                }
+                | DatabaseConfig::Sqlite {
                     max_connections, ..
                 } => *max_connections,
                 DatabaseConfig::Memory => default_max_connections(),
             };
-            self.database = DatabaseConfig::Postgres {
-                url: ConfigValue::Value(url),
-                migration_url,
+            self.database = DatabaseConfig::from_url(
+                url,
+                std::env::var("DATABASE_URL_UNPOOLED").ok(),
                 max_connections,
-            };
+            );
         }
         if std::env::var("SHARING_PROVIDER_TOKEN").is_ok() {
             self.provider_tokens.push(ConfigValue::Env {
@@ -411,6 +438,32 @@ sources:
         )
         .unwrap();
         assert!(config.sources().is_err());
+    }
+
+    #[test]
+    fn database_urls_pick_the_backend() {
+        assert!(matches!(
+            DatabaseConfig::from_url("sqlite://sharing.db".into(), None, 4),
+            DatabaseConfig::Sqlite {
+                max_connections: 4,
+                ..
+            }
+        ));
+        assert!(matches!(
+            DatabaseConfig::from_url(
+                "postgres://db/sharing".into(),
+                Some("postgres://direct".into()),
+                4
+            ),
+            DatabaseConfig::Postgres {
+                migration_url: Some(_),
+                ..
+            }
+        ));
+        let config: Config =
+            serde_yml::from_str("database:\n  type: sqlite\n  url: sqlite://data/sharing.db\n")
+                .unwrap();
+        assert!(matches!(config.database, DatabaseConfig::Sqlite { .. }));
     }
 
     #[test]

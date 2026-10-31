@@ -23,8 +23,13 @@
 //! [`StoreCatalog`](crate::catalog::StoreCatalog) and
 //! [`StoreAuthenticator`](crate::recipients::StoreAuthenticator).
 //!
-//! Two implementations: [`memory::InMemoryStore`] (tests, ephemeral demos) and,
-//! with the `postgres` feature, [`postgres::PostgresStore`].
+//! Three implementations:
+//!
+//! - [`memory::InMemoryStore`], for tests and ephemeral demos;
+//! - `postgres::PostgresStore` (feature `postgres`);
+//! - `sqlite::SqliteStore` (feature `sqlite`), for single-node deployments.
+//!
+//! The SQL stores embed their own migrations (`migrations/{postgres,sqlite}`).
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -34,6 +39,10 @@ use crate::Result;
 pub mod memory;
 #[cfg(feature = "postgres")]
 pub mod postgres;
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
+mod sql;
+#[cfg(feature = "sqlite")]
+pub mod sqlite;
 
 /// One entry of a share: an asset, or a whole schema, in a source catalog.
 ///

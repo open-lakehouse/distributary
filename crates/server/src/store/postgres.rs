@@ -14,6 +14,7 @@ use async_trait::async_trait;
 use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
 use sqlx::{Row, migrate::Migrator};
 
+use super::sql::{APPLIED_MIGRATIONS, AppliedMigration, check_applied};
 use super::{
     CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, SealedCredential,
     ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord, now_millis,
@@ -21,7 +22,7 @@ use super::{
 use crate::{Error, Result};
 
 /// The embedded migrations.
-pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations/postgres");
 
 /// Connect a pool to `url`.
 pub async fn connect(url: &str, max_connections: u32) -> Result<PgPool> {
@@ -42,51 +43,14 @@ pub async fn migrate(pool: &PgPool) -> Result<()> {
 
 /// Fail unless the database schema is exactly what this binary expects.
 pub async fn ensure_schema_current(pool: &PgPool) -> Result<()> {
-    let applied: Vec<(i64, Vec<u8>, bool)> = match sqlx::query_as(
-        "SELECT version, checksum, success FROM _sqlx_migrations ORDER BY version",
-    )
-    .fetch_all(pool)
-    .await
-    {
-        Ok(rows) => rows,
-        Err(sqlx::Error::Database(e)) if e.code().as_deref() == Some("42P01") => Vec::new(),
-        Err(e) => return Err(db(e)),
-    };
-    if let Some((version, _, _)) = applied.iter().find(|(_, _, ok)| !ok) {
-        return Err(Error::generic(format!(
-            "migration {version} is dirty (failed part-way); repair it and re-run `migrate`"
-        )));
-    }
-    let expected: Vec<_> = MIGRATOR
-        .iter()
-        .filter(|m| !m.migration_type.is_down_migration())
-        .collect();
-    for migration in &expected {
-        match applied.iter().find(|(v, _, _)| *v == migration.version) {
-            None => {
-                return Err(Error::generic(format!(
-                    "migration {} ({}) is pending; run `sharing-server migrate`",
-                    migration.version, migration.description
-                )));
-            }
-            Some((_, checksum, _)) if checksum.as_slice() != &*migration.checksum => {
-                return Err(Error::generic(format!(
-                    "migration {} was modified after it was applied",
-                    migration.version
-                )));
-            }
-            Some(_) => {}
-        }
-    }
-    if let Some((version, _, _)) = applied
-        .iter()
-        .find(|(v, _, _)| !expected.iter().any(|m| m.version == *v))
-    {
-        return Err(Error::generic(format!(
-            "the database has migration {version}, unknown to this binary (is it newer?)"
-        )));
-    }
-    Ok(())
+    let applied: Vec<AppliedMigration> =
+        match sqlx::query_as(APPLIED_MIGRATIONS).fetch_all(pool).await {
+            Ok(rows) => rows,
+            // No migrations table yet: nothing is applied.
+            Err(sqlx::Error::Database(e)) if e.code().as_deref() == Some("42P01") => Vec::new(),
+            Err(e) => return Err(db(e)),
+        };
+    check_applied(&MIGRATOR, &applied)
 }
 
 /// A Postgres [`SharingStore`](super::SharingStore).

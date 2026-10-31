@@ -92,22 +92,30 @@ async fn run(cli: Cli) -> Result<(), String> {
 }
 
 async fn migrate(config: &Config) -> Result<(), String> {
-    use opensharing_server::store::postgres;
-    let DatabaseConfig::Postgres {
-        url, migration_url, ..
-    } = &config.database
-    else {
-        return Err("`migrate` needs a postgres database".to_string());
-    };
-    let url = migration_url
-        .as_ref()
-        .and_then(|u| u.value())
-        .or_else(|| url.value())
-        .ok_or("database url is not set")?;
-    let pool = postgres::connect(&url, 1)
-        .await
-        .map_err(|e| e.to_string())?;
-    postgres::migrate(&pool).await.map_err(|e| e.to_string())?;
+    use opensharing_server::store::{postgres, sqlite};
+    match &config.database {
+        DatabaseConfig::Postgres {
+            url, migration_url, ..
+        } => {
+            let url = migration_url
+                .as_ref()
+                .and_then(|u| u.value())
+                .or_else(|| url.value())
+                .ok_or("database url is not set")?;
+            let pool = postgres::connect(&url, 1)
+                .await
+                .map_err(|e| e.to_string())?;
+            postgres::migrate(&pool).await.map_err(|e| e.to_string())?;
+        }
+        DatabaseConfig::Sqlite { url, .. } => {
+            let url = url.value().ok_or("database url is not set")?;
+            let pool = sqlite::connect(&url, 1).await.map_err(|e| e.to_string())?;
+            sqlite::migrate(&pool).await.map_err(|e| e.to_string())?;
+        }
+        DatabaseConfig::Memory => {
+            return Err("`migrate` needs a postgres or sqlite database".to_string());
+        }
+    }
     tracing::info!("migrations applied");
     Ok(())
 }

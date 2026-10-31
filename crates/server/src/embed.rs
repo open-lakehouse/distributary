@@ -116,8 +116,8 @@ impl Config {
         })
     }
 
-    /// Connect the configured store. For Postgres this checks the schema is
-    /// current (over the migration URL) but never migrates.
+    /// Connect the configured store. For the SQL stores this checks the schema
+    /// is current (for Postgres over the migration URL) but never migrates.
     pub async fn store(&self) -> std::result::Result<Arc<dyn SharingStore>, String> {
         match &self.database {
             DatabaseConfig::Memory => Ok(Arc::new(InMemoryStore::new())),
@@ -148,6 +148,25 @@ impl Config {
             #[cfg(not(feature = "postgres"))]
             DatabaseConfig::Postgres { .. } => {
                 Err("this build has no Postgres support (feature `postgres`)".to_string())
+            }
+            #[cfg(feature = "sqlite")]
+            DatabaseConfig::Sqlite {
+                url,
+                max_connections,
+            } => {
+                use crate::store::sqlite;
+                let url = url.value().ok_or("database url is not set")?;
+                let pool = sqlite::connect(&url, *max_connections)
+                    .await
+                    .map_err(|e| e.to_string())?;
+                sqlite::ensure_schema_current(&pool)
+                    .await
+                    .map_err(|e| e.to_string())?;
+                Ok(Arc::new(sqlite::SqliteStore::new(pool)))
+            }
+            #[cfg(not(feature = "sqlite"))]
+            DatabaseConfig::Sqlite { .. } => {
+                Err("this build has no SQLite support (feature `sqlite`)".to_string())
             }
         }
     }
