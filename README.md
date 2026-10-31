@@ -56,6 +56,13 @@ and the [`trestle`](https://github.com/open-lakehouse/trestle) CLI. Run
 `just generate` after changing a proto, and commit the generated output with the
 change. Never hand-edit files under `**/models/_gen/**` or `**/codegen/**`.
 
+Install the CLI from the open-lakehouse Homebrew tap. It is updated on every
+trestle release:
+
+```sh
+brew install open-lakehouse/tap/trestle   # later: brew upgrade trestle
+```
+
 ## License
 
 Apache-2.0
