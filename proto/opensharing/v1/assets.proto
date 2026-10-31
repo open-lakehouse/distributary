@@ -147,7 +147,10 @@ message Skill {
   // The fully qualified storage location of the skill's directory.
   optional string storage_location = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // A human-readable description of what the skill does.
+  // What the skill does and when to use it, as declared in its SKILL.md.
+  //
+  // The server reads this and the fields below from the skill's `SKILL.md`
+  // frontmatter, so they always match what an agent loads.
   optional string description = 7 [(google.api.field_behavior) = OPTIONAL];
 
   // SPDX license identifier or free-form license text for the skill.
@@ -158,4 +161,8 @@ message Skill {
 
   // Arbitrary additional metadata declared by the skill.
   map<string, string> metadata = 10 [(google.api.field_behavior) = OPTIONAL];
+
+  // The environment the skill requires (products, system packages, network
+  // access, …), as declared in its SKILL.md.
+  optional string compatibility = 11 [(google.api.field_behavior) = OPTIONAL];
 }
