@@ -19,7 +19,7 @@
 use async_trait::async_trait;
 use delta_kernel::Version;
 
-use opensharing_common::models::opensharing::v1::Share as SharingShare;
+pub use opensharing_common::models::opensharing::v1::Share;
 
 use crate::{Error, Result};
 
@@ -43,25 +43,6 @@ pub enum DataFormat {
     Delta,
     /// An Apache Iceberg table.
     Iceberg,
-}
-
-/// A share, as listed to a recipient.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct ShareInfo {
-    pub name: String,
-    pub id: Option<String>,
-    pub comment: Option<String>,
-}
-
-impl From<ShareInfo> for SharingShare {
-    fn from(s: ShareInfo) -> Self {
-        SharingShare {
-            name: s.name,
-            id: s.id,
-            comment: s.comment,
-            ..Default::default()
-        }
-    }
 }
 
 /// One object listed under a share, under its shared (`schema`, `name`).
@@ -210,10 +191,10 @@ pub struct Page<T> {
 #[async_trait]
 pub trait ShareCatalog<Cx = opensharing_api::DefaultContext>: Send + Sync + 'static {
     /// The shares visible to the caller, one page at a time.
-    async fn list_shares(&self, page: PageRequest, cx: &Cx) -> Result<Page<ShareInfo>>;
+    async fn list_shares(&self, page: PageRequest, cx: &Cx) -> Result<Page<Share>>;
 
     /// A share by name. Missing → [`Error::NotFound`].
-    async fn get_share(&self, share: &str, cx: &Cx) -> Result<ShareInfo>;
+    async fn get_share(&self, share: &str, cx: &Cx) -> Result<Share>;
 
     /// Every object in a share, of every kind, in a stable order.
     ///
