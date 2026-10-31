@@ -1,7 +1,7 @@
 //! The sharing API error contract, decoupled from any server's internal error.
 //!
 //! [`Error`] is the error half of every handler `Result` in this crate: the
-//! generated `SharingHandler` / `SharingVolumeHandler` / `SharingSkillHandler`
+//! generated `ShareHandler` / `VolumeHandler` / `SkillHandler`
 //! traits return `crate::Result<T>`, and the hand-written NDJSON query path does
 //! too. Its `IntoResponse` (feature `axum`) emits the [`ErrorResponse`] envelope
 //! (`{ "errorCode", "message" }`, the shape Delta Sharing and Unity Catalog

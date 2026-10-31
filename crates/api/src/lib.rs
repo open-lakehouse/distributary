@@ -6,8 +6,8 @@
 //! them. It holds no sharing semantics of its own. A host implements the traits
 //! and mounts [`sharing_router`]; that is the most barebones server there is.
 //!
-//! - The generated discovery and asset traits: [`SharingHandler`] (shares,
-//!   schemas, tables), [`SharingVolumeHandler`] and [`SharingSkillHandler`].
+//! - The generated discovery and asset traits: [`ShareHandler`] (shares,
+//!   schemas, tables), [`VolumeHandler`] and [`SkillHandler`].
 //! - [`SharingQueryHandler`], hand-written: the NDJSON `version` / `metadata` /
 //!   `query` path, temporary table credentials, change data feed and
 //!   asynchronous queries.
@@ -40,11 +40,11 @@ pub use query::{SharingApiHandler, SharingQueryHandler, TableResponse, Version};
 #[cfg(feature = "axum")]
 pub use router::{get_router, opensharing_router, sharing_router};
 
-/// The generated handler traits (`SharingHandler`, `SharingVolumeHandler`,
-/// `SharingSkillHandler`), re-exported at the crate root.
-pub use codegen::sharing::SharingHandler;
-pub use codegen::sharing_skill::SharingSkillHandler;
-pub use codegen::sharing_volume::SharingVolumeHandler;
+/// The generated handler traits (`ShareHandler`, `VolumeHandler`,
+/// `SkillHandler`), re-exported at the crate root.
+pub use codegen::shares::ShareHandler;
+pub use codegen::skills::SkillHandler;
+pub use codegen::volumes::VolumeHandler;
 
 /// The crate's error type, re-exported under a descriptive alias.
 pub type SharingApiError = Error;

@@ -9,7 +9,7 @@ set dotenv-load
 # The provider admin API packages. They have their own codegen pipeline
 # (buf.gen.admin.yaml + trestle.admin.yaml -> crates/admin), so the protocol
 # pipeline excludes them.
-ADMIN_PROTOS := "proto/opensharing/shares proto/opensharing/recipients proto/opensharing/providers"
+ADMIN_PROTOS := "proto/unitycatalog/shares proto/unitycatalog/recipients proto/unitycatalog/providers"
 
 # the OpenSharing server as a Neon Function
 mod neon 'crates/neon/justfile'

@@ -38,7 +38,7 @@ message ListVolumesRequest {
 // Response for ListVolumesRequest.
 message ListVolumesResponse {
   // The volumes that were requested.
-  repeated SharingVolume items = 1;
+  repeated Volume items = 1;
 
   // Token that can be used to retrieve the next page of volumes.
   optional string next_page_token = 2;
@@ -67,7 +67,7 @@ message ListAllVolumesRequest {
 // Response for ListAllVolumesRequest.
 message ListAllVolumesResponse {
   // The volumes that were requested.
-  repeated SharingVolume items = 1;
+  repeated Volume items = 1;
 
   // Token that can be used to retrieve the next page of volumes.
   optional string next_page_token = 2;
@@ -123,7 +123,7 @@ message GenerateTemporaryVolumeCredentialsRequest {
 
 // OpenSharing volume APIs: discovery and credential vending for shared
 // storage-backed volumes.
-service SharingVolumeService {
+service VolumesService {
   // List the volumes in a given share's schema.
   rpc ListVolumes(ListVolumesRequest) returns (ListVolumesResponse) {
     option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/volumes"};
@@ -137,14 +137,14 @@ service SharingVolumeService {
   }
 
   // Get the metadata for a single shared volume.
-  rpc GetVolume(GetVolumeRequest) returns (SharingVolume) {
+  rpc GetVolume(GetVolumeRequest) returns (Volume) {
     option (google.api.http) = {get: "/shares/{share}/schemas/{schema}/volumes/{name}"};
     option (gnostic.openapi.v3.operation) = {operation_id: "GetVolume"};
   }
 
   // Generate temporary credentials scoped to a shared volume's storage
   // location, for direct file access via the cloud storage API.
-  rpc GenerateTemporaryVolumeCredentials(GenerateTemporaryVolumeCredentialsRequest) returns (SharingTemporaryCredentials) {
+  rpc GenerateTemporaryVolumeCredentials(GenerateTemporaryVolumeCredentialsRequest) returns (TemporaryCredentials) {
     option (google.api.http) = {
       post: "/shares/{share}/schemas/{schema}/volumes/{name}/temporary-volume-credentials"
       body: "*"

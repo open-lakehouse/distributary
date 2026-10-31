@@ -14,7 +14,7 @@ use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use opensharing_api::auth::{BearerAuthenticator, authenticated, require_bearer};
 use opensharing_api::{Error, Result, sharing_router};
-use opensharing_common::models::opensharing::v1::SharingTemporaryCredentials;
+use opensharing_common::models::opensharing::v1::TemporaryCredentials;
 use opensharing_engine::SharingService;
 use opensharing_engine::testing::{FixtureObject, FixtureShare, in_memory_service};
 
@@ -146,7 +146,7 @@ async fn vends_table_credentials_on_the_opensharing_surface() {
     let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX)
         .await
         .unwrap();
-    let credentials: SharingTemporaryCredentials = serde_json::from_slice(&bytes).unwrap();
+    let credentials: TemporaryCredentials = serde_json::from_slice(&bytes).unwrap();
     assert!(credentials.credentials.is_some());
     assert!(credentials.url.unwrap().ends_with("basic_partitioned/"));
 

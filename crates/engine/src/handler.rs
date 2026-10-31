@@ -1,7 +1,7 @@
 //! The sharing handler surface, implemented by [`SharingService`].
 //!
-//! The generated discovery / asset handler traits (`SharingHandler`,
-//! `SharingVolumeHandler`, `SharingSkillHandler`) and the hand-written
+//! The generated discovery / asset handler traits (`ShareHandler`,
+//! `VolumeHandler`, `SkillHandler`) and the hand-written
 //! [`SharingQueryHandler`] — whose newline-delimited JSON responses the generated,
 //! JSON-only handlers do not model — are all implemented here in terms of the
 //! service's ports. This is the only place protocol semantics live.
@@ -10,7 +10,7 @@ use bytes::Bytes;
 use chrono::DateTime;
 
 use opensharing_common::models::opensharing::v1::{
-    Schema, Share as SharingShare, SharingSkill, SharingVolume, Table, *,
+    Schema, Share as SharingShare, Skill, Table, Volume, *,
 };
 
 use crate::catalog::{AssetKind, AssetRef, PageRequest, SharedAsset, SharedObject};
@@ -19,9 +19,9 @@ use crate::policy::SharingAction;
 use crate::service::{SharingService, paginate};
 use crate::{Error, Result};
 use opensharing_api::SharingQueryHandler;
-use opensharing_api::codegen::sharing::SharingHandler;
-use opensharing_api::codegen::sharing_skill::SharingSkillHandler;
-use opensharing_api::codegen::sharing_volume::SharingVolumeHandler;
+use opensharing_api::codegen::shares::ShareHandler;
+use opensharing_api::codegen::skills::SkillHandler;
+use opensharing_api::codegen::volumes::VolumeHandler;
 
 impl<Cx: Clone + Send + Sync + 'static> SharingService<Cx> {
     /// Authorize reading `share`.
@@ -94,7 +94,7 @@ fn parse_timestamp(field: &str, value: &str) -> Result<i64> {
 // ---------------------------------------------------------------------------
 
 #[async_trait::async_trait]
-impl<Cx: Clone + Send + Sync + 'static> SharingHandler<Cx> for SharingService<Cx> {
+impl<Cx: Clone + Send + Sync + 'static> ShareHandler<Cx> for SharingService<Cx> {
     async fn list_shares(
         &self,
         request: ListSharesRequest,
@@ -224,7 +224,7 @@ fn table(object: SharedObject, share: &str, share_id: Option<&str>) -> Table {
 // ---------------------------------------------------------------------------
 
 #[async_trait::async_trait]
-impl<Cx: Clone + Send + Sync + 'static> SharingVolumeHandler<Cx> for SharingService<Cx> {
+impl<Cx: Clone + Send + Sync + 'static> VolumeHandler<Cx> for SharingService<Cx> {
     async fn list_volumes(
         &self,
         request: ListVolumesRequest,
@@ -272,7 +272,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingVolumeHandler<Cx> for SharingServ
         })
     }
 
-    async fn get_volume(&self, request: GetVolumeRequest, context: Cx) -> Result<SharingVolume> {
+    async fn get_volume(&self, request: GetVolumeRequest, context: Cx) -> Result<Volume> {
         let asset = self
             .storage_asset(
                 &request.share,
@@ -282,7 +282,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingVolumeHandler<Cx> for SharingServ
                 &context,
             )
             .await?;
-        Ok(SharingVolume {
+        Ok(Volume {
             name: request.name,
             schema: request.schema,
             share: request.share,
@@ -296,7 +296,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingVolumeHandler<Cx> for SharingServ
         &self,
         request: GenerateTemporaryVolumeCredentialsRequest,
         context: Cx,
-    ) -> Result<SharingTemporaryCredentials> {
+    ) -> Result<TemporaryCredentials> {
         let asset = self
             .storage_asset(
                 &request.share,
@@ -310,8 +310,8 @@ impl<Cx: Clone + Send + Sync + 'static> SharingVolumeHandler<Cx> for SharingServ
     }
 }
 
-fn volume(object: SharedObject, share: &str, share_id: Option<&str>) -> SharingVolume {
-    SharingVolume {
+fn volume(object: SharedObject, share: &str, share_id: Option<&str>) -> Volume {
+    Volume {
         name: object.name,
         schema: object.schema,
         share: share.to_string(),
@@ -326,7 +326,7 @@ fn volume(object: SharedObject, share: &str, share_id: Option<&str>) -> SharingV
 // ---------------------------------------------------------------------------
 
 #[async_trait::async_trait]
-impl<Cx: Clone + Send + Sync + 'static> SharingSkillHandler<Cx> for SharingService<Cx> {
+impl<Cx: Clone + Send + Sync + 'static> SkillHandler<Cx> for SharingService<Cx> {
     async fn list_skills(
         &self,
         request: ListSkillsRequest,
@@ -374,7 +374,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingSkillHandler<Cx> for SharingServi
         })
     }
 
-    async fn get_skill(&self, request: GetSkillRequest, context: Cx) -> Result<SharingSkill> {
+    async fn get_skill(&self, request: GetSkillRequest, context: Cx) -> Result<Skill> {
         let asset = self
             .storage_asset(
                 &request.share,
@@ -384,7 +384,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingSkillHandler<Cx> for SharingServi
                 &context,
             )
             .await?;
-        Ok(SharingSkill {
+        Ok(Skill {
             name: request.name,
             schema: request.schema,
             share: request.share,
@@ -398,7 +398,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingSkillHandler<Cx> for SharingServi
         &self,
         request: GenerateTemporarySkillCredentialsRequest,
         context: Cx,
-    ) -> Result<SharingTemporaryCredentials> {
+    ) -> Result<TemporaryCredentials> {
         let asset = self
             .storage_asset(
                 &request.share,
@@ -412,8 +412,8 @@ impl<Cx: Clone + Send + Sync + 'static> SharingSkillHandler<Cx> for SharingServi
     }
 }
 
-fn skill(object: SharedObject, share: &str, share_id: Option<&str>) -> SharingSkill {
-    SharingSkill {
+fn skill(object: SharedObject, share: &str, share_id: Option<&str>) -> Skill {
+    Skill {
         name: object.name,
         schema: object.schema,
         share: share.to_string(),
@@ -513,7 +513,7 @@ impl<Cx: Clone + Send + Sync + 'static> SharingQueryHandler<Cx> for SharingServi
         schema: String,
         name: String,
         context: Cx,
-    ) -> Result<SharingTemporaryCredentials> {
+    ) -> Result<TemporaryCredentials> {
         let asset = self.table(&share, &schema, &name, &context).await?;
         self.access.vend_read_credential(&asset, &context).await
     }

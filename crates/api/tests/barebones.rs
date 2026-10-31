@@ -1,13 +1,13 @@
 //! The barebones contract: a host implements the handler traits directly, with
 //! no ports and no table format, and mounts the router. A Delta Sharing server
-//! needs only [`SharingHandler`] and [`SharingQueryHandler`].
+//! needs only [`ShareHandler`] and [`SharingQueryHandler`].
 
 use async_trait::async_trait;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use bytes::Bytes;
 use opensharing_api::{
-    Error, Result, SharingHandler, SharingQueryHandler, TableResponse, get_router,
+    Error, Result, ShareHandler, SharingQueryHandler, TableResponse, get_router,
 };
 use opensharing_common::models::opensharing::v1::*;
 use tower::ServiceExt;
@@ -17,7 +17,7 @@ use tower::ServiceExt;
 struct Stub;
 
 #[async_trait]
-impl SharingHandler for Stub {
+impl ShareHandler for Stub {
     async fn list_shares(&self, _: ListSharesRequest, _: ()) -> Result<ListSharesResponse> {
         Ok(ListSharesResponse {
             items: vec![Share {
@@ -76,7 +76,7 @@ impl SharingQueryHandler for Stub {
         _: String,
         _: String,
         _: (),
-    ) -> Result<SharingTemporaryCredentials> {
+    ) -> Result<TemporaryCredentials> {
         Err(Error::not_implemented("temporary table credentials"))
     }
 

@@ -225,7 +225,7 @@ message ListAllTablesResponse {
 }
 
 // Service exposing the official APIs for Delta Sharing.
-service SharingService {
+service SharesService {
   // List shares accessible to a recipient.
   rpc ListShares(ListSharesRequest) returns (ListSharesResponse) {
     option (google.api.http) = {get: "/shares"};

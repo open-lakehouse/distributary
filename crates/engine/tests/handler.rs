@@ -1,9 +1,9 @@
 //! Handler integration tests: drive the discovery + asset surface through the
 //! generated handler traits over the in-memory backend.
 
-use opensharing_api::codegen::sharing::SharingHandler;
-use opensharing_api::codegen::sharing_skill::SharingSkillHandler;
-use opensharing_api::codegen::sharing_volume::SharingVolumeHandler;
+use opensharing_api::codegen::shares::ShareHandler;
+use opensharing_api::codegen::skills::SkillHandler;
+use opensharing_api::codegen::volumes::VolumeHandler;
 use opensharing_api::{Error, SharingQueryHandler};
 use opensharing_common::models::opensharing::v1::*;
 use opensharing_engine::SharingService;
@@ -33,7 +33,7 @@ fn backend() -> SharingService<()> {
 #[tokio::test]
 async fn lists_shares() {
     let b = backend();
-    let resp = SharingHandler::<()>::list_shares(&b, ListSharesRequest::default(), ())
+    let resp = ShareHandler::<()>::list_shares(&b, ListSharesRequest::default(), ())
         .await
         .unwrap();
     assert_eq!(resp.items.len(), 1);
@@ -44,7 +44,7 @@ async fn lists_shares() {
 #[tokio::test]
 async fn gets_share() {
     let b = backend();
-    let share = SharingHandler::<()>::get_share(
+    let share = ShareHandler::<()>::get_share(
         &b,
         GetShareRequest {
             name: "share1".to_string(),
@@ -61,7 +61,7 @@ async fn gets_share() {
 #[tokio::test]
 async fn lists_schemas_and_tables() {
     let b = backend();
-    let schemas = SharingHandler::<()>::list_schemas(
+    let schemas = ShareHandler::<()>::list_schemas(
         &b,
         ListSchemasRequest {
             share: "share1".to_string(),
@@ -74,7 +74,7 @@ async fn lists_schemas_and_tables() {
     let names: Vec<_> = schemas.items.iter().map(|s| s.name.as_str()).collect();
     assert_eq!(names, vec!["schema1", "schema2"]);
 
-    let tables = SharingHandler::<()>::list_tables(
+    let tables = ShareHandler::<()>::list_tables(
         &b,
         ListTablesRequest {
             share: "share1".to_string(),
@@ -90,7 +90,7 @@ async fn lists_schemas_and_tables() {
     assert_eq!(tables.items[0].schema, "schema1");
     assert_eq!(tables.items[0].share, "share1");
 
-    let all = SharingHandler::<()>::list_all_tables(
+    let all = ShareHandler::<()>::list_all_tables(
         &b,
         ListAllTablesRequest {
             name: "share1".to_string(),
@@ -107,7 +107,7 @@ async fn lists_schemas_and_tables() {
 #[tokio::test]
 async fn lists_and_vends_volumes() {
     let b = backend();
-    let vols = SharingVolumeHandler::<()>::list_volumes(
+    let vols = VolumeHandler::<()>::list_volumes(
         &b,
         ListVolumesRequest {
             share: "share1".to_string(),
@@ -121,7 +121,7 @@ async fn lists_and_vends_volumes() {
     assert_eq!(vols.items.len(), 1);
     assert_eq!(vols.items[0].name, "vol1");
 
-    let creds = SharingVolumeHandler::<()>::generate_temporary_volume_credentials(
+    let creds = VolumeHandler::<()>::generate_temporary_volume_credentials(
         &b,
         GenerateTemporaryVolumeCredentialsRequest {
             share: "share1".to_string(),
@@ -140,7 +140,7 @@ async fn lists_and_vends_volumes() {
 #[tokio::test]
 async fn lists_skills() {
     let b = backend();
-    let skills = SharingSkillHandler::<()>::list_skills(
+    let skills = SkillHandler::<()>::list_skills(
         &b,
         ListSkillsRequest {
             share: "share1".to_string(),
@@ -158,7 +158,7 @@ async fn lists_skills() {
 #[tokio::test]
 async fn missing_share_is_not_found() {
     let b = backend();
-    let err = SharingHandler::<()>::get_share(
+    let err = ShareHandler::<()>::get_share(
         &b,
         GetShareRequest {
             name: "nope".to_string(),
@@ -197,7 +197,7 @@ async fn gap_endpoints_are_not_implemented() {
 #[tokio::test]
 async fn list_schemas_paginates() {
     let b = backend();
-    let first = SharingHandler::<()>::list_schemas(
+    let first = ShareHandler::<()>::list_schemas(
         &b,
         ListSchemasRequest {
             share: "share1".to_string(),
@@ -212,7 +212,7 @@ async fn list_schemas_paginates() {
     assert_eq!(first.items[0].name, "schema1");
     let token = first.next_page_token.expect("a second page");
 
-    let second = SharingHandler::<()>::list_schemas(
+    let second = ShareHandler::<()>::list_schemas(
         &b,
         ListSchemasRequest {
             share: "share1".to_string(),

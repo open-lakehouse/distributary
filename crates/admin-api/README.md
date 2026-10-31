@@ -8,7 +8,7 @@ The crate is built the same way as the recipient-facing protocol in
 [`opensharing-api`](../api), and depends on it not at all:
 
 - `ShareHandler`, `RecipientHandler` and `ProviderHandler` are generated from
-  `proto/opensharing/{shares,recipients,providers}` (`just generate`). Each is
+  `proto/unitycatalog/{shares,recipients,providers}` (`just generate`). Each is
   generic over the request context `Cx`.
 - `shares_router`, `recipients_router`, `providers_router` and `admin_router`
   bind the generated route functions, extracting `Cx` per request. Mount them

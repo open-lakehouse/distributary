@@ -20,7 +20,7 @@ use object_store::local::LocalFileSystem;
 use object_store::memory::InMemory;
 
 use opensharing_common::models::opensharing::v1::{
-    SharingAwsCredentials, SharingTemporaryCredentials, sharing_temporary_credentials::Credentials,
+    AwsCredentials, TemporaryCredentials, temporary_credentials::Credentials,
 };
 
 use crate::access::{StorageAccess, TableStorage, UnsignedUrls};
@@ -173,18 +173,16 @@ impl<Cx: Send + Sync + 'static> StorageAccess<Cx> for LocalStorageAccess {
         &self,
         asset: &SharedAsset,
         _cx: &Cx,
-    ) -> Result<SharingTemporaryCredentials> {
-        Ok(SharingTemporaryCredentials {
+    ) -> Result<TemporaryCredentials> {
+        Ok(TemporaryCredentials {
             expiration_time: 1_700_000_000_000,
             url: Some(asset.location.raw.clone()),
-            credentials: Some(Credentials::AwsTempCredentials(Box::new(
-                SharingAwsCredentials {
-                    access_key_id: "AKIAFAKE".to_string(),
-                    secret_access_key: "fake-secret".to_string(),
-                    session_token: "fake-token".to_string(),
-                    ..Default::default()
-                },
-            ))),
+            credentials: Some(Credentials::AwsTempCredentials(Box::new(AwsCredentials {
+                access_key_id: "AKIAFAKE".to_string(),
+                secret_access_key: "fake-secret".to_string(),
+                session_token: "fake-token".to_string(),
+                ..Default::default()
+            }))),
             ..Default::default()
         })
     }

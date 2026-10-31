@@ -137,7 +137,7 @@ fn token(row: &PgRow) -> Result<TokenRecord> {
 impl ShareReader for PostgresStore {
     async fn get_share(&self, name: &str) -> Result<ShareRecord> {
         let row = sqlx::query(&format!(
-            "SELECT {SHARE_COLUMNS} FROM sharing_shares WHERE name = $1"
+            "SELECT {SHARE_COLUMNS} FROM shares WHERE name = $1"
         ))
         .bind(name)
         .fetch_one(&self.pool)
@@ -148,7 +148,7 @@ impl ShareReader for PostgresStore {
 
     async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>> {
         sqlx::query(&format!(
-            "SELECT {} FROM sharing_shares s JOIN sharing_grants g ON g.share_id = s.id \
+            "SELECT {} FROM shares s JOIN grants g ON g.share_id = s.id \
              WHERE g.recipient_id = $1 ORDER BY s.name",
             SHARE_COLUMNS
                 .split(", ")
@@ -167,7 +167,7 @@ impl ShareReader for PostgresStore {
 
     async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool> {
         let row = sqlx::query(
-            "SELECT EXISTS (SELECT 1 FROM sharing_grants g JOIN sharing_shares s ON s.id = g.share_id \
+            "SELECT EXISTS (SELECT 1 FROM grants g JOIN shares s ON s.id = g.share_id \
              WHERE s.name = $1 AND g.recipient_id = $2) AS granted",
         )
         .bind(share)
@@ -184,7 +184,7 @@ impl ShareStore for PostgresStore {
     async fn create_share(&self, name: &str, comment: Option<String>) -> Result<ShareRecord> {
         let now = now_millis();
         let row = sqlx::query(&format!(
-            "INSERT INTO sharing_shares (id, name, comment, objects, created_at, updated_at) \
+            "INSERT INTO shares (id, name, comment, objects, created_at, updated_at) \
              VALUES ($1, $2, $3, '[]'::jsonb, $4, $4) RETURNING {SHARE_COLUMNS}"
         ))
         .bind(uuid::Uuid::new_v4().to_string())
@@ -198,15 +198,13 @@ impl ShareStore for PostgresStore {
     }
 
     async fn list_shares(&self) -> Result<Vec<ShareRecord>> {
-        sqlx::query(&format!(
-            "SELECT {SHARE_COLUMNS} FROM sharing_shares ORDER BY name"
-        ))
-        .fetch_all(&self.pool)
-        .await
-        .map_err(db)?
-        .into_iter()
-        .map(share)
-        .collect()
+        sqlx::query(&format!("SELECT {SHARE_COLUMNS} FROM shares ORDER BY name"))
+            .fetch_all(&self.pool)
+            .await
+            .map_err(db)?
+            .into_iter()
+            .map(share)
+            .collect()
     }
 
     async fn update_share(
@@ -216,7 +214,7 @@ impl ShareStore for PostgresStore {
         comment: Option<String>,
     ) -> Result<ShareRecord> {
         let row = sqlx::query(&format!(
-            "UPDATE sharing_shares SET objects = $2, comment = $3, updated_at = $4 \
+            "UPDATE shares SET objects = $2, comment = $3, updated_at = $4 \
              WHERE name = $1 RETURNING {SHARE_COLUMNS}"
         ))
         .bind(name)
@@ -230,7 +228,7 @@ impl ShareStore for PostgresStore {
     }
 
     async fn delete_share(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM sharing_shares WHERE name = $1")
+        let done = sqlx::query("DELETE FROM shares WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await
@@ -240,8 +238,8 @@ impl ShareStore for PostgresStore {
 
     async fn grant(&self, share: &str, recipient: &str) -> Result<()> {
         let done = sqlx::query(
-            "INSERT INTO sharing_grants (share_id, recipient_id) \
-             SELECT s.id, r.id FROM sharing_shares s, sharing_recipients r \
+            "INSERT INTO grants (share_id, recipient_id) \
+             SELECT s.id, r.id FROM shares s, recipients r \
              WHERE s.name = $1 AND r.name = $2 ON CONFLICT DO NOTHING",
         )
         .bind(share)
@@ -259,7 +257,7 @@ impl ShareStore for PostgresStore {
 
     async fn revoke(&self, share: &str, recipient: &str) -> Result<()> {
         sqlx::query(
-            "DELETE FROM sharing_grants g USING sharing_shares s, sharing_recipients r \
+            "DELETE FROM grants g USING shares s, recipients r \
              WHERE g.share_id = s.id AND g.recipient_id = r.id AND s.name = $1 AND r.name = $2",
         )
         .bind(share)
@@ -272,9 +270,9 @@ impl ShareStore for PostgresStore {
 
     async fn recipients_of(&self, share: &str) -> Result<Vec<String>> {
         let rows = sqlx::query(
-            "SELECT r.name FROM sharing_grants g \
-             JOIN sharing_shares s ON s.id = g.share_id \
-             JOIN sharing_recipients r ON r.id = g.recipient_id \
+            "SELECT r.name FROM grants g \
+             JOIN shares s ON s.id = g.share_id \
+             JOIN recipients r ON r.id = g.recipient_id \
              WHERE s.name = $1 ORDER BY r.name",
         )
         .bind(share)
@@ -292,7 +290,7 @@ impl TokenReader for PostgresStore {
     async fn token_by_hash(&self, token_hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)> {
         let row = sqlx::query(&format!(
             "SELECT {TOKEN_COLUMNS}, r.name, r.comment, r.created_at AS recipient_created_at \
-             FROM sharing_recipient_tokens t JOIN sharing_recipients r ON r.id = t.recipient_id \
+             FROM recipient_tokens t JOIN recipients r ON r.id = t.recipient_id \
              WHERE t.token_hash = $1"
         ))
         .bind(token_hash)
@@ -318,7 +316,7 @@ impl RecipientStore for PostgresStore {
         comment: Option<String>,
     ) -> Result<RecipientRecord> {
         let row = sqlx::query(
-            "INSERT INTO sharing_recipients (id, name, comment, created_at) \
+            "INSERT INTO recipients (id, name, comment, created_at) \
              VALUES ($1, $2, $3, $4) RETURNING id, name, comment, created_at",
         )
         .bind(uuid::Uuid::new_v4().to_string())
@@ -332,18 +330,17 @@ impl RecipientStore for PostgresStore {
     }
 
     async fn get_recipient(&self, name: &str) -> Result<RecipientRecord> {
-        let row = sqlx::query(
-            "SELECT id, name, comment, created_at FROM sharing_recipients WHERE name = $1",
-        )
-        .bind(name)
-        .fetch_one(&self.pool)
-        .await
-        .map_err(db)?;
+        let row =
+            sqlx::query("SELECT id, name, comment, created_at FROM recipients WHERE name = $1")
+                .bind(name)
+                .fetch_one(&self.pool)
+                .await
+                .map_err(db)?;
         recipient(&row)
     }
 
     async fn list_recipients(&self) -> Result<Vec<RecipientRecord>> {
-        sqlx::query("SELECT id, name, comment, created_at FROM sharing_recipients ORDER BY name")
+        sqlx::query("SELECT id, name, comment, created_at FROM recipients ORDER BY name")
             .fetch_all(&self.pool)
             .await
             .map_err(db)?
@@ -358,7 +355,7 @@ impl RecipientStore for PostgresStore {
         comment: Option<String>,
     ) -> Result<RecipientRecord> {
         let row = sqlx::query(
-            "UPDATE sharing_recipients SET comment = $2 WHERE name = $1 \
+            "UPDATE recipients SET comment = $2 WHERE name = $1 \
              RETURNING id, name, comment, created_at",
         )
         .bind(name)
@@ -371,7 +368,7 @@ impl RecipientStore for PostgresStore {
 
     async fn delete_recipient(&self, name: &str) -> Result<()> {
         // Tokens and grants cascade.
-        let done = sqlx::query("DELETE FROM sharing_recipients WHERE name = $1")
+        let done = sqlx::query("DELETE FROM recipients WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await
@@ -381,7 +378,7 @@ impl RecipientStore for PostgresStore {
 
     async fn insert_token(&self, t: TokenRecord) -> Result<()> {
         sqlx::query(
-            "INSERT INTO sharing_recipient_tokens \
+            "INSERT INTO recipient_tokens \
              (id, recipient_id, token_hash, sealed_token, activation_code, expires_at, created_at) \
              VALUES ($1, $2, $3, $4, $5, $6, $7)",
         )
@@ -400,7 +397,7 @@ impl RecipientStore for PostgresStore {
 
     async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord> {
         let row = sqlx::query(&format!(
-            "SELECT {TOKEN_COLUMNS} FROM sharing_recipient_tokens t WHERE t.activation_code = $1"
+            "SELECT {TOKEN_COLUMNS} FROM recipient_tokens t WHERE t.activation_code = $1"
         ))
         .bind(code)
         .fetch_one(&self.pool)
@@ -411,7 +408,7 @@ impl RecipientStore for PostgresStore {
 
     async fn mark_activated(&self, token_id: &str) -> Result<()> {
         let done = sqlx::query(
-            "UPDATE sharing_recipient_tokens SET sealed_token = NULL, activation_code = NULL \
+            "UPDATE recipient_tokens SET sealed_token = NULL, activation_code = NULL \
              WHERE id = $1",
         )
         .bind(token_id)
@@ -423,7 +420,7 @@ impl RecipientStore for PostgresStore {
 
     async fn tokens_for_recipient(&self, recipient_id: &str) -> Result<Vec<TokenRecord>> {
         sqlx::query(&format!(
-            "SELECT {TOKEN_COLUMNS} FROM sharing_recipient_tokens t \
+            "SELECT {TOKEN_COLUMNS} FROM recipient_tokens t \
              WHERE t.recipient_id = $1 ORDER BY t.created_at DESC"
         ))
         .bind(recipient_id)
@@ -436,7 +433,7 @@ impl RecipientStore for PostgresStore {
     }
 
     async fn delete_tokens(&self, recipient_id: &str) -> Result<()> {
-        sqlx::query("DELETE FROM sharing_recipient_tokens WHERE recipient_id = $1")
+        sqlx::query("DELETE FROM recipient_tokens WHERE recipient_id = $1")
             .bind(recipient_id)
             .execute(&self.pool)
             .await
@@ -446,7 +443,7 @@ impl RecipientStore for PostgresStore {
 
     async fn sealed_tokens(&self) -> Result<Vec<TokenRecord>> {
         sqlx::query(&format!(
-            "SELECT {TOKEN_COLUMNS} FROM sharing_recipient_tokens t WHERE t.sealed_token IS NOT NULL"
+            "SELECT {TOKEN_COLUMNS} FROM recipient_tokens t WHERE t.sealed_token IS NOT NULL"
         ))
         .fetch_all(&self.pool)
         .await
@@ -457,13 +454,12 @@ impl RecipientStore for PostgresStore {
     }
 
     async fn update_sealed_token(&self, token_id: &str, sealed: Vec<u8>) -> Result<()> {
-        let done =
-            sqlx::query("UPDATE sharing_recipient_tokens SET sealed_token = $2 WHERE id = $1")
-                .bind(token_id)
-                .bind(sealed)
-                .execute(&self.pool)
-                .await
-                .map_err(db)?;
+        let done = sqlx::query("UPDATE recipient_tokens SET sealed_token = $2 WHERE id = $1")
+            .bind(token_id)
+            .bind(sealed)
+            .execute(&self.pool)
+            .await
+            .map_err(db)?;
         affected(done.rows_affected())
     }
 }
@@ -472,7 +468,7 @@ impl RecipientStore for PostgresStore {
 impl CredentialStore for PostgresStore {
     async fn put_credential(&self, c: SealedCredential) -> Result<()> {
         sqlx::query(
-            "INSERT INTO sharing_credentials (name, sealed) VALUES ($1, $2) \
+            "INSERT INTO credentials (name, sealed) VALUES ($1, $2) \
              ON CONFLICT (name) DO UPDATE SET sealed = EXCLUDED.sealed",
         )
         .bind(c.name)
@@ -484,7 +480,7 @@ impl CredentialStore for PostgresStore {
     }
 
     async fn get_credential(&self, name: &str) -> Result<SealedCredential> {
-        let row = sqlx::query("SELECT name, sealed FROM sharing_credentials WHERE name = $1")
+        let row = sqlx::query("SELECT name, sealed FROM credentials WHERE name = $1")
             .bind(name)
             .fetch_one(&self.pool)
             .await
@@ -496,7 +492,7 @@ impl CredentialStore for PostgresStore {
     }
 
     async fn list_credentials(&self) -> Result<Vec<SealedCredential>> {
-        sqlx::query("SELECT name, sealed FROM sharing_credentials ORDER BY name")
+        sqlx::query("SELECT name, sealed FROM credentials ORDER BY name")
             .fetch_all(&self.pool)
             .await
             .map_err(db)?
@@ -511,7 +507,7 @@ impl CredentialStore for PostgresStore {
     }
 
     async fn delete_credential(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM sharing_credentials WHERE name = $1")
+        let done = sqlx::query("DELETE FROM credentials WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await
@@ -521,7 +517,7 @@ impl CredentialStore for PostgresStore {
 
     async fn put_external_location(&self, l: ExternalLocationRecord) -> Result<()> {
         sqlx::query(
-            "INSERT INTO sharing_external_locations (name, url, credential_name) VALUES ($1, $2, $3) \
+            "INSERT INTO external_locations (name, url, credential_name) VALUES ($1, $2, $3) \
              ON CONFLICT (name) DO UPDATE SET url = EXCLUDED.url, credential_name = EXCLUDED.credential_name",
         )
         .bind(l.name)
@@ -534,25 +530,23 @@ impl CredentialStore for PostgresStore {
     }
 
     async fn list_external_locations(&self) -> Result<Vec<ExternalLocationRecord>> {
-        sqlx::query(
-            "SELECT name, url, credential_name FROM sharing_external_locations ORDER BY name",
-        )
-        .fetch_all(&self.pool)
-        .await
-        .map_err(db)?
-        .iter()
-        .map(|row| {
-            Ok(ExternalLocationRecord {
-                name: row.try_get("name").map_err(db)?,
-                url: row.try_get("url").map_err(db)?,
-                credential_name: row.try_get("credential_name").map_err(db)?,
+        sqlx::query("SELECT name, url, credential_name FROM external_locations ORDER BY name")
+            .fetch_all(&self.pool)
+            .await
+            .map_err(db)?
+            .iter()
+            .map(|row| {
+                Ok(ExternalLocationRecord {
+                    name: row.try_get("name").map_err(db)?,
+                    url: row.try_get("url").map_err(db)?,
+                    credential_name: row.try_get("credential_name").map_err(db)?,
+                })
             })
-        })
-        .collect()
+            .collect()
     }
 
     async fn delete_external_location(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM sharing_external_locations WHERE name = $1")
+        let done = sqlx::query("DELETE FROM external_locations WHERE name = $1")
             .bind(name)
             .execute(&self.pool)
             .await

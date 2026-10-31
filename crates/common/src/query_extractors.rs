@@ -1,7 +1,7 @@
 //! Hand-written axum request extractors for the Delta Sharing **query** path
 //! (`get_table_version`, `get_table_metadata`, `query_table`).
 //!
-//! These RPCs are deliberately not part of the generated `SharingService`
+//! These RPCs are deliberately not part of the generated `SharesService`
 //! (their responses are newline-delimited JSON, a streaming contract the code
 //! generator does not model — see `proto/opensharing/v1/svc.proto`), so
 //! their extractors are maintained here rather than generated alongside the

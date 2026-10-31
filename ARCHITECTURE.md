@@ -363,9 +363,10 @@ to host them. The layering:
   catalog, and it is optional (feature `admin`). Its traits and routers are
   generated into `opensharing-admin-api`, and implemented by
   `opensharing-provider`. Its models come from `opensharing-admin`
-  (`proto/opensharing/{shares,recipients,providers}`,
-  moved from mangrove's `unitycatalog.*` packages with an unchanged wire format,
-  2026-10-30).
+  (`proto/unitycatalog/{shares,recipients,providers}`,
+  moved from mangrove with the `unitycatalog.*` package names and wire format
+  unchanged, 2026-10-30). The package names match the Unity Catalog resources
+  they mirror and the `/api/2.1/unity-catalog` prefix they mount under.
 - Unity Catalog comes in only through `opensharing-server`'s `unity` feature
   (`src/unity/`): the UC
   REST `CatalogSource` and the UC-shaped `credentials` / `external-locations`
