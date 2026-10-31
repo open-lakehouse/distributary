@@ -15,6 +15,20 @@
 # of the context so rustup does not fetch a second toolchain)
 FROM rust@sha256:9181b56c2a21ab1d5e73cffe04fc762426d30aa7fac3c91141dd033f49a7fc8b AS chef
 
+# Optional sparse-registry mirror (e.g. an internal crates proxy), for build
+# hosts without direct crates.io access. Configured in the shared base so every
+# downstream stage routes crates-io fetches through it. `git` deps still go
+# straight to their host, so the build host needs outbound git access regardless.
+ARG CRATES_PROXY=
+RUN if [ -n "${CRATES_PROXY}" ]; then \
+      proxy_url="${CRATES_PROXY}"; \
+      case "${proxy_url}" in \
+        sparse+*) ;; \
+        *) proxy_url="sparse+${proxy_url}" ;; \
+      esac; \
+      printf '[source.crates-io]\nreplace-with = "proxy"\n\n[source.proxy]\nregistry = "%s"\n' "${proxy_url}" > "${CARGO_HOME}/config.toml"; \
+      echo "Using CRATES_PROXY for cargo registry: ${proxy_url}"; \
+    fi
 RUN cargo install cargo-chef --locked
 WORKDIR /app
 
