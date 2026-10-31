@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use futures::TryStreamExt;
 use olai_storage_credentials::wire::{VendContext, unity};
 use olai_storage_credentials::{AccessLevel, StorageLocation, StorageScope, VendedCredential};
-use opensharing_api::catalog::DataFormat;
+use opensharing_engine::catalog::DataFormat;
 use unitycatalog_client::{
     TableOperation, TableReference, UnityCatalogClient, VolumeOperation, VolumeReference,
 };
@@ -18,8 +18,8 @@ use unitycatalog_common::models::temporary_credentials::v1::TemporaryCredential;
 use unitycatalog_common::models::volumes::v1::GetVolumeRequest;
 use url::Url;
 
-use crate::source::{CatalogSource, SourceTable, SourceVolume, split_name};
-use crate::{Error, Result};
+use opensharing_engine::source::{CatalogSource, SourceTable, SourceVolume, split_name};
+use opensharing_engine::{Error, Result};
 
 /// A Unity Catalog REST server as a catalog source.
 pub struct UnitySource {

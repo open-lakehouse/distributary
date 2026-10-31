@@ -2,11 +2,11 @@
 //! `credentials` and `external-locations`, the stored storage credentials local
 //! access vends from (credentials are sealed and never returned).
 //!
-//! [`routes`] is merged into the [admin router](crate::admin::router), behind
+//! [`routes`] is merged into the [admin routes](opensharing_provider::admin::routes), behind
 //! the same provider-token check. Unlike the share and recipient routes these
 //! are hand-written (the UC credential handler traits are not part of the UC
 //! models crate), but they take the same request context `Cx` and check the
-//! same [`AdminPolicy`](crate::admin::AdminPolicy), with
+//! same [`AdminPolicy`](opensharing_provider::admin::AdminPolicy), with
 //! [`AdminAction::ManageStorage`].
 
 use axum::Json;
@@ -20,13 +20,13 @@ use unitycatalog_common::models::credentials::v1::Credential;
 use unitycatalog_common::models::external_locations::v1::CreateExternalLocationRequest;
 
 use crate::Error;
-use crate::access::credential_aad;
-use crate::admin::{AdminAction, ProviderService, identifier};
 use crate::store::{ExternalLocationRecord, SealedCredential};
 use opensharing_admin_api::Result as AdminResult;
+use opensharing_provider::admin::{AdminAction, ProviderService, identifier};
+use opensharing_provider::credentials::credential_aad;
 
 /// The credential and external-location routes, to merge into
-/// [`admin::router`](crate::admin::router).
+/// [`admin_router`](crate::embed::admin_router).
 pub fn routes<Cx>() -> axum::Router<ProviderService<Cx>>
 where
     Cx: FromRequestParts<ProviderService<Cx>> + Send + Sync + 'static,
@@ -69,14 +69,14 @@ async fn create_credential<Cx: Send + Sync + 'static>(
         )
     })?;
     let sealed = state
-        .secrets
+        .secrets()
         .seal(
             &credential_aad(&credential.name),
             &serde_json::to_vec(&storage)?,
         )
         .await?;
     state
-        .store
+        .store()
         .put_credential(SealedCredential {
             name: credential.name.clone(),
             sealed,
@@ -93,7 +93,7 @@ async fn list_credentials<Cx: Send + Sync + 'static>(
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
     let names: Vec<_> = state
-        .store
+        .store()
         .list_credentials()
         .await?
         .into_iter()
@@ -110,7 +110,7 @@ async fn delete_credential<Cx: Send + Sync + 'static>(
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
-    state.store.delete_credential(&name).await?;
+    state.store().delete_credential(&name).await?;
     Ok(StatusCode::OK)
 }
 
@@ -127,13 +127,19 @@ async fn create_external_location<Cx: Send + Sync + 'static>(
         .url
         .parse::<StorageLocation>()
         .map_err(|e| Error::invalid_argument(format!("invalid url: {e}")))?;
-    state.store.get_credential(&request.credential_name).await?;
+    state
+        .store()
+        .get_credential(&request.credential_name)
+        .await?;
     let location = ExternalLocationRecord {
         name: request.name,
         url: request.url,
         credential_name: request.credential_name,
     };
-    state.store.put_external_location(location.clone()).await?;
+    state
+        .store()
+        .put_external_location(location.clone())
+        .await?;
     Ok(Json(location_json(&location)))
 }
 
@@ -153,7 +159,7 @@ async fn list_external_locations<Cx: Send + Sync + 'static>(
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
     let locations: Vec<_> = state
-        .store
+        .store()
         .list_external_locations()
         .await?
         .iter()
@@ -170,6 +176,6 @@ async fn delete_external_location<Cx: Send + Sync + 'static>(
     state
         .authorize(AdminAction::ManageStorage, &context)
         .await?;
-    state.store.delete_external_location(&name).await?;
+    state.store().delete_external_location(&name).await?;
     Ok(StatusCode::OK)
 }

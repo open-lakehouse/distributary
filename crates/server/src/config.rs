@@ -33,10 +33,10 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "unity")]
 use url::Url;
 
-use crate::source::fixed::StaticSource;
-use crate::source::{AccessMode, RegisteredSource, SourceRegistry};
 #[cfg(feature = "unity")]
 use crate::unity::source::UnitySource;
+use opensharing_engine::source::fixed::StaticSource;
+use opensharing_engine::source::{AccessMode, RegisteredSource, SourceRegistry};
 
 /// A configuration value given inline or read from an environment variable.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -348,26 +348,28 @@ impl Config {
     pub fn sources(&self) -> Result<SourceRegistry, String> {
         let mut sources = Vec::new();
         for source in &self.sources {
-            let (implementation, default_access): (Arc<dyn crate::source::CatalogSource>, _) =
-                match &source.kind {
-                    #[cfg(feature = "unity")]
-                    SourceKind::Unity { url, token } => {
-                        let mut url = Url::parse(url)
-                            .map_err(|e| format!("source '{}': invalid url: {e}", source.name))?;
-                        if !url.path().ends_with('/') {
-                            url.set_path(&format!("{}/", url.path()));
-                        }
-                        let token = token
-                            .as_ref()
-                            .map(|t| t.require(&format!("source '{}' token", source.name)))
-                            .transpose()?;
-                        (
-                            Arc::new(UnitySource::new(url, token)),
-                            AccessMode::Delegated,
-                        )
+            let (implementation, default_access): (
+                Arc<dyn opensharing_engine::source::CatalogSource>,
+                _,
+            ) = match &source.kind {
+                #[cfg(feature = "unity")]
+                SourceKind::Unity { url, token } => {
+                    let mut url = Url::parse(url)
+                        .map_err(|e| format!("source '{}': invalid url: {e}", source.name))?;
+                    if !url.path().ends_with('/') {
+                        url.set_path(&format!("{}/", url.path()));
                     }
-                    SourceKind::Static(fixed) => (Arc::new(fixed.clone()), AccessMode::Local),
-                };
+                    let token = token
+                        .as_ref()
+                        .map(|t| t.require(&format!("source '{}' token", source.name)))
+                        .transpose()?;
+                    (
+                        Arc::new(UnitySource::new(url, token)),
+                        AccessMode::Delegated,
+                    )
+                }
+                SourceKind::Static(fixed) => (Arc::new(fixed.clone()), AccessMode::Local),
+            };
             let access = source.access.unwrap_or(default_access);
             if matches!(source.kind, SourceKind::Static(_)) && access == AccessMode::Delegated {
                 return Err(format!(

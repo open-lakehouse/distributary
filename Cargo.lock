@@ -2502,21 +2502,15 @@ dependencies = [
  "async-trait",
  "axum",
  "axum-extra",
- "buoyant_kernel",
- "buoyant_kernel_engine",
  "bytes",
- "chrono",
- "object_store",
  "opensharing-common",
  "serde",
  "serde_json",
- "tempfile",
  "thiserror",
  "tokio",
  "tower",
  "tracing",
  "url",
- "uuid",
 ]
 
 [[package]]
@@ -2541,10 +2535,36 @@ dependencies = [
  "axum",
  "axum-extra",
  "buffa",
- "buoyant_kernel",
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "opensharing-engine"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "axum",
+ "buoyant_kernel",
+ "buoyant_kernel_engine",
+ "bytes",
+ "chrono",
+ "http",
+ "object_store",
+ "olai-credential-vending",
+ "olai-storage-credentials",
+ "olai-vended-store",
+ "opensharing-api",
+ "opensharing-common",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
 ]
 
 [[package]]
@@ -2563,6 +2583,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "opensharing-postgres"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "opensharing-provider",
+ "serde_json",
+ "sqlx",
+ "tempfile",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "opensharing-provider"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "olai-credential-vending",
+ "olai-storage-credentials",
+ "olai-store",
+ "opensharing-admin",
+ "opensharing-admin-api",
+ "opensharing-api",
+ "opensharing-engine",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "opensharing-server"
 version = "0.0.1"
 dependencies = [
@@ -2572,29 +2631,38 @@ dependencies = [
  "chrono",
  "clap",
  "futures",
- "object_store",
  "olai-credential-vending",
  "olai-storage-credentials",
  "olai-store",
  "olai-uc-client",
  "olai-uc-common",
- "olai-vended-store",
- "opensharing-admin",
  "opensharing-admin-api",
  "opensharing-api",
- "opensharing-common",
+ "opensharing-engine",
+ "opensharing-postgres",
+ "opensharing-provider",
+ "opensharing-sqlite",
  "serde",
  "serde_json",
  "serde_yml",
- "sha2",
- "sqlx",
- "tempfile",
- "thiserror",
  "tokio",
  "tower",
  "tracing",
  "tracing-subscriber",
  "url",
+ "uuid",
+]
+
+[[package]]
+name = "opensharing-sqlite"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "opensharing-provider",
+ "serde_json",
+ "sqlx",
+ "tempfile",
+ "tokio",
  "uuid",
 ]
 

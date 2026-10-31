@@ -1,0 +1,55 @@
+[package]
+name = "opensharing-provider"
+version = "0.0.1"
+description = "The OpenSharing provider domain as a library: shares mapped onto source-catalog assets, recipients and their bearer tokens, grants, sealed secrets, the admin API service, and the context, policy and catalog it plugs into the protocol."
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+rust-version.workspace = true
+
+[dependencies]
+# local dependencies in alphabetical order
+opensharing-admin = { path = "../admin", version = "0.0.1", optional = true }
+opensharing-admin-api = { path = "../admin-api", version = "0.0.1", optional = true }
+opensharing-api = { path = "../api", version = "0.0.1" }
+opensharing-engine = { path = "../engine", version = "0.0.1" }
+
+# workspace dependencies in alphabetical order
+async-trait = { workspace = true }
+axum = { workspace = true }
+base64 = "0.22"
+chrono = { workspace = true }
+olai-credential-vending = { workspace = true }
+olai-storage-credentials = { workspace = true, features = ["sharing"] }
+olai-store = { workspace = true, features = ["encryption"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = "0.10"
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+tracing = { workspace = true }
+url = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+tokio = { version = "1", features = ["full"] }
+tower = { workspace = true }
+
+[[test]]
+name = "memory"
+required-features = ["testing"]
+
+[features]
+default = ["admin"]
+# The provider admin API service (shares, permissions, recipients, activation
+# links) on the handler traits `opensharing-admin-api` generates.
+admin = ["dep:opensharing-admin", "dep:opensharing-admin-api"]
+# `testing::round_trips`, the conformance suite every store implementation runs.
+testing = []
+
+[package.metadata.docs.rs]
+all-features = true

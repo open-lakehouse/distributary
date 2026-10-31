@@ -1,0 +1,33 @@
+[package]
+name = "opensharing-postgres"
+version = "0.0.1"
+description = "The Postgres implementation of the OpenSharing provider's store traits (sqlx), with embedded migrations."
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+rust-version.workspace = true
+
+[dependencies]
+# local dependencies in alphabetical order
+opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false }
+
+# workspace dependencies in alphabetical order
+async-trait = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true, features = [
+  "chrono",
+  "json",
+  "runtime-tokio-rustls",
+  "migrate",
+  "macros",
+  "postgres",
+] }
+uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false, features = ["testing"] }
+tempfile = "3"
+tokio = { version = "1", features = ["full"] }

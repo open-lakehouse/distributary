@@ -1,0 +1,257 @@
+//! A catalog that keeps shares and recipients in its own store, with its own
+//! request context, and reuses the provider's protocol side on top of it.
+//!
+//! It implements only the read-only [`ShareReader`] and [`TokenReader`] views,
+//! and its context implements [`RecipientIdentity`]. It builds the sharing
+//! router itself, from [`StoreCatalog`], [`GrantPolicy`], [`SourceStorageAccess`]
+//! and an authenticator that maps the provider's [`Recipient`] onto its context.
+
+use std::path::Path;
+use std::sync::Arc;
+use std::time::Duration;
+
+use async_trait::async_trait;
+use axum::Router;
+use axum::body::Body;
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
+use axum::http::{Request, StatusCode};
+use opensharing_api::auth::{BearerAuthenticator, authenticated, require_bearer};
+use opensharing_api::sharing_router;
+use opensharing_engine::catalog::PageRequest;
+use opensharing_engine::policy::{SharingAction, SharingPolicy};
+use opensharing_engine::source::fixed::{StaticSource, StaticTable};
+use opensharing_engine::source::{AccessMode, RegisteredSource, SourceRegistry};
+use opensharing_engine::vending::{NoCredentials, SourceStorageAccess};
+use opensharing_engine::{ShareCatalog, SharingService};
+use opensharing_provider::RecipientIdentity;
+use opensharing_provider::catalog::{GrantPolicy, StoreCatalog};
+use opensharing_provider::recipients::{Recipient, StoreAuthenticator, token_hash};
+use opensharing_provider::store::{
+    RecipientRecord, ShareObject, ShareObjectKind, ShareReader, ShareRecord, TokenReader,
+    TokenRecord,
+};
+use opensharing_provider::{Error, Result};
+use serde_json::Value;
+use tower::ServiceExt;
+
+const TOKEN: &str = "host-issued-token";
+
+/// The host's own request context: its principal, and the sharing recipient
+/// that principal is, if any.
+#[derive(Debug, Clone)]
+struct HostContext {
+    #[allow(dead_code)]
+    principal: String,
+    recipient_id: Option<String>,
+}
+
+impl RecipientIdentity for HostContext {
+    fn recipient_id(&self) -> Option<&str> {
+        self.recipient_id.as_deref()
+    }
+}
+
+impl<S: Send + Sync> FromRequestParts<S> for HostContext {
+    type Rejection = opensharing_api::Error;
+
+    async fn from_request_parts(parts: &mut Parts, _: &S) -> opensharing_api::Result<Self> {
+        authenticated(parts)
+    }
+}
+
+/// The host's authentication: recipient tokens resolve through the provider's
+/// token store, and the recipient becomes the host's principal.
+struct HostAuthenticator(StoreAuthenticator);
+
+#[async_trait]
+impl BearerAuthenticator<HostContext> for HostAuthenticator {
+    async fn authenticate(&self, token: &str) -> opensharing_api::Result<HostContext> {
+        let recipient: Recipient = self.0.authenticate(token).await?;
+        Ok(HostContext {
+            principal: format!("sharing:{}", recipient.name),
+            recipient_id: Some(recipient.id),
+        })
+    }
+}
+
+/// The catalog's own state: one share, granted to one recipient with one token.
+struct HostStore {
+    share: ShareRecord,
+    recipient: RecipientRecord,
+}
+
+impl HostStore {
+    fn new() -> Self {
+        Self {
+            share: ShareRecord {
+                id: "share-1".to_string(),
+                name: "letters".to_string(),
+                comment: None,
+                objects: vec![ShareObject::new(
+                    ShareObjectKind::Table,
+                    "demo.sales.letters",
+                )],
+                created_at: 0,
+                updated_at: 0,
+            },
+            recipient: RecipientRecord {
+                id: "recipient-1".to_string(),
+                name: "acme".to_string(),
+                comment: None,
+                created_at: 0,
+            },
+        }
+    }
+}
+
+#[async_trait]
+impl ShareReader for HostStore {
+    async fn get_share(&self, name: &str) -> Result<ShareRecord> {
+        (name == self.share.name)
+            .then(|| self.share.clone())
+            .ok_or(Error::NotFound)
+    }
+
+    async fn shares_of(&self, recipient_id: &str) -> Result<Vec<ShareRecord>> {
+        Ok(if recipient_id == self.recipient.id {
+            vec![self.share.clone()]
+        } else {
+            Vec::new()
+        })
+    }
+
+    async fn is_granted(&self, share: &str, recipient_id: &str) -> Result<bool> {
+        Ok(share == self.share.name && recipient_id == self.recipient.id)
+    }
+}
+
+#[async_trait]
+impl TokenReader for HostStore {
+    async fn token_by_hash(&self, hash: &[u8]) -> Result<(TokenRecord, RecipientRecord)> {
+        if hash != token_hash(TOKEN).as_slice() {
+            return Err(Error::NotFound);
+        }
+        let token = TokenRecord {
+            id: "token-1".to_string(),
+            recipient_id: self.recipient.id.clone(),
+            token_hash: hash.to_vec(),
+            sealed_token: None,
+            activation_code: None,
+            expires_at: None,
+            created_at: 0,
+        };
+        Ok((token, self.recipient.clone()))
+    }
+}
+
+fn sources() -> SourceRegistry {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../engine/tests/data/basic_partitioned")
+        .canonicalize()
+        .unwrap();
+    let mut source = StaticSource::default();
+    source.tables.insert(
+        "demo.sales.letters".to_string(),
+        StaticTable {
+            location: url::Url::from_directory_path(dir).unwrap().to_string(),
+            format: "delta".to_string(),
+        },
+    );
+    SourceRegistry::new(vec![RegisteredSource {
+        name: "static".to_string(),
+        catalogs: vec!["demo".to_string()],
+        access: AccessMode::Local,
+        source: Arc::new(source),
+    }])
+}
+
+/// The host's sharing router, assembled from the provider's protocol pieces.
+fn router(host: Arc<HostStore>) -> Router {
+    let catalog = Arc::new(StoreCatalog::new(host.clone(), sources()));
+    // The host stores no storage credentials; local access reads the table directly.
+    let access = Arc::new(SourceStorageAccess::new(
+        sources(),
+        NoCredentials,
+        Duration::from_secs(300),
+        None,
+    ));
+    let policy = Arc::new(GrantPolicy::new(host.clone()));
+    let service = SharingService::<HostContext>::new(catalog, access, policy);
+    require_bearer(
+        sharing_router::<SharingService<HostContext>, HostContext>(service),
+        Arc::new(HostAuthenticator(StoreAuthenticator::new(host))),
+    )
+}
+
+async fn call(app: &Router, method: &str, uri: &str, token: Option<&str>) -> (StatusCode, String) {
+    let mut req = Request::builder().method(method).uri(uri);
+    if let Some(token) = token {
+        req = req.header("authorization", format!("Bearer {token}"));
+    }
+    if method == "POST" {
+        req = req.header("content-type", "application/json");
+    }
+    let body = if method == "POST" { "{}" } else { "" };
+    let resp = app
+        .clone()
+        .oneshot(req.body(Body::from(body)).unwrap())
+        .await
+        .unwrap();
+    let status = resp.status();
+    let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    (status, String::from_utf8(bytes.to_vec()).unwrap())
+}
+
+#[tokio::test]
+async fn a_principal_that_is_no_recipient_sees_nothing() {
+    let policy = GrantPolicy::new(Arc::new(HostStore::new()));
+    let catalog = StoreCatalog::new(Arc::new(HostStore::new()), sources());
+    let anonymous = HostContext {
+        principal: "anonymous".to_string(),
+        recipient_id: None,
+    };
+    let shares = catalog
+        .list_shares(PageRequest::default(), &anonymous)
+        .await
+        .unwrap();
+    assert!(shares.items.is_empty());
+    let read = policy
+        .authorize(SharingAction::ReadShare { share: "letters" }, &anonymous)
+        .await;
+    assert!(
+        matches!(read, Err(opensharing_api::Error::NotFound)),
+        "{read:?}"
+    );
+}
+
+#[tokio::test]
+async fn serves_the_protocol_over_a_host_store() {
+    let app = router(Arc::new(HostStore::new()));
+
+    let (status, _) = call(&app, "GET", "/api/1.0/opensharing/shares", Some("wrong")).await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+
+    let (status, shares) = call(&app, "GET", "/api/1.0/opensharing/shares", Some(TOKEN)).await;
+    assert_eq!(status, StatusCode::OK, "{shares}");
+    let shares: Value = serde_json::from_str(&shares).unwrap();
+    assert_eq!(shares["items"][0]["name"], "letters");
+
+    let (status, lines) = call(
+        &app,
+        "POST",
+        "/api/v1/delta-sharing/shares/letters/schemas/sales/tables/letters/query",
+        Some(TOKEN),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{lines}");
+    assert!(
+        lines
+            .lines()
+            .map(|l| serde_json::from_str::<Value>(l).unwrap())
+            .any(|l| l.get("file").is_some()),
+        "expected file lines: {lines}"
+    );
+}

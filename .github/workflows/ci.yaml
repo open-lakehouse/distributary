@@ -80,6 +80,11 @@ jobs:
   #   crate at all;
   # - opensharing-api depends on no admin crate, and opensharing-admin-api on
   #   no protocol crate;
+  # - opensharing-api is the bare protocol surface: no table format, object
+  #   store or engine (those are opensharing-engine's), and opensharing-engine
+  #   depends on no catalog and no admin crate;
+  # - opensharing-provider (the provider domain) depends on no catalog and on
+  #   no SQL driver (opensharing-postgres / opensharing-sqlite hold those);
   # - opensharing-server without `unity` depends on no olai-uc-* crate either:
   #   its storage access comes from the catalog-independent trestle vending
   #   crates (olai-storage-credentials, olai-vended-store, olai-credential-vending),
@@ -125,6 +130,20 @@ jobs:
             '^opensharing-admin' -p opensharing-api --all-features
           deny "opensharing-admin-api must not depend on the protocol crates" \
             '^opensharing-(api|common|client) ' -p opensharing-admin-api --all-features
+          deny "opensharing-api must not depend on a table format, object store or the engine" \
+            '^(buoyant_kernel|object_store|opensharing-engine) ' -p opensharing-api --all-features
+          deny "opensharing-engine must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p opensharing-engine --all-features
+          deny "opensharing-engine must not depend on the admin crates" \
+            '^opensharing-admin' -p opensharing-engine --all-features
+          deny "opensharing-provider must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p opensharing-provider --all-features
+          deny "opensharing-provider must not depend on sqlx" \
+            '^sqlx' -p opensharing-provider --all-features
+          deny "opensharing-postgres must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p opensharing-postgres --all-features
+          deny "opensharing-sqlite must not depend on olai-uc-* crates" \
+            '^olai-uc-' -p opensharing-sqlite --all-features
           deny "opensharing-server (no unity) must not depend on olai-uc-* crates" \
             '^olai-uc-' -p opensharing-server --no-default-features --features postgres,admin
           deny "opensharing-server (no admin) must not depend on opensharing-admin" \
@@ -133,6 +152,8 @@ jobs:
       - name: Build without Unity Catalog
         run: |
           cargo check --locked --all-targets -p opensharing-api --no-default-features
+          cargo check --locked --all-targets -p opensharing-engine --no-default-features
+          cargo check --locked --all-targets -p opensharing-provider --no-default-features
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features postgres,admin
           cargo check --locked --all-targets -p opensharing-server --no-default-features --features sqlite
@@ -140,13 +161,14 @@ jobs:
 
       # The share / recipient admin API must work end to end without `unity`
       # (tests/e2e.rs), the store-provisioned host without `admin` either
-      # (tests/custom_mount.rs, tests/custom_store.rs), and on the SQLite store
-      # (tests/sqlite.rs).
+      # (tests/custom_mount.rs), and the provider's host-store composition
+      # without the admin service (provider tests/host_store.rs).
       - name: Test without Unity Catalog
         run: |
           cargo test --locked -p opensharing-server --no-default-features --features postgres,admin
           cargo test --locked -p opensharing-server --no-default-features --features postgres
           cargo test --locked -p opensharing-server --no-default-features --features sqlite,admin
+          cargo test --locked -p opensharing-provider --no-default-features --features testing
 
   test:
     name: test
@@ -156,8 +178,8 @@ jobs:
       contents: read
       # dorny/test-reporter publishes a check run with the parsed JUnit results.
       checks: write
-    # A disposable database for the sharing-server Postgres store test
-    # (crates/server/tests/postgres.rs), which skips when its URL is unset.
+    # A disposable database for the Postgres store test
+    # (crates/postgres/tests/store.rs), which skips when its URL is unset.
     services:
       postgres:
         image: postgres:17

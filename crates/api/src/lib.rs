@@ -1,55 +1,32 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
-//! Portable **OpenSharing** / **Delta Sharing** REST API.
+//! The **OpenSharing** / **Delta Sharing** REST surface, and nothing more.
 //!
-//! This crate owns the sharing *semantics* — share / schema / asset discovery,
-//! the table query path (version / metadata / query) and the storage-backed asset
-//! surface (volumes, agent skills) — and expresses them over three narrow ports a
-//! host plugs implementations into:
+//! This crate is the protocol as the spec defines it: one handler trait per
+//! service, generic over a request context `Cx`, and the axum routers that bind
+//! them. It holds no sharing semantics of its own. A host implements the traits
+//! and mounts [`sharing_router`]; that is the most barebones server there is.
 //!
-//! - [`ShareCatalog`] — which shares and objects a recipient sees, and where a
-//!   shared object lives (backed by any source catalog);
-//! - [`StorageAccess`] — the server's own reads of a shared asset, presigned file
-//!   URLs and temporary credentials for recipients;
-//! - [`TableFormat`] — serving one table format; Delta (via `delta_kernel`, no
-//!   query engine) is built in behind the `delta` feature.
+//! - The generated discovery and asset traits: [`SharingHandler`] (shares,
+//!   schemas, tables), [`SharingVolumeHandler`] and [`SharingSkillHandler`].
+//! - [`SharingQueryHandler`], hand-written: the NDJSON `version` / `metadata` /
+//!   `query` path, temporary table credentials, change data feed and
+//!   asynchronous queries.
+//! - [`router`]: the Delta Sharing and OpenSharing mounts.
+//! - [`auth`]: bearer-token authentication in front of the routes.
+//! - [`error`]: the `{ "errorCode", "message" }` error contract.
 //!
-//! [`SharingService`] composes them and implements every handler; the [`router`]
-//! serves it over axum. See `ARCHITECTURE.md` for the overall design.
-//!
-//! The crate depends on no catalog. An existing catalog becomes a sharing server
-//! by implementing the ports over its own discovery, authorization and
-//! credential machinery; `opensharing-server` is one such host.
-//!
-//! The wire types come from `opensharing-common`
-//! ([`opensharing_common`]), shared with the client.
-//!
-//! # Layout
-//! - [`catalog`] — the [`ShareCatalog`] port and the share / asset types.
-//! - [`access`] — the [`StorageAccess`] port and [`FileSigner`](access::FileSigner).
-//! - [`format`] — the [`TableFormat`] port, the format registry, the Delta format
-//!   and predicate-hint translation.
-//! - [`service`] — [`SharingService`], the composition root.
-//! - [`handler`] — the handler traits, implemented by [`SharingService`].
-//! - [`router`] — the axum routers for the Delta Sharing + OpenSharing surfaces.
-//! - [`auth`] — the [`RecipientAuthenticator`](auth::RecipientAuthenticator)
-//!   port and its bearer-token layer.
-//! - [`error`] — the error contract.
+//! `opensharing-engine` implements every trait over pluggable ports (share
+//! catalog, storage access, table formats) and is the usual way to serve this
+//! surface. The wire types come from [`opensharing_common`], shared with the
+//! client. The crate depends on no catalog and no table format.
 
-pub mod access;
 #[cfg(feature = "axum")]
 pub mod auth;
-pub mod catalog;
 pub mod codegen;
 pub mod error;
-pub mod format;
-pub mod handler;
-#[cfg(feature = "delta")]
-mod kernel;
+pub mod query;
 #[cfg(feature = "axum")]
 pub mod router;
-pub mod service;
-#[cfg(feature = "testing")]
-pub mod testing;
 
 /// The default context type for the generated sharing handler traits.
 ///
@@ -58,14 +35,10 @@ pub mod testing;
 /// server plugs in its own request-context type when it implements the port.
 pub type DefaultContext = ();
 
-pub use access::StorageAccess;
-pub use catalog::ShareCatalog;
 pub use error::{Error, Result};
-pub use format::TableFormat;
-pub use handler::{SharingApiHandler, SharingQueryHandler};
+pub use query::{SharingApiHandler, SharingQueryHandler, TableResponse, Version};
 #[cfg(feature = "axum")]
 pub use router::{get_router, opensharing_router, sharing_router};
-pub use service::SharingService;
 
 /// The generated handler traits (`SharingHandler`, `SharingVolumeHandler`,
 /// `SharingSkillHandler`), re-exported at the crate root.

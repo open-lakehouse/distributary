@@ -5,7 +5,7 @@
 //! Sharing asset routes (volumes, agent skills, temporary table credentials).
 //! [`sharing_router`] mounts both under their protocol prefixes
 //! ([`DELTA_SHARING_PREFIX`], [`OPENSHARING_PREFIX`]), which is what a host
-//! normally serves — wrapped in [`require_recipient`](crate::auth::require_recipient).
+//! normally serves — wrapped in [`require_bearer`](crate::auth::require_bearer).
 //!
 //! # Response formats
 //!
@@ -40,7 +40,7 @@ use crate::codegen::sharing::{self, SharingHandler};
 use crate::codegen::sharing_skill::{self, SharingSkillHandler};
 use crate::codegen::sharing_volume::{self, SharingVolumeHandler};
 use crate::error::{Error, Result};
-use crate::handler::SharingQueryHandler;
+use crate::query::SharingQueryHandler;
 
 /// Response header advertising the Delta Sharing capabilities this server
 /// supports. The query path currently emits responses in `parquet` format.

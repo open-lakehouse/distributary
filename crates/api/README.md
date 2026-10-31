@@ -1,60 +1,32 @@
 # opensharing-api
 
-Portable **OpenSharing** / **Delta Sharing** REST API.
+The **OpenSharing** / **Delta Sharing** REST surface, and nothing more.
 
-This crate owns the sharing *semantics* — share / schema / asset discovery,
-the table query path (version / metadata / query) and the storage-backed asset
-surface (volumes, agent skills) — and expresses them over three narrow ports:
+This crate is the protocol as the spec defines it, generic over a request
+context `Cx`:
 
-- `ShareCatalog`: which shares and objects a recipient sees, and where a shared
-  object lives (backed by any source catalog);
-- `StorageAccess`: the server's own reads of a shared asset, plus presigned file
-  URLs and temporary credentials for recipients;
-- `TableFormat`: serving one table format. Delta is built in (feature `delta`)
-  and reads tables through `delta_kernel` directly, so no query engine is
-  involved.
+- the generated handler traits `SharingHandler` (shares, schemas, tables),
+  `SharingVolumeHandler` and `SharingSkillHandler`;
+- the hand-written `SharingQueryHandler`: the NDJSON `version` / `metadata` /
+  `query` path, temporary table credentials, change data feed and asynchronous
+  queries;
+- the axum routers: `get_router` (Delta Sharing), `opensharing_router`
+  (OpenSharing, adding volumes, agent skills and credentials) and
+  `sharing_router`, which mounts both under `/api/v1/delta-sharing` and
+  `/api/1.0/opensharing`;
+- bearer-token authentication in front of the routes (`auth`);
+- the `{ "errorCode", "message" }` error contract (`Error`).
 
-`SharingService` composes one implementation of each port and implements every
-handler. `sharing_router` serves it under `/api/v1/delta-sharing` (Delta
-Sharing) and `/api/1.0/opensharing` (OpenSharing, adding volumes, agent skills
-and temporary credentials), and `auth::require_recipient` puts a bearer-token
-`RecipientAuthenticator` in front. The wire types come from
-[`opensharing-common`](https://crates.io/crates/opensharing-common), which
-the client shares; this crate does not depend on the client.
+It holds no sharing semantics and depends on no catalog, table format or object
+store. The most barebones server there is implements the traits and mounts a
+router (`tests/barebones.rs`). A Delta Sharing server needs only
+`SharingHandler` and `SharingQueryHandler`.
 
-## Integrating
+[`opensharing-engine`](../engine) implements every trait over pluggable ports
+(share catalog, storage access, table formats, with a kernel-backed Delta
+format) and is the usual way to serve this surface. The wire types come from
+[`opensharing-common`](../common), which the client shares.
 
-The crate depends on no catalog (no Unity Catalog crates). To serve sharing from
-an existing catalog, implement `ShareCatalog`, `StorageAccess` and a
-`RecipientAuthenticator` over the catalog's own discovery, grants and credential
-vending, then mount `sharing_router` behind `auth::require_recipient`. Map
-your own errors onto `Error`, which renders the `{ "errorCode", "message" }`
-envelope. [`opensharing-server`](../server) is a complete host built
-this way.
-
-## Admin API
-
-This crate carries only the recipient-facing protocol. The provider admin API
-(shares, permissions, recipients) is a separate crate,
-[`opensharing-admin-api`](../admin-api). It is built the same way, but has its
-own authentication and error contract and shares no code with this crate.
-
-## Status
-
-- **Discovery** (shares, schemas, tables, volumes, skills) is implemented and
-  paginated.
-- **Query** (`version`, `metadata`, `query`) serves Delta tables in the parquet
-  response format, with version / timestamp time travel, predicate-hint file
-  skipping and limit hints. Tables that need reader features (column mapping,
-  deletion vectors, …) require `responseformat=delta` and are rejected for now.
-- **Credentials**: `temporary-table-credentials` (OpenSharing) and the volume /
-  skill credential endpoints vend read-only credentials through `StorageAccess`.
-- **Not implemented** (`501`): change data feed (`/changes`), asynchronous
-  queries (`POST /queries/{id}`) and `responseformat=delta` serving.
-
-## Architecture
-
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the pluggable server design
-(ports, source-catalog share mapping, delegated vs. local storage access,
-secrets at rest) and the gap assessment against the upstream OpenSharing
-reference implementation.
+The provider admin API is a separate surface,
+[`opensharing-admin-api`](../admin-api), with its own authentication and error
+contract.
