@@ -7,11 +7,13 @@
 //! one, hand it to a router, and never re-implement any protocol semantics.
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use crate::access::StorageAccess;
 use crate::catalog::{Page, ShareCatalog};
 use crate::format::FormatRegistry;
 use crate::policy::SharingPolicy;
+use crate::skill::ManifestCache;
 use crate::{Error, Result};
 
 /// The sharing service. Cheap to clone (all ports are behind [`Arc`]s).
@@ -20,7 +22,11 @@ pub struct SharingService<Cx = opensharing_api::DefaultContext> {
     pub(crate) access: Arc<dyn StorageAccess<Cx>>,
     pub(crate) policy: Arc<dyn SharingPolicy<Cx>>,
     pub(crate) formats: Arc<FormatRegistry>,
+    pub(crate) skills: Arc<ManifestCache>,
 }
+
+/// How long a skill's parsed `SKILL.md` is served before it is read again.
+pub const DEFAULT_SKILL_MANIFEST_TTL: Duration = Duration::from_secs(5 * 60);
 
 impl<Cx> Clone for SharingService<Cx> {
     fn clone(&self) -> Self {
@@ -29,6 +35,7 @@ impl<Cx> Clone for SharingService<Cx> {
             access: self.access.clone(),
             policy: self.policy.clone(),
             formats: self.formats.clone(),
+            skills: self.skills.clone(),
         }
     }
 }
@@ -49,12 +56,20 @@ impl<Cx: Send + Sync + 'static> SharingService<Cx> {
             access,
             policy,
             formats: Arc::new(FormatRegistry::builtin()),
+            skills: Arc::new(ManifestCache::new(DEFAULT_SKILL_MANIFEST_TTL)),
         }
     }
 
     /// Replace the table formats this service serves.
     pub fn with_formats(mut self, formats: FormatRegistry) -> Self {
         self.formats = Arc::new(formats);
+        self
+    }
+
+    /// How long a skill's metadata, read from its `SKILL.md`, is cached
+    /// ([`DEFAULT_SKILL_MANIFEST_TTL`] by default). Zero disables the cache.
+    pub fn with_skill_manifest_ttl(mut self, ttl: Duration) -> Self {
+        self.skills = Arc::new(ManifestCache::new(ttl));
         self
     }
 

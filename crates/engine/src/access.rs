@@ -69,7 +69,8 @@ pub struct TableStorage {
 /// The storage access port. See the module docs.
 #[async_trait]
 pub trait StorageAccess<Cx = opensharing_api::DefaultContext>: Send + Sync + 'static {
-    /// Storage access for serving a shared table.
+    /// Server-side storage access to a shared asset's location: a table to
+    /// serve, or a skill whose `SKILL.md` the server reads.
     async fn table_storage(&self, asset: &SharedAsset, cx: &Cx) -> Result<TableStorage>;
 
     /// Read-only temporary credentials for a shared asset's location, in the Open

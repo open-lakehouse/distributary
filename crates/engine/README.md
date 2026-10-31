@@ -55,7 +55,9 @@ contract.
 ## Status
 
 - **Discovery** (shares, schemas, tables, volumes, skills) is implemented and
-  paginated.
+  paginated. A skill's description, license, compatibility, allowed tools and
+  metadata come from its `SKILL.md` frontmatter. The server reads them from
+  storage (one range read of the file's head) and caches them for five minutes.
 - **Query** (`version`, `metadata`, `query`) serves Delta tables in the parquet
   response format, with version / timestamp time travel, predicate-hint file
   skipping and limit hints. Tables that need reader features (column mapping,
