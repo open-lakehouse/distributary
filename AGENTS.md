@@ -12,15 +12,18 @@ for the design.
   or `crates/**/codegen/**`, or any file marked `@generated`. Change `proto/` and
   run `just generate`, then commit the output in the same commit as the source
   change.
-- **Keep the catalog boundary.** `opensharing-common`, `opensharing-admin`,
-  `opensharing-admin-api`, `opensharing-client` and `opensharing-api` never
-  depend on a catalog crate.
-  `opensharing-server` may depend on `olai-uc-*` only behind its `unity`
-  feature. CI's `catalog-independence` job guards this.
-- **Keep the protocol and the admin API apart.** `opensharing-api` never
-  depends on `opensharing-admin*`, and `opensharing-admin-api` never depends on
-  `opensharing-api`, `opensharing-common` or `opensharing-client`. Each has its
-  own auth seam and error type. The same CI job guards this.
+- **Keep the catalog boundary.** No crate except `opensharing-server` depends
+  on a catalog crate, and the server depends on `olai-uc-*` only behind its
+  `unity` feature. CI's `catalog-independence` job guards this.
+- **Keep the layers.** The surface crates (`opensharing-api`,
+  `opensharing-admin-api`) are barebones: generated traits, routers, auth and
+  errors. `opensharing-api` has no table format, object store or engine, and
+  never depends on `opensharing-admin*`. `opensharing-admin-api` never depends
+  on `opensharing-api`, `opensharing-common` or `opensharing-client`. Each
+  surface has its own auth seam and error type. `opensharing-engine` never
+  depends on the admin crates or the provider. `opensharing-provider` never
+  depends on sqlx; the store crates do. The same CI job guards this. See
+  `ARCHITECTURE.md` ("Crate layering").
 - **Cargo.lock and trestle.** CI resolves the `olai-*` trestle crates from
   crates.io. A lock resolved under the local `just configure-trestle-deps` patch
   must not be committed. Check with `dev/scripts/check-cargo-lock-trestle.sh`,
@@ -70,6 +73,7 @@ cargo fmt --all --check \
 
 ## Commits and pull requests
 
-Conventional commits, scoped by crate directory (`common`, `admin`, `admin-api`, `client`,
-`api`, `server`, `neon`): release-plz derives each crate's version bump and
+Conventional commits, scoped by crate directory (`common`, `admin`,
+`admin-api`, `client`, `api`, `engine`, `provider`, `postgres`, `sqlite`,
+`server`, `neon`): release-plz derives each crate's version bump and
 changelog from them. PR titles follow the same format.
