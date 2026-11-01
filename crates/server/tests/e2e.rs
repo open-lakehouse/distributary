@@ -465,6 +465,130 @@ async fn rotating_a_token_invalidates_the_old_one() {
     assert_eq!(shares(new).await, StatusCode::OK);
 }
 
+/// A proto JSON int64: a string, or absent for 0.
+fn int64(value: &Value) -> i64 {
+    value.as_str().map_or(0, |s| s.parse().unwrap())
+}
+
+#[tokio::test]
+async fn rotation_keeps_the_old_token_for_the_grace_period() {
+    let client = app(
+        Arc::new(InMemoryStore::new()),
+        secrets(key("v1", 1), vec![]),
+        static_sources(),
+    );
+    let first = client
+        .provision(
+            "sales",
+            json!({"name": "demo.sales.letters", "data_object_type": "TABLE"}),
+            "acme",
+        )
+        .await;
+    let shares = |token: &str| {
+        let client = &client;
+        let token = token.to_string();
+        async move {
+            client
+                .call("GET", "/api/v1/delta-sharing/shares", Some(&token), None)
+                .await
+                .0
+        }
+    };
+
+    let rotated = client
+        .admin(
+            "POST",
+            "/recipients/acme/rotate-token",
+            Some(json!({"existing_token_expire_in_seconds": 3600})),
+        )
+        .await;
+    let tokens = rotated["tokens"].as_array().unwrap();
+    assert_eq!(tokens.len(), 2, "{rotated}");
+    // The old token now expires; the new one, like the old one did, never.
+    assert!(int64(&tokens[1]["expiration_time"]) > 0, "{rotated}");
+    assert_eq!(int64(&tokens[0]["expiration_time"]), 0, "{rotated}");
+    let second = client.activate(&rotated).await;
+    assert_eq!(shares(&first).await, StatusCode::OK);
+    assert_eq!(shares(&second).await, StatusCode::OK);
+
+    // A zero grace period revokes the others at once.
+    let rotated = client
+        .admin(
+            "POST",
+            "/recipients/acme/rotate-token",
+            Some(json!({"existing_token_expire_in_seconds": 0})),
+        )
+        .await;
+    assert_eq!(rotated["tokens"].as_array().unwrap().len(), 1, "{rotated}");
+    let third = client.activate(&rotated).await;
+    assert_eq!(shares(&first).await, StatusCode::UNAUTHORIZED);
+    assert_eq!(shares(&second).await, StatusCode::UNAUTHORIZED);
+    assert_eq!(shares(&third).await, StatusCode::OK);
+}
+
+#[tokio::test]
+async fn updating_the_expiration_time_expires_and_renews_tokens() {
+    let client = app(
+        Arc::new(InMemoryStore::new()),
+        secrets(key("v1", 1), vec![]),
+        static_sources(),
+    );
+    let token = client
+        .provision(
+            "sales",
+            json!({"name": "demo.sales.letters", "data_object_type": "TABLE"}),
+            "acme",
+        )
+        .await;
+    let shares = |token: String| {
+        let client = &client;
+        async move {
+            client
+                .call("GET", "/api/v1/delta-sharing/shares", Some(&token), None)
+                .await
+                .0
+        }
+    };
+
+    // Expired: the bearer token is refused.
+    let updated = client
+        .admin(
+            "PATCH",
+            "/recipients/acme",
+            Some(json!({"expiration_time": 1})),
+        )
+        .await;
+    assert_eq!(
+        int64(&updated["tokens"][0]["expiration_time"]),
+        1,
+        "{updated}"
+    );
+    assert_eq!(shares(token).await, StatusCode::UNAUTHORIZED);
+
+    // A rotated token inherits the expiry, so its link does not activate…
+    let rotated = client
+        .admin("POST", "/recipients/acme/rotate-token", Some(json!({})))
+        .await;
+    let link = rotated["tokens"][0]["activation_url"].as_str().unwrap();
+    let path = link.strip_prefix(PUBLIC_URL).unwrap().to_string();
+    assert_eq!(
+        client.call("GET", &path, None, None).await.0,
+        StatusCode::NOT_FOUND
+    );
+
+    // …until the expiry is lifted (0: never), and the same link works.
+    let renewed = client
+        .admin(
+            "PATCH",
+            "/recipients/acme",
+            Some(json!({"expiration_time": 0})),
+        )
+        .await;
+    assert_eq!(renewed["tokens"][0]["activation_url"], link, "{renewed}");
+    let token = client.activate(&renewed).await;
+    assert_eq!(shares(token).await, StatusCode::OK);
+}
+
 /// A catalog that vends (local) credentials and counts how often.
 struct VendingCatalog {
     location: String,
