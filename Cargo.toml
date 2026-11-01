@@ -39,14 +39,11 @@ delta_kernel_default_engine = { package = "buoyant_kernel_engine", version = "0.
 # and the sharing store (shares, recipients, tokens and grants) the provider
 # runs on. Their models, clients and handler traits are gated per resource, so
 # no default features: each dependent enables only the resources it uses.
-#
-# Git pins, all on one mangrove rev so the crates share one `olai-uc-common`:
-# `olai-uc-sharing` is not on crates.io yet. Drop `git`/`rev` once it is.
-unitycatalog-client = { package = "olai-uc-client", version = "0.0.7", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a", default-features = false }
-unitycatalog-common = { package = "olai-uc-common", version = "0.0.7", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a", default-features = false }
-unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.1", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a", default-features = false }
-unitycatalog-sharing = { package = "olai-uc-sharing", version = "0.0.1", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a" }
-unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.2", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a" }
+unitycatalog-client = { package = "olai-uc-client", version = "0.0.7", default-features = false }
+unitycatalog-common = { package = "olai-uc-common", version = "0.0.7", default-features = false }
+unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.1", default-features = false }
+unitycatalog-sharing = { package = "olai-uc-sharing", version = "0.0.1" }
+unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.2" }
 
 async-trait = "0.1.83"
 axum = { version = "0.8" }
