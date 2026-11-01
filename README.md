@@ -44,15 +44,18 @@ cargo nextest run --workspace --all-features
 
 Behind a crates.io proxy that hides freshly published versions, patch the
 `olai-*` crates from a [`trestle`](https://github.com/open-lakehouse/trestle)
-checkout at `../trestle` (writes a gitignored `.cargo/config.toml`):
+checkout next to this one (writes a gitignored `.cargo/config.toml`), then
+restore the registry entries in `Cargo.lock` before committing:
 
 ```sh
-just configure-trestle-deps
+just configure-trestle-deps   # dev/scripts/crates-proxy.sh patch trestle
+just lock-registry            # before committing a Cargo.lock change
 ```
 
 Never commit a `Cargo.lock` resolved under that patch. The pre-commit hook
-(`git config core.hooksPath .githooks`) runs
-`dev/scripts/check-cargo-lock-trestle.sh` to catch it.
+(`git config core.hooksPath .githooks`) runs the same check as `just check-lock`
+to catch it. See trestle's
+[`docs/crates-proxy.md`](https://github.com/open-lakehouse/trestle/blob/main/docs/crates-proxy.md).
 
 ### Code generation
 

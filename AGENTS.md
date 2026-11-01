@@ -26,8 +26,9 @@ for the design.
   `ARCHITECTURE.md` ("Crate layering").
 - **Cargo.lock and trestle.** CI resolves the `olai-*` trestle crates from
   crates.io. A lock resolved under the local `just configure-trestle-deps` patch
-  must not be committed. Check with `dev/scripts/check-cargo-lock-trestle.sh`,
-  which the pre-commit hook also runs (`git config core.hooksPath .githooks`).
+  must not be committed: run `just lock-registry` first. `just check-lock`, which
+  the pre-commit hook also runs (`git config core.hooksPath .githooks`), catches
+  it. See "crates.io proxy" below.
 - **Every change ships with tests.** Never delete a passing test to green a
   suite.
 
@@ -37,7 +38,7 @@ for the design.
   `brew install open-lakehouse/tap/trestle`, or `brew upgrade trestle` after a
   trestle release. Trestle's release pipeline updates the tap, so a release is
   installable right away. A crates.io proxy that age-filters new versions can
-  hide it for days. A stale CLI rejects `json_field_names`. The `../trestle`
+  hide it for days. A stale CLI rejects `json_field_names`. The trestle
   source checkout is only needed to patch the `olai-*` library crates
   (`just configure-trestle-deps`), not for the CLI.
 - The admin protos (`proto/unitycatalog/{shares,recipients,providers}`) have their
@@ -71,9 +72,37 @@ cargo fmt --all --check \
   && cargo test --workspace --all-features --doc
 ```
 
+## Builds and disk
+
+Dev builds keep line tables for workspace crates and no debug info for
+dependencies (`[profile.dev]`). Panic locations and backtrace file:line still
+work. For a debugger, use `cargo build --profile debugging` (separate
+`target/debugging/`). Run `cargo clean` in a worktree before removing it.
+
+## crates.io proxy
+
+The local crates.io proxy hides versions for 7 days after release. Trestle's
+[`docs/crates-proxy.md`](https://github.com/open-lakehouse/trestle/blob/main/docs/crates-proxy.md)
+has the full guide. In short:
+
+- A fresh `olai-*` release: `just configure-trestle-deps`, build, then
+  `just lock-registry` before committing. The shim
+  `dev/scripts/crates-proxy.sh` runs trestle's `scripts/crates-proxy/` from a
+  trestle checkout next to this one (or `TRESTLE_ROOT`), and also works from
+  worktrees.
+- The mangrove crates (`olai-uc-*`) are git pins (`version` + `git` + `rev`).
+  Git dependencies bypass the proxy. Drop `git`/`rev` once the version is on
+  crates.io and older than 7 days.
+
 ## Commits and pull requests
 
-Conventional commits, scoped by crate directory (`common`, `admin`,
-`admin-api`, `client`, `api`, `engine`, `provider`, `postgres`, `sqlite`,
-`server`, `neon`): release-plz derives each crate's version bump and
-changelog from them. PR titles follow the same format.
+- **PRs are squash-merged. The PR title is the commit release-plz sees**: a
+  conventional commit scoped by crate directory (`common`, `admin`,
+  `admin-api`, `client`, `api`, `engine`, `provider`, `postgres`, `sqlite`,
+  `server`, `neon`). release-plz derives each crate's version bump and
+  changelog from it, and CI lints it (`pr-title.yml`). Commits inside a PR are
+  for review only.
+- When work should land on `main` as separate commits (several crates or change
+  types, each deserving its own changelog entry), split it into a
+  [`gh stack`](https://github.com/github/gh-stack), one layer per
+  `type(scope)`.
