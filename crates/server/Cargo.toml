@@ -73,6 +73,7 @@ required-features = ["admin"]
 chrono = { workspace = true }
 olai-storage-credentials = { workspace = true }
 opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false, features = ["testing"] }
+sqlx = { workspace = true, features = ["postgres", "runtime-tokio"] }
 tempfile = "3"
 tower = { workspace = true }
 

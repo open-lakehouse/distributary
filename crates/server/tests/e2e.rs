@@ -469,7 +469,7 @@ fn int64(value: &Value) -> i64 {
 #[tokio::test]
 async fn rotation_keeps_the_old_token_for_the_grace_period() {
     let client = app(
-        Arc::new(InMemoryStore::new()),
+        Stores::memory(),
         secrets(key("v1", 1), vec![]),
         static_sources(),
     );
@@ -525,7 +525,7 @@ async fn rotation_keeps_the_old_token_for_the_grace_period() {
 #[tokio::test]
 async fn updating_the_expiration_time_expires_and_renews_tokens() {
     let client = app(
-        Arc::new(InMemoryStore::new()),
+        Stores::memory(),
         secrets(key("v1", 1), vec![]),
         static_sources(),
     );

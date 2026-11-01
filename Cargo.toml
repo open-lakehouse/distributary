@@ -39,7 +39,7 @@ delta_kernel_default_engine = { package = "buoyant_kernel_engine", version = "0.
 unitycatalog-client = { package = "olai-uc-client", version = "0.0.7" }
 unitycatalog-common = { package = "olai-uc-common", version = "0.0.7" }
 unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.1", default-features = false }
-unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.1" }
+unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.2" }
 
 async-trait = "0.1.83"
 axum = { version = "0.8" }

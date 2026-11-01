@@ -73,8 +73,8 @@ async fn sqlite_upgrade_voids_clear_activation_codes() {
     .await
     .unwrap();
 
-    migrate(&pool).await.unwrap();
-    ensure_schema_current(&pool).await.unwrap();
+    migrate(&MIGRATOR, &pool).await.unwrap();
+    ensure_schema_current(&MIGRATOR, &pool).await.unwrap();
     let store = SqliteStore::new(pool);
     let (active, recipient) = store.token_by_hash(&[1]).await.unwrap();
     assert_eq!(
