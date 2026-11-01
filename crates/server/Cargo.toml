@@ -27,10 +27,21 @@ opensharing-provider = { path = "../provider", version = "0.0.1", default-featur
 opensharing-sqlite = { path = "../sqlite", version = "0.0.1", optional = true }
 # The Unity Catalog source, the storage-access store and the UC credential /
 # external-location admin routes (feature `unity`).
-unitycatalog-client = { workspace = true, optional = true }
+# Only the resources the source and the admin routes use: tables, volumes and
+# temporary credentials for `UnitySource`, credentials and external locations
+# for the storage-access store and its admin routes.
+unitycatalog-client = { workspace = true, optional = true, features = [
+  "tables",
+  "temporary_credentials",
+  "volumes",
+] }
 unitycatalog-common = { workspace = true, optional = true, features = [
   "axum",
   "credential-vending",
+  "external_locations",
+  "tables",
+  "temporary_credentials",
+  "volumes",
 ] }
 unitycatalog-handlers = { workspace = true, optional = true, features = [
   "axum",

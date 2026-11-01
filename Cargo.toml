@@ -35,9 +35,11 @@ delta_kernel_default_engine = { package = "buoyant_kernel_engine", version = "0.
 # The Unity Catalog crates behind `opensharing-server`'s `unity` feature: the
 # UC REST catalog source, the storage-access store (credentials and the
 # external locations they govern) and the generated credential /
-# external-location handler traits the admin routes implement.
-unitycatalog-client = { package = "olai-uc-client", version = "0.0.7" }
-unitycatalog-common = { package = "olai-uc-common", version = "0.0.7" }
+# external-location handler traits the admin routes implement. Their models,
+# clients and handler traits are gated per resource, so no default features:
+# each dependent enables only the resources it uses.
+unitycatalog-client = { package = "olai-uc-client", version = "0.0.7", default-features = false }
+unitycatalog-common = { package = "olai-uc-common", version = "0.0.7", default-features = false }
 unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.1", default-features = false }
 unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.2" }
 
