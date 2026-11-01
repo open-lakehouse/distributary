@@ -19,14 +19,16 @@ CREATE TABLE recipients (
 );
 
 CREATE TABLE recipient_tokens (
-    id               TEXT PRIMARY KEY,
-    recipient_id     TEXT NOT NULL REFERENCES recipients (id) ON DELETE CASCADE,
-    token_hash       BYTEA NOT NULL UNIQUE,
+    id                    TEXT PRIMARY KEY,
+    recipient_id          TEXT NOT NULL REFERENCES recipients (id) ON DELETE CASCADE,
+    token_hash            BYTEA NOT NULL UNIQUE,
     -- Kept only until the recipient activates the token.
-    sealed_token     BYTEA,
-    activation_code  TEXT UNIQUE,
-    expires_at       BIGINT,
-    created_at       BIGINT NOT NULL
+    sealed_token          BYTEA,
+    -- The sha256 digest of the activation code, which is derived from the
+    -- token; the link is rebuilt from the sealed token while that is kept.
+    activation_code_hash  BYTEA UNIQUE,
+    expires_at            BIGINT,
+    created_at            BIGINT NOT NULL
 );
 
 CREATE INDEX recipient_tokens_recipient ON recipient_tokens (recipient_id);
@@ -39,15 +41,6 @@ CREATE TABLE grants (
 
 CREATE INDEX grants_recipient ON grants (recipient_id);
 
--- Local storage access: sealed storage credentials (UC `Credential` JSON) and
--- the storage URL prefixes they govern.
-CREATE TABLE credentials (
-    name    TEXT PRIMARY KEY,
-    sealed  BYTEA NOT NULL
-);
-
-CREATE TABLE external_locations (
-    name             TEXT PRIMARY KEY,
-    url              TEXT NOT NULL,
-    credential_name  TEXT NOT NULL REFERENCES credentials (name)
-);
+-- Storage credentials and external locations are not here: they live in the
+-- storage-access tables (`olai-uc-storage-access`, migrations 02xx), which the
+-- server merges into this ledger with its `unity` feature.
