@@ -6,9 +6,13 @@ shares. This crate holds that state and its logic:
 
 - `store`: shares (lists of `ShareObject`s naming source-catalog assets),
   recipients, tokens and grants, behind targeted per-resource traits, with an
-  in-memory implementation;
+  in-memory implementation. These come from mangrove's
+  [`olai-uc-sharing`](https://github.com/open-lakehouse/mangrove/tree/main/crates/sharing),
+  re-exported here;
 - `secrets`: envelope encryption with lazy key rotation;
-- `recipients`: recipient tokens with one-time activation links;
+- `recipients`: recipient tokens with one-time activation links (the token
+  rules are `olai-uc-sharing`'s; this adds the links, the profile and the
+  activation route);
 - `admin` (feature `admin`, on by default): `ProviderService`, which
   implements the share and recipient handler traits of
   [`opensharing-admin-api`](../admin-api), authorized by an `AdminPolicy`.
@@ -44,5 +48,7 @@ The state is split into targeted traits rather than one generic resource store:
 - `SharingStore` bundles both.
 
 Every implementation runs the conformance suite `testing::round_trips`
-(feature `testing`). The SQL implementations live outside this crate, so it
-does not depend on sqlx.
+(feature `testing`, from `olai-uc-sharing`). The SQL implementations live
+outside this crate, so it does not depend on sqlx. Stores report
+`store::StoreError` (`unitycatalog_sharing::Error`), which converts into this
+crate's `Error`; a host store returns it too.

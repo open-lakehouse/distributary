@@ -28,10 +28,9 @@ use opensharing_provider::RecipientIdentity;
 use opensharing_provider::catalog::{GrantPolicy, StoreCatalog};
 use opensharing_provider::recipients::{Recipient, StoreAuthenticator, token_hash};
 use opensharing_provider::store::{
-    RecipientRecord, ShareObject, ShareObjectKind, ShareReader, ShareRecord, TokenReader,
-    TokenRecord,
+    RecipientRecord, ShareObject, ShareObjectKind, ShareReader, ShareRecord, StoreError as Error,
+    StoreResult as Result, TokenReader, TokenRecord,
 };
-use opensharing_provider::{Error, Result};
 use serde_json::Value;
 use tower::ServiceExt;
 

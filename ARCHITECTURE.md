@@ -75,7 +75,7 @@ request context `Cx`, which becomes the authenticated recipient.
 |---|---|---|---|
 | `BearerAuthenticator<Cx>` | bearer token → `Cx` (the caller) | the token store, sha256-hashed tokens | OIDC / JWT |
 | `SharingPolicy<Cx>` | may the caller list shares / read this share? | the store's grants | — |
-| Store traits (`ShareStore: ShareReader`, `RecipientStore: TokenReader`) | shares (UC `shares/v1` `Share` / `DataObject`) and grants, recipients and tokens | Postgres and SQLite (sqlx), memory | — |
+| Store traits (`ShareStore: ShareReader`, `RecipientStore: TokenReader`, `olai-uc-sharing`) | shares (UC `shares/v1` `Share` / `DataObject`) and grants, recipients and tokens | Postgres and SQLite (own tables, migrations 03xx), memory | — |
 | `StorageAccessStore` (`olai-uc-storage-access`, feature `unity`) | storage credentials and the external locations they govern; path → governing credential | Postgres and SQLite (own tables, migrations 02xx), memory | a remote catalog |
 | `CatalogSource` | resolve a `DataObject` (`catalog.schema.table`; `SCHEMA` objects expand) to a `SourceAsset { url, format, id, … }`, paged | UC REST (`olai-uc-client`: our UC or Databricks), static | Iceberg REST, UC-Delta API, in-process UC store |
 | `StorageAccess` | the server's own log reads, `presign(url, ttl)`, `vend(url, op)` | delegated (catalog-vended), local (own credentials) | — |
@@ -371,20 +371,24 @@ store, because the set of resources is small and fixed:
 - `RecipientStore` holds recipients and tokens.
 - `SharingStore` bundles both.
 
-Storage credentials are not among them: they are the storage-access store's
-(see "Storage access"). Its migrations (02xx) are merged into the store
-crate's migrator (`migrator_with`), so the database keeps one ledger and
-`migrate` and the startup schema check cover both. The store crates number
-their own migrations below 0200.
-
 The read-only views `ShareReader` and `TokenReader` are all the protocol needs.
-The traits and the memory implementation live in `opensharing-provider`. The
-Postgres and SQLite implementations are their own crates
-(`opensharing-postgres`, `opensharing-sqlite`), each with its own SQL and
-embedded migrations. All of them run the provider's conformance suite
-(`testing::round_trips`). SQLite serves single-node deployments that should
-survive a restart without a database server. Postgres (Neon) stays the hosted
-backend.
+The traits, the records, the memory, Postgres and SQLite stores, the token rules
+(issuing, rotation, activation, re-wrapping) and the conformance suite
+(`testing::round_trips`) live in mangrove's `olai-uc-sharing`, so any catalog
+can keep the same state. Its tables are `uc_shares`, `uc_recipients`,
+`uc_recipient_tokens` and `uc_share_grants`, and its migrations are versioned
+03xx. `opensharing-provider` re-exports them (`store`) and adds what the
+protocol needs on top: activation links and profiles, `StoreAuthenticator`,
+`StoreCatalog`, `GrantPolicy` and the admin service. `opensharing-postgres`
+and `opensharing-sqlite` own the database lifecycle around those stores:
+connecting, migrating and the startup schema check. SQLite serves
+single-node deployments that should survive a restart without a database
+server. Postgres (Neon) stays the hosted backend.
+
+Storage credentials are not among them: they are the storage-access store's
+(see "Storage access"). Its migrations (02xx) are merged with the sharing
+migrations (`migrator_with`), so the database keeps one ledger and `migrate`
+and the startup schema check cover both.
 
 ### Catalog independence
 
@@ -398,7 +402,9 @@ to host them. The layering:
 - `opensharing-provider` (store, recipients, secrets, `StoreCatalog`,
   `GrantPolicy`) and the store crates use catalog-independent types:
   `ShareObject` for share entries and the trestle crates'
-  `RegisteredCredential` / `VendedCredential` for vending.
+  `RegisteredCredential` / `VendedCredential` for vending. The store itself is
+  mangrove's `olai-uc-sharing`, which speaks those records and needs nothing of
+  `olai-uc-common` but its error (no resource feature).
 - The provider admin API for shares, permissions and recipients needs no
   catalog runtime, and it is optional (feature `admin`). Its models, handler
   traits, route functions and error come from mangrove: `olai-uc-common` and

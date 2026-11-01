@@ -42,9 +42,9 @@ use opensharing_admin_api::{ADMIN_PREFIX, admin_router};
 
 use crate::secrets::Secrets;
 use crate::store::SharingStore;
-use crate::tokens::token_hash;
 use crate::{Error, Result};
 use opensharing_admin_api::{Error as AdminError, Result as AdminResult};
+use unitycatalog_sharing::tokens::token_hash;
 
 pub mod recipients;
 pub mod shares;

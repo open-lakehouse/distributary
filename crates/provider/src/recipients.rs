@@ -6,9 +6,10 @@
 //! dropped, and from then on the server holds just its sha256 digest. The
 //! activation code is derived from the token and stored only as a digest too.
 //!
-//! These functions hold the rules (generating and sealing tokens, expiry, the
-//! rotation grace period); each store write they make is one atomic
-//! [`RecipientStore`] operation.
+//! The rules (generating and sealing tokens, expiry, the rotation grace
+//! period) live in `unitycatalog_sharing::recipients`; these functions apply
+//! them with the server's [`Secrets`] and add the links and profiles of the
+//! protocol.
 
 use std::sync::Arc;
 
@@ -22,11 +23,11 @@ use serde::Serialize;
 
 use crate::RecipientIdentity;
 use crate::secrets::Secrets;
-use crate::store::{RecipientRecord, RecipientStore, TokenReader, TokenRecord, now_millis};
-pub use crate::tokens::token_hash;
-use crate::tokens::{activation_code, random_secret};
+use crate::store::{RecipientRecord, RecipientStore, TokenReader, TokenRecord};
 use crate::{Error, Result};
 use opensharing_api::{Error as ApiError, Result as ApiResult};
+use unitycatalog_sharing::recipients as rules;
+pub use unitycatalog_sharing::tokens::token_hash;
 
 /// Where activation links are served, under the server's public URL.
 pub const ACTIVATION_PATH: &str = "/api/1.0/opensharing/activations";
@@ -72,10 +73,10 @@ impl BearerAuthenticator<Recipient> for StoreAuthenticator {
     async fn authenticate(&self, token: &str) -> ApiResult<Recipient> {
         let (token, recipient) = match self.store.token_by_hash(&token_hash(token)).await {
             Ok(found) => found,
-            Err(Error::NotFound) => return Err(ApiError::Unauthenticated),
-            Err(e) => return Err(e.into()),
+            Err(unitycatalog_sharing::Error::NotFound) => return Err(ApiError::Unauthenticated),
+            Err(e) => return Err(Error::from(e).into()),
         };
-        if !token.is_live(now_millis()) {
+        if !token.is_live(crate::store::now_millis()) {
             return Err(ApiError::Unauthenticated);
         }
         Ok(Recipient {
@@ -85,30 +86,14 @@ impl BearerAuthenticator<Recipient> for StoreAuthenticator {
     }
 }
 
-/// The AAD a token awaiting activation is sealed under.
-fn token_aad(token_id: &str) -> String {
-    format!("recipient-token:{token_id}")
-}
-
 /// A new token for the recipient `recipient_id`, sealed for activation, not
-/// yet stored. Ids are time-ordered, so tokens created within the same
-/// millisecond still sort by creation.
+/// yet stored.
 pub async fn new_token(
     secrets: &Secrets,
     recipient_id: &str,
     expires_at: Option<i64>,
 ) -> Result<TokenRecord> {
-    let id = uuid::Uuid::now_v7().to_string();
-    let token = random_secret();
-    Ok(TokenRecord {
-        id: id.clone(),
-        recipient_id: recipient_id.to_string(),
-        token_hash: token_hash(&token),
-        sealed_token: Some(secrets.seal(&token_aad(&id), token.as_bytes()).await?),
-        activation_code_hash: Some(token_hash(&activation_code(&token))),
-        expires_at,
-        created_at: now_millis(),
-    })
+    Ok(rules::new_token(secrets.encryptor(), recipient_id, expires_at).await?)
 }
 
 /// Create the recipient `name` with its first token, whose activation link
@@ -120,15 +105,7 @@ pub async fn create_recipient(
     comment: Option<String>,
     expires_at: Option<i64>,
 ) -> Result<RecipientRecord> {
-    let recipient = RecipientRecord {
-        id: uuid::Uuid::now_v7().to_string(),
-        name: name.to_string(),
-        comment,
-        created_at: now_millis(),
-    };
-    let token = new_token(secrets, &recipient.id, expires_at).await?;
-    store.create_recipient(recipient.clone(), token).await?;
-    Ok(recipient)
+    Ok(rules::create_recipient(store, secrets.encryptor(), name, comment, expires_at).await?)
 }
 
 /// Give `recipient` a fresh token, with the expiry of its newest one, and
@@ -142,23 +119,13 @@ pub async fn rotate_token(
     recipient: &RecipientRecord,
     existing_expire_in_seconds: Option<i64>,
 ) -> Result<()> {
-    let grace = match existing_expire_in_seconds {
-        Some(seconds) if seconds < 0 => {
-            return Err(Error::invalid_argument(
-                "existing_token_expire_in_seconds must not be negative",
-            ));
-        }
-        Some(seconds) if seconds > 0 => Some(seconds.saturating_mul(1000)),
-        _ => None,
-    };
-    let expires_at = store
-        .tokens_for_recipient(&recipient.id)
-        .await?
-        .first()
-        .and_then(|t| t.expires_at);
-    let token = new_token(secrets, &recipient.id, expires_at).await?;
-    let existing_expire_at = grace.map(|grace| token.created_at.saturating_add(grace));
-    store.rotate_token(token, existing_expire_at).await
+    Ok(rules::rotate_token(
+        store,
+        secrets.encryptor(),
+        recipient,
+        existing_expire_in_seconds,
+    )
+    .await?)
 }
 
 /// The activation link for a token, until it is used.
@@ -167,19 +134,9 @@ pub async fn activation_url(
     public_url: &str,
     token: &TokenRecord,
 ) -> Result<Option<String>> {
-    let Some(sealed) = &token.sealed_token else {
-        return Ok(None);
-    };
-    let clear = open_token(secrets, token, sealed).await?;
-    Ok(Some(format!(
-        "{public_url}{ACTIVATION_PATH}/{}",
-        activation_code(&clear)
-    )))
-}
-
-async fn open_token(secrets: &Secrets, token: &TokenRecord, sealed: &[u8]) -> Result<String> {
-    let (clear, _) = secrets.open(&token_aad(&token.id), sealed).await?;
-    String::from_utf8(clear).map_err(|_| Error::generic("stored token is not valid UTF-8"))
+    Ok(rules::pending_activation(secrets.encryptor(), token)
+        .await?
+        .map(|code| format!("{public_url}{ACTIVATION_PATH}/{code}")))
 }
 
 /// A Delta Sharing profile (the contents of a `.share` file).
@@ -202,18 +159,16 @@ pub async fn activate(
     public_url: &str,
     code: &str,
 ) -> Result<SharingProfile> {
-    let token = store
-        .redeem_activation(&token_hash(code), now_millis())
-        .await?;
-    let sealed = token.sealed_token.as_deref().ok_or(Error::NotFound)?;
+    let activated = rules::redeem(store, secrets.encryptor(), code).await?;
     Ok(SharingProfile {
         share_credentials_version: 1,
         endpoint: format!(
             "{public_url}{}",
             opensharing_api::router::DELTA_SHARING_PREFIX
         ),
-        bearer_token: open_token(secrets, &token, sealed).await?,
-        expiration_time: token
+        bearer_token: activated.bearer_token,
+        expiration_time: activated
+            .token
             .expires_at
             .and_then(chrono::DateTime::from_timestamp_millis)
             .map(|at| at.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)),
@@ -262,16 +217,5 @@ async fn activation(
 
 /// Re-wrap every token awaiting activation under the active key.
 pub async fn rewrap_tokens(store: &dyn RecipientStore, secrets: &Secrets) -> Result<usize> {
-    let mut rewrapped = 0;
-    for token in store.sealed_tokens().await? {
-        let Some(current) = &token.sealed_token else {
-            continue;
-        };
-        if let Some(sealed) = secrets.rewrap(current).await?
-            && store.reseal_token(&token.id, current, sealed).await?
-        {
-            rewrapped += 1;
-        }
-    }
-    Ok(rewrapped)
+    Ok(rules::rewrap_tokens(store, secrets.encryptor()).await?)
 }

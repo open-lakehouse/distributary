@@ -86,6 +86,22 @@ impl From<opensharing_api::Error> for Error {
     }
 }
 
+impl From<unitycatalog_sharing::Error> for Error {
+    fn from(err: unitycatalog_sharing::Error) -> Self {
+        use unitycatalog_sharing::Error as Sharing;
+        match err {
+            Sharing::NotFound => Error::NotFound,
+            // Kept a caller error, as the admin API has always reported it.
+            Sharing::AlreadyExists => Error::invalid_argument("the resource already exists"),
+            Sharing::InvalidArgument(message) => Error::InvalidArgument(message),
+            Sharing::Unauthenticated(_) => Error::Unauthenticated,
+            Sharing::SerDe(source) => Error::Serde { source },
+            Sharing::InvalidUrl(source) => Error::Url { source },
+            other => Error::Generic(other.to_string()),
+        }
+    }
+}
+
 impl From<Error> for opensharing_api::Error {
     fn from(err: Error) -> Self {
         use opensharing_api::Error as Api;
@@ -146,6 +162,20 @@ mod tests {
         assert!(matches!(
             opensharing_api::Error::from(passed),
             opensharing_api::Error::InvalidPredicate(_)
+        ));
+    }
+
+    #[test]
+    fn store_errors_keep_their_meaning() {
+        use unitycatalog_sharing::Error as Sharing;
+        assert!(matches!(Error::from(Sharing::NotFound), Error::NotFound));
+        assert!(matches!(
+            Error::from(Sharing::AlreadyExists),
+            Error::InvalidArgument(_)
+        ));
+        assert!(matches!(
+            Error::from(Sharing::invalid_argument("x")),
+            Error::InvalidArgument(m) if m == "x"
         ));
     }
 

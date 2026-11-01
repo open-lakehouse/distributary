@@ -18,9 +18,12 @@ for the design.
   `opensharing-admin-api` takes its models, handler traits and error from
   `olai-uc-common` and `olai-uc-handlers`, with only the `shares`,
   `recipients` and `providers` resources (plus `axum`), and the provider and
-  the server's `admin` feature inherit exactly that. `opensharing-api` and
-  `opensharing-engine` depend on no `olai-uc-*` crate. CI's
-  `catalog-independence` job guards this.
+  the server's `admin` feature inherit exactly that. The other exception is
+  the sharing store: `olai-uc-sharing` (shares, recipients, tokens and grants,
+  over catalog-independent records) and, for its error, `olai-uc-common` with
+  no resource feature, which the provider, the store crates and the server
+  use in every configuration. `opensharing-api` and `opensharing-engine`
+  depend on no `olai-uc-*` crate. CI's `catalog-independence` job guards this.
 - **Keep the layers.** The surface crates (`opensharing-api`,
   `opensharing-admin-api`) are barebones: generated traits, routers, auth and
   errors (the admin API's from Unity Catalog, see above). `opensharing-api` has no table format, object store or engine, and
@@ -48,6 +51,10 @@ for the design.
   hide it for days. A stale CLI rejects `json_field_names`. The trestle
   source checkout is only needed to patch the `olai-*` library crates
   (`just configure-trestle-deps`), not for the CLI.
+- The sharing store (`olai-uc-sharing`: the store traits and records, the
+  memory, Postgres and SQLite stores with their migrations, the token rules and
+  the conformance suite) lives in mangrove, like the admin protos below:
+  change it there and bump the pin. The provider adds the protocol pieces on top.
 - The admin API protos (`unitycatalog.{shares,recipients,providers}.v1`) live in
   mangrove, not here: change them there, release `olai-uc-common` /
   `olai-uc-handlers`, then bump the pins. `proto/` holds only the protocol.

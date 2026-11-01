@@ -148,7 +148,11 @@ impl<Cx: RecipientIdentity> SharingPolicy<Cx> for GrantPolicy {
             SharingAction::ListShares => Ok(()),
             SharingAction::ReadShare { share } => {
                 let granted = match cx.recipient_id() {
-                    Some(recipient) => self.store.is_granted(share, recipient).await?,
+                    Some(recipient) => self
+                        .store
+                        .is_granted(share, recipient)
+                        .await
+                        .map_err(Error::from)?,
                     None => false,
                 };
                 if granted {
@@ -166,7 +170,7 @@ impl<Cx: RecipientIdentity> SharingPolicy<Cx> for GrantPolicy {
 impl<Cx: RecipientIdentity> ShareCatalog<Cx> for StoreCatalog {
     async fn list_shares(&self, page: PageRequest, cx: &Cx) -> ApiResult<Page<Share>> {
         let shares = match cx.recipient_id() {
-            Some(recipient) => self.store.shares_of(recipient).await?,
+            Some(recipient) => self.store.shares_of(recipient).await.map_err(Error::from)?,
             None => Vec::new(),
         };
         paginate(
@@ -177,11 +181,13 @@ impl<Cx: RecipientIdentity> ShareCatalog<Cx> for StoreCatalog {
     }
 
     async fn get_share(&self, share: &str, _cx: &Cx) -> ApiResult<Share> {
-        Ok(info(&self.store.get_share(share).await?))
+        Ok(info(
+            &self.store.get_share(share).await.map_err(Error::from)?,
+        ))
     }
 
     async fn list_objects(&self, share: &str, _cx: &Cx) -> ApiResult<Vec<SharedObject>> {
-        let share = self.store.get_share(share).await?;
+        let share = self.store.get_share(share).await.map_err(Error::from)?;
         Ok(self
             .expose(&share)
             .await?
@@ -191,7 +197,11 @@ impl<Cx: RecipientIdentity> ShareCatalog<Cx> for StoreCatalog {
     }
 
     async fn resolve(&self, asset: &AssetRef, _cx: &Cx) -> ApiResult<SharedAsset> {
-        let share = self.store.get_share(&asset.share).await?;
+        let share = self
+            .store
+            .get_share(&asset.share)
+            .await
+            .map_err(Error::from)?;
         let exposed = self
             .expose(&share)
             .await?

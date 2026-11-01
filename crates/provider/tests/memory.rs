@@ -1,4 +1,4 @@
-//! The in-memory store behaves like the SQL stores.
+//! The in-memory store the provider re-exports behaves like the SQL stores.
 
 use opensharing_provider::store::memory::InMemoryStore;
 use opensharing_provider::testing::round_trips;

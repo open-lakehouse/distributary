@@ -13,19 +13,16 @@ rust-version.workspace = true
 [dependencies]
 # local dependencies in alphabetical order
 opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false }
+# The store and its migrations. Only the shared error of olai-uc-common: see
+# the catalog-independence CI job.
+unitycatalog-sharing = { workspace = true, features = ["postgres"] }
 
 # workspace dependencies in alphabetical order
-async-trait = { workspace = true }
-serde_json = { workspace = true }
 sqlx = { workspace = true, features = [
-  "chrono",
-  "json",
   "runtime-tokio-rustls",
   "migrate",
-  "macros",
   "postgres",
 ] }
-uuid = { workspace = true, features = ["v4"] }
 
 [dev-dependencies]
 opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false, features = ["testing"] }

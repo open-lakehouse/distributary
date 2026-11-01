@@ -5,8 +5,8 @@
 //! its logic, and plugs it into the protocol on both sides:
 //!
 //! - [`store`]: shares, recipients, tokens and grants, behind targeted
-//!   per-resource traits, with an in-memory implementation (the SQL ones live
-//!   in their own crates);
+//!   per-resource traits, from `olai-uc-sharing`, with an in-memory
+//!   implementation (the SQL ones live in their own crates);
 //! - [`secrets`]: envelope encryption with lazy key rotation;
 //! - [`recipients`]: recipient tokens with activation links;
 //! - `admin` (feature `admin`): the provider admin API service, implementing
@@ -47,9 +47,9 @@ pub mod error;
 pub mod recipients;
 pub mod secrets;
 pub mod store;
+/// The conformance suite every store implementation runs (feature `testing`).
 #[cfg(feature = "testing")]
-pub mod testing;
-mod tokens;
+pub use unitycatalog_sharing::testing;
 
 pub use error::{Error, Result};
 

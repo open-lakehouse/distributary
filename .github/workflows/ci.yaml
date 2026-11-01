@@ -124,13 +124,28 @@ jobs:
             fi
           }
           admin_uc_only() { # <description> <cargo tree args...>
-            # Only olai-uc-common / olai-uc-handlers, only the admin resources.
+            # Only olai-uc-common / olai-uc-handlers, only the admin resources,
+            # and the sharing store.
             local what="$1" crates features; shift
             crates=$(cargo tree --locked -e normal --prefix none "$@" \
-              | grep -E '^olai-uc-' | grep -vE '^olai-uc-(common|handlers) ' || true)
+              | grep -E '^olai-uc-' | grep -vE '^olai-uc-(common|handlers|sharing) ' || true)
             features=$(cargo tree --locked -e features --prefix none "$@" \
               | grep -oE '^olai-uc-(common|handlers) feature "[^"]+"' \
               | grep -vE 'feature "(axum|http|providers|recipients|shares)"$' | sort -u || true)
+            if [ -n "$crates$features" ]; then
+              printf '%s\n' "$crates" "$features"
+              echo "::error::$what"
+              exit 1
+            fi
+          }
+          sharing_only() { # <description> <cargo tree args...>
+            # Only the sharing store, and olai-uc-common (its error) with no
+            # resource feature.
+            local what="$1" crates features; shift
+            crates=$(cargo tree --locked -e normal --prefix none "$@" \
+              | grep -E '^olai-uc-' | grep -vE '^olai-uc-(common|sharing) ' || true)
+            features=$(cargo tree --locked -e features --prefix none "$@" \
+              | grep -oE '^olai-uc-common feature "[^"]+"' | sort -u || true)
             if [ -n "$crates$features" ]; then
               printf '%s\n' "$crates" "$features"
               echo "::error::$what"
@@ -151,20 +166,22 @@ jobs:
             '^olai-uc-' -p opensharing-engine --all-features
           deny "opensharing-engine must not depend on the admin crates" \
             '^opensharing-admin' -p opensharing-engine --all-features
-          admin_uc_only "opensharing-provider may use only the olai-uc-common / olai-uc-handlers admin resources" \
+          admin_uc_only "opensharing-provider may use only the olai-uc-common / olai-uc-handlers admin resources and olai-uc-sharing" \
             -p opensharing-provider --all-features
           deny "opensharing-provider must not depend on sqlx" \
             '^sqlx' -p opensharing-provider --all-features
-          deny "opensharing-postgres must not depend on olai-uc-* crates" \
-            '^olai-uc-' -p opensharing-postgres --all-features
-          deny "opensharing-sqlite must not depend on olai-uc-* crates" \
-            '^olai-uc-' -p opensharing-sqlite --all-features
-          admin_uc_only "opensharing-server (no unity) may use only the olai-uc-common / olai-uc-handlers admin resources" \
+          sharing_only "opensharing-provider (no admin) may use only olai-uc-sharing" \
+            -p opensharing-provider --no-default-features
+          sharing_only "opensharing-postgres may use only olai-uc-sharing" \
+            -p opensharing-postgres --all-features
+          sharing_only "opensharing-sqlite may use only olai-uc-sharing" \
+            -p opensharing-sqlite --all-features
+          admin_uc_only "opensharing-server (no unity) may use only the olai-uc-common / olai-uc-handlers admin resources and olai-uc-sharing" \
             -p opensharing-server --no-default-features --features postgres,admin
-          admin_uc_only "opensharing-server (no unity) may use only the olai-uc-common / olai-uc-handlers admin resources" \
+          admin_uc_only "opensharing-server (no unity) may use only the olai-uc-common / olai-uc-handlers admin resources and olai-uc-sharing" \
             -p opensharing-server --no-default-features --features sqlite,admin
-          deny "opensharing-server (no unity, no admin) must not depend on olai-uc-* crates" \
-            '^olai-uc-' -p opensharing-server --no-default-features --features postgres
+          sharing_only "opensharing-server (no unity, no admin) may use only olai-uc-sharing" \
+            -p opensharing-server --no-default-features --features postgres
           deny "opensharing-server (no admin) must not depend on opensharing-admin" \
             '^opensharing-admin' -p opensharing-server --no-default-features --features postgres
 

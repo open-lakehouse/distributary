@@ -33,8 +33,9 @@ implementation. Unity Catalog stays an optional integration: the server's
 access through `olai-uc-storage-access` (storage credentials and external
 locations, with their UC admin routes). Without it, the only Unity Catalog
 crates here are the admin API's models and handler traits (`olai-uc-common`
-and `olai-uc-handlers`, shares, recipients and providers only). CI's
-`catalog-independence` job enforces this.
+and `olai-uc-handlers`, shares, recipients and providers only) and the sharing
+store (`olai-uc-sharing`: shares, recipients, tokens and grants, over
+catalog-independent records). CI's `catalog-independence` job enforces this.
 
 ## Development
 

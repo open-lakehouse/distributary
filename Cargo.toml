@@ -32,16 +32,21 @@ delta_kernel_default_engine = { package = "buoyant_kernel_engine", version = "0.
   "rustls",
 ] }
 
-# The Unity Catalog crates behind `opensharing-server`'s `unity` feature: the
-# UC REST catalog source, the storage-access store (credentials and the
-# external locations they govern) and the generated credential /
-# external-location handler traits the admin routes implement. Their models,
-# clients and handler traits are gated per resource, so no default features:
-# each dependent enables only the resources it uses.
-unitycatalog-client = { package = "olai-uc-client", version = "0.0.7", default-features = false }
-unitycatalog-common = { package = "olai-uc-common", version = "0.0.7", default-features = false }
-unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.1", default-features = false }
-unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.2" }
+# The Unity Catalog crates from mangrove: the UC REST catalog source, the
+# storage-access store (credentials and the external locations they govern)
+# and the generated handler traits behind `opensharing-server`'s `unity`
+# feature, the admin models and handler traits behind `opensharing-admin-api`,
+# and the sharing store (shares, recipients, tokens and grants) the provider
+# runs on. Their models, clients and handler traits are gated per resource, so
+# no default features: each dependent enables only the resources it uses.
+#
+# Git pins, all on one mangrove rev so the crates share one `olai-uc-common`:
+# `olai-uc-sharing` is not on crates.io yet. Drop `git`/`rev` once it is.
+unitycatalog-client = { package = "olai-uc-client", version = "0.0.7", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a", default-features = false }
+unitycatalog-common = { package = "olai-uc-common", version = "0.0.7", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a", default-features = false }
+unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.1", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a", default-features = false }
+unitycatalog-sharing = { package = "olai-uc-sharing", version = "0.0.1", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a" }
+unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.2", git = "https://github.com/open-lakehouse/mangrove", rev = "4add0ada3b5923267dc77d9fcfd004b0aa63011a" }
 
 async-trait = "0.1.83"
 axum = { version = "0.8" }
