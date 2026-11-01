@@ -75,7 +75,8 @@ request context `Cx`, which becomes the authenticated recipient.
 |---|---|---|---|
 | `BearerAuthenticator<Cx>` | bearer token → `Cx` (the caller) | the token store, sha256-hashed tokens | OIDC / JWT |
 | `SharingPolicy<Cx>` | may the caller list shares / read this share? | the store's grants | — |
-| Store traits (`ShareStore: ShareReader`, `RecipientStore: TokenReader`, `CredentialStore`) | shares (UC `shares/v1` `Share` / `DataObject`) and grants, recipients and tokens, sealed credentials | Postgres and SQLite (sqlx), memory | — |
+| Store traits (`ShareStore: ShareReader`, `RecipientStore: TokenReader`) | shares (UC `shares/v1` `Share` / `DataObject`) and grants, recipients and tokens | Postgres and SQLite (sqlx), memory | — |
+| `StorageAccessStore` (`olai-uc-storage-access`, feature `unity`) | storage credentials and the external locations they govern; path → governing credential | Postgres and SQLite (own tables, migrations 02xx), memory | a remote catalog |
 | `CatalogSource` | resolve a `DataObject` (`catalog.schema.table`; `SCHEMA` objects expand) to a `SourceAsset { url, format, id, … }`, paged | UC REST (`olai-uc-client`: our UC or Databricks), static | Iceberg REST, UC-Delta API, in-process UC store |
 | `StorageAccess` | the server's own log reads, `presign(url, ttl)`, `vend(url, op)` | delegated (catalog-vended), local (own credentials) | — |
 | `TableFormat` | version / metadata / query / changes as protocol actions | Delta (kernel) | Iceberg |
@@ -147,22 +148,35 @@ the `temporary-{table,volume,skill}-credentials` endpoints.
 - **Local.** This mode is for standalone deployments, static catalogs, or
   catalogs that can't vend. The server holds storage credentials itself, in
   UC's model: a storage `Credential` (IAM role, Azure service principal or
-  managed identity, storage key) plus external locations matched by longest
-  URL prefix. It presigns and vends with the **same** code `uc-server` uses,
-  the trestle `olai-credential-vending` minters and `olai-vended-store`
-  presigning, so the workspace has exactly one vending implementation.
+  managed identity, storage key) plus the external locations it governs. They
+  live in the **same** store `uc-server` uses, `olai-uc-storage-access`
+  (feature `unity`), with tables of its own in the server's database. That
+  store owns the rules: a location names an existing credential, locations
+  never overlap, and a credential in use cannot be deleted. It resolves a path
+  to its governing credential from an index. The server presigns and vends
+  with the same code too, the trestle `olai-credential-vending` minters and
+  `olai-vended-store` presigning, so the workspace has exactly one storage
+  access implementation.
 
-Each catalog source chooses its mode (`access = delegated | local`).
+Each catalog source chooses its mode (`access = delegated | local`). When a
+deployed Unity Catalog is the authority over storage, `storage_credentials:
+none` keeps no credentials locally: the credential routes are not mounted,
+delegated sources get theirs from the catalog, and local sources serve
+`file://` only. Without `unity`, local access serves `file://` only as well
+(`NoCredentials`); `sharing_service` takes any `CredentialResolver`, so a host
+can plug in its own.
 
 ### Secrets at rest
 
-Storage credentials (local mode) and catalog-source client secrets (PATs,
-OAuth client secrets) are sealed with `olai-store`'s `EnvelopeEncryptor`.
-This is the same envelope encryption `uc-server` uses. Recipient tokens are
-stored as sha256 digests. The clear token is also kept sealed until the
-recipient opens its activation link, which is the one time it is handed out.
-The activation code is derived from the token and stored only as a digest, so
-a database read alone yields neither tokens nor working links.
+Storage credentials (local mode) are sealed with `olai-store`'s
+`EnvelopeEncryptor`, by the storage-access store, under the server's keys.
+This is the same envelope encryption `uc-server` uses. Catalog-source client
+secrets (PATs) are configuration values, typically read from the
+environment, and are not stored. Recipient tokens are stored as sha256
+digests. The clear token is also kept sealed until the recipient opens its
+activation link, which is the one time it is handed out. The activation code
+is derived from the token and stored only as a digest, so a database read
+alone yields neither tokens nor working links.
 
 `KeyProvider` is async and keyed by KEK id, so an external key store slots in
 without format changes. Rotation is **lazy**. When a read opens a blob sealed
@@ -308,9 +322,9 @@ batteries   opensharing-server  ->  opensharing-neon              config, store 
 |---|---|---|
 | Surface | handler traits per spec service (generated, plus the NDJSON `SharingQueryHandler`), routers, `BearerAuthenticator<Cx>` + `require_bearer`, the error contract | wire models only |
 | Engine | `ShareCatalog`, `SharingPolicy`, `StorageAccess`, `TableFormat`; `SharingService`, which implements every surface trait; the Delta format; `CatalogSource` and `SourceStorageAccess<R: CredentialResolver>` (feature `vending`) | surface, kernel, object_store, trestle vending |
-| Provider | the store traits and in-memory store, recipients and activation, secrets, `ProviderService` (feature `admin`), and the bridge: `Recipient`, `RecipientIdentity`, `StoreCatalog`, `GrantPolicy`, `StoreAuthenticator`, `StoreCredentialResolver`, `sharing_service` | engine, both surfaces |
+| Provider | the store traits and in-memory store, recipients and activation, secrets, `ProviderService` (feature `admin`), and the bridge: `Recipient`, `RecipientIdentity`, `StoreCatalog`, `GrantPolicy`, `StoreAuthenticator`, `sharing_service` | engine, both surfaces |
 | Stores | Postgres / SQLite store implementations and migrations | provider |
-| Batteries | config, `embed`, binary, UC source and UC credential routes | everything |
+| Batteries | config, `embed`, binary, UC source, storage access and the UC credential routes | everything |
 
 Both surfaces follow one pattern: handler traits generic over the request
 context `Cx`, generated where the protos define the RPCs and hand-written where
@@ -354,8 +368,13 @@ store, because the set of resources is small and fixed:
 
 - `ShareStore` holds shares and grants.
 - `RecipientStore` holds recipients and tokens.
-- `CredentialStore` holds sealed storage credentials and external locations.
-- `SharingStore` bundles all three.
+- `SharingStore` bundles both.
+
+Storage credentials are not among them: they are the storage-access store's
+(see "Storage access"). Its migrations (02xx) are merged into the store
+crate's migrator (`migrator_with`), so the database keeps one ledger and
+`migrate` and the startup schema check cover both. The store crates number
+their own migrations below 0200.
 
 The read-only views `ShareReader` and `TokenReader` are all the protocol needs.
 The traits and the memory implementation live in `opensharing-provider`. The
@@ -389,9 +408,10 @@ to host them. The layering:
   they mirror and the `/api/2.1/unity-catalog` prefix they mount under.
 - Unity Catalog comes in only through `opensharing-server`'s `unity` feature
   (`src/unity/`): the UC
-  REST `CatalogSource` and the UC-shaped `credentials` / `external-locations`
-  admin routes. It converts UC models at that boundary (`olai-uc-common`'s
-  `credential-vending` feature for credentials).
+  REST `CatalogSource`, the `olai-uc-storage-access` store, and the
+  `credentials` / `external-locations` admin routes, which implement
+  `olai-uc-handlers`' generated handler traits. It converts UC models at that
+  boundary (`olai-uc-common`'s `credential-vending` feature for credentials).
 
 Credential vending, the object-store primitives and presigning come from the
 catalog-independent trestle crates (`olai-storage-credentials`,
@@ -403,8 +423,9 @@ shapes and depend on no catalog crate.
 One GitHub stack, one PR per layer:
 
 1. This document.
-2. Extract `olai-uc-credentials` (vending, storage locations, presign) out of
-   `uc-server`, with no behavior change.
+2. Extract vending, storage locations and presigning out of `uc-server` into
+   the trestle crates (`olai-credential-vending`, `olai-storage-credentials`,
+   `olai-vended-store`), with no behavior change.
 3. `sharing-api` ports split and kernel Delta format. DataFusion is dropped,
    pagination and capability parsing are fixed.
 4. Storage access on the recipient surface: presigned `/query`, credential

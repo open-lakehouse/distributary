@@ -31,8 +31,9 @@ The crates moved here from
 [mangrove](https://github.com/open-lakehouse/mangrove), a Unity Catalog
 implementation, together with the shares, recipients and providers APIs.
 Unity Catalog stays an optional integration: the server's `unity` feature adds a
-Unity Catalog REST catalog source and the UC-shaped storage credential /
-external location admin routes. Without it, no crate here depends on a
+Unity Catalog REST catalog source and local storage access through
+`olai-uc-storage-access` (storage credentials and external locations, with
+their UC admin routes). Without it, no crate here depends on a
 catalog's models (CI's `catalog-independence` job enforces this).
 
 ## Development
