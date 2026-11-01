@@ -137,7 +137,7 @@ impl TokenReader for HostStore {
             recipient_id: self.recipient.id.clone(),
             token_hash: hash.to_vec(),
             sealed_token: None,
-            activation_code: None,
+            activation_code_hash: None,
             expires_at: None,
             created_at: 0,
         };

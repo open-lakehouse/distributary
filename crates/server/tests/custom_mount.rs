@@ -12,7 +12,7 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use opensharing_engine::source::fixed::{StaticSource, StaticTable};
 use opensharing_engine::source::{AccessMode, RegisteredSource, SourceRegistry};
-use opensharing_provider::recipients::{activation_url, issue_token};
+use opensharing_provider::recipients::{activation_url, create_recipient};
 use opensharing_provider::secrets::Secrets;
 use opensharing_server::config::EncryptionConfig;
 use opensharing_server::embed::{self, Settings};
@@ -98,14 +98,17 @@ async fn serves_shares_provisioned_through_the_store() {
         )
         .await
         .unwrap();
-    let recipient = store.create_recipient("acme", None).await.unwrap();
-    let token = issue_token(store.as_ref(), &secrets, &recipient, None)
+    let recipient = create_recipient(store.as_ref(), &secrets, "acme", None, None)
         .await
         .unwrap();
+    let token = store.tokens_for_recipient(&recipient.id).await.unwrap()[0].clone();
     store.grant("letters", "acme").await.unwrap();
 
     // The recipient activates its link and reads the table.
-    let link = activation_url(PUBLIC_URL, &token).unwrap();
+    let link = activation_url(&secrets, PUBLIC_URL, &token)
+        .await
+        .unwrap()
+        .unwrap();
     let (status, profile) = call(&app, "GET", link.strip_prefix(PUBLIC_URL).unwrap(), None).await;
     assert_eq!(status, StatusCode::OK, "{profile}");
     let profile: Value = serde_json::from_str(&profile).unwrap();

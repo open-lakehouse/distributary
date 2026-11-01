@@ -10,31 +10,36 @@ use opensharing_admin_api::RecipientHandler;
 
 use super::{AdminAction, ProviderService, identifier};
 use crate::Result;
-use crate::recipients::{activation_url, issue_token};
-use crate::store::{RecipientRecord, TokenRecord};
+use crate::recipients::{activation_url, create_recipient, rotate_token};
+use crate::secrets::Secrets;
+use crate::store::{RecipientRecord, RecipientUpdate, TokenRecord};
 use opensharing_admin_api::{Error as AdminError, Result as AdminResult};
 
-/// A token as shown to the provider; the activation link only until it is used.
-pub fn listed_token(public_url: &str, token: &TokenRecord) -> RecipientToken {
-    RecipientToken {
+/// A token as shown to the provider; the activation link only until it is
+/// used. An `expiration_time` of 0 means the token never expires.
+pub async fn listed_token(
+    secrets: &Secrets,
+    public_url: &str,
+    token: &TokenRecord,
+) -> Result<RecipientToken> {
+    Ok(RecipientToken {
         id: token.id.clone(),
         created_at: token.created_at,
-        activation_url: activation_url(public_url, token).unwrap_or_default(),
+        activation_url: activation_url(secrets, public_url, token)
+            .await?
+            .unwrap_or_default(),
         expiration_time: token.expires_at.unwrap_or_default(),
         ..Default::default()
-    }
+    })
 }
 
 impl<Cx> ProviderService<Cx> {
     /// A stored recipient with its tokens.
     async fn recipient(&self, record: RecipientRecord) -> Result<Recipient> {
-        let tokens = self
-            .store
-            .tokens_for_recipient(&record.id)
-            .await?
-            .iter()
-            .map(|t| listed_token(&self.public_url, t))
-            .collect();
+        let mut tokens = Vec::new();
+        for token in self.store.tokens_for_recipient(&record.id).await? {
+            tokens.push(listed_token(&self.secrets, &self.public_url, &token).await?);
+        }
         Ok(Recipient {
             id: Some(record.id),
             name: record.name,
@@ -89,15 +94,12 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
             }
         }
         identifier(&request.name)?;
-        let record = self
-            .store
-            .create_recipient(&request.name, request.comment)
-            .await?;
-        issue_token(
+        let record = create_recipient(
             self.store.as_ref(),
             &self.secrets,
-            &record,
-            request.expiration_time,
+            &request.name,
+            request.comment,
+            request.expiration_time.filter(|at| *at != 0),
         )
         .await?;
         Ok(self.recipient(record).await?)
@@ -119,8 +121,9 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         Ok(self.recipient(record).await?)
     }
 
-    /// Update a recipient's comment. Renaming, changing the owner and setting
-    /// properties are not supported.
+    /// Update a recipient's comment and its token's expiry (`expiration_time`,
+    /// 0 for never). Renaming, changing the owner and setting properties are
+    /// not supported.
     async fn update_recipient(
         &self,
         request: UpdateRecipientRequest,
@@ -138,9 +141,13 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
                 "renaming recipients is not supported",
             ));
         }
-        let current = self.store.get_recipient(&request.name).await?;
-        let comment = request.comment.or(current.comment);
-        let record = self.store.update_recipient(&request.name, comment).await?;
+        let update = RecipientUpdate {
+            comment: request.comment,
+            expires_at: request
+                .expiration_time
+                .map(|at| Some(at).filter(|at| *at != 0)),
+        };
+        let record = self.store.update_recipient(&request.name, update).await?;
         Ok(self.recipient(record).await?)
     }
 
@@ -159,9 +166,9 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         Ok(self.store.delete_recipient(&request.name).await?)
     }
 
-    /// Replace the recipient's tokens with a fresh one. Existing tokens stop
-    /// working immediately, which is always within the
-    /// `existing_token_expire_in_seconds` the request may carry.
+    /// Issue the recipient a fresh token. Existing tokens keep working for
+    /// `existing_token_expire_in_seconds` at most; without it, or with 0, they
+    /// stop at once.
     async fn rotate_recipient_token(
         &self,
         request: RotateRecipientTokenRequest,
@@ -175,14 +182,13 @@ impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
         )
         .await?;
         let record = self.store.get_recipient(&request.name).await?;
-        let expires_at = self
-            .store
-            .tokens_for_recipient(&record.id)
-            .await?
-            .first()
-            .and_then(|t| t.expires_at);
-        self.store.delete_tokens(&record.id).await?;
-        issue_token(self.store.as_ref(), &self.secrets, &record, expires_at).await?;
+        rotate_token(
+            self.store.as_ref(),
+            &self.secrets,
+            &record,
+            request.existing_token_expire_in_seconds,
+        )
+        .await?;
         Ok(self.recipient(record).await?)
     }
 }

@@ -6,8 +6,9 @@ use std::sync::Mutex;
 use async_trait::async_trait;
 
 use super::{
-    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, SealedCredential,
-    ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord, now_millis,
+    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, RecipientUpdate,
+    SealedCredential, ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord,
+    now_millis,
 };
 use crate::{Error, Result};
 
@@ -171,25 +172,17 @@ impl TokenReader for InMemoryStore {
     }
 }
 
+// Each operation runs under the one lock, so each is atomic.
 #[async_trait]
 impl RecipientStore for InMemoryStore {
-    async fn create_recipient(
-        &self,
-        name: &str,
-        comment: Option<String>,
-    ) -> Result<RecipientRecord> {
+    async fn create_recipient(&self, recipient: RecipientRecord, token: TokenRecord) -> Result<()> {
         let mut state = self.state();
-        if state.recipients.contains_key(name) {
-            return Err(exists("recipient", name));
+        if state.recipients.contains_key(&recipient.name) {
+            return Err(exists("recipient", &recipient.name));
         }
-        let recipient = RecipientRecord {
-            id: uuid::Uuid::new_v4().to_string(),
-            name: name.to_string(),
-            comment,
-            created_at: now_millis(),
-        };
-        state.recipients.insert(name.to_string(), recipient.clone());
-        Ok(recipient)
+        state.recipients.insert(recipient.name.clone(), recipient);
+        state.tokens.push(token);
+        Ok(())
     }
 
     async fn get_recipient(&self, name: &str) -> Result<RecipientRecord> {
@@ -207,12 +200,24 @@ impl RecipientStore for InMemoryStore {
     async fn update_recipient(
         &self,
         name: &str,
-        comment: Option<String>,
+        update: RecipientUpdate,
     ) -> Result<RecipientRecord> {
         let mut state = self.state();
         let recipient = state.recipients.get_mut(name).ok_or(Error::NotFound)?;
-        recipient.comment = comment;
-        Ok(recipient.clone())
+        if let Some(comment) = update.comment {
+            recipient.comment = Some(comment);
+        }
+        let recipient = recipient.clone();
+        if let Some(expires_at) = update.expires_at
+            && let Some(newest) = state
+                .tokens
+                .iter_mut()
+                .filter(|t| t.recipient_id == recipient.id)
+                .max_by(|a, b| newest_last(a, b))
+        {
+            newest.expires_at = expires_at;
+        }
+        Ok(recipient)
     }
 
     async fn delete_recipient(&self, name: &str) -> Result<()> {
@@ -220,32 +225,6 @@ impl RecipientStore for InMemoryStore {
         let recipient = state.recipients.remove(name).ok_or(Error::NotFound)?;
         state.tokens.retain(|t| t.recipient_id != recipient.id);
         state.grants.retain(|(_, r)| r != name);
-        Ok(())
-    }
-
-    async fn insert_token(&self, token: TokenRecord) -> Result<()> {
-        self.state().tokens.push(token);
-        Ok(())
-    }
-
-    async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord> {
-        self.state()
-            .tokens
-            .iter()
-            .find(|t| t.activation_code.as_deref() == Some(code))
-            .cloned()
-            .ok_or(Error::NotFound)
-    }
-
-    async fn mark_activated(&self, token_id: &str) -> Result<()> {
-        let mut state = self.state();
-        let token = state
-            .tokens
-            .iter_mut()
-            .find(|t| t.id == token_id)
-            .ok_or(Error::NotFound)?;
-        token.sealed_token = None;
-        token.activation_code = None;
         Ok(())
     }
 
@@ -257,15 +236,43 @@ impl RecipientStore for InMemoryStore {
             .filter(|t| t.recipient_id == recipient_id)
             .cloned()
             .collect();
-        tokens.sort_by_key(|t| std::cmp::Reverse(t.created_at));
+        tokens.sort_by(|a, b| newest_last(b, a));
         Ok(tokens)
     }
 
-    async fn delete_tokens(&self, recipient_id: &str) -> Result<()> {
-        self.state()
-            .tokens
-            .retain(|t| t.recipient_id != recipient_id);
+    async fn rotate_token(
+        &self,
+        token: TokenRecord,
+        existing_expire_at: Option<i64>,
+    ) -> Result<()> {
+        let mut state = self.state();
+        state.recipient_by_id(&token.recipient_id)?;
+        let now = token.created_at;
+        state.tokens.retain_mut(|t| {
+            if t.recipient_id != token.recipient_id {
+                return true;
+            }
+            let Some(at) = existing_expire_at else {
+                return false;
+            };
+            t.expires_at = Some(t.expires_at.map_or(at, |e| e.min(at)));
+            t.is_live(now)
+        });
+        state.tokens.push(token);
         Ok(())
+    }
+
+    async fn redeem_activation(&self, code_hash: &[u8], now: i64) -> Result<TokenRecord> {
+        let mut state = self.state();
+        let token = state
+            .tokens
+            .iter_mut()
+            .find(|t| t.activation_code_hash.as_deref() == Some(code_hash) && t.is_live(now))
+            .ok_or(Error::NotFound)?;
+        let redeemed = token.clone();
+        token.sealed_token = None;
+        token.activation_code_hash = None;
+        Ok(redeemed)
     }
 
     async fn sealed_tokens(&self) -> Result<Vec<TokenRecord>> {
@@ -278,16 +285,25 @@ impl RecipientStore for InMemoryStore {
             .collect())
     }
 
-    async fn update_sealed_token(&self, token_id: &str, sealed: Vec<u8>) -> Result<()> {
+    async fn reseal_token(&self, token_id: &str, current: &[u8], sealed: Vec<u8>) -> Result<bool> {
         let mut state = self.state();
-        let token = state
+        match state
             .tokens
             .iter_mut()
-            .find(|t| t.id == token_id)
-            .ok_or(Error::NotFound)?;
-        token.sealed_token = Some(sealed);
-        Ok(())
+            .find(|t| t.id == token_id && t.sealed_token.as_deref() == Some(current))
+        {
+            Some(token) => {
+                token.sealed_token = Some(sealed);
+                Ok(true)
+            }
+            None => Ok(false),
+        }
     }
+}
+
+/// Orders tokens by creation, the SQL stores' `created_at, id` order.
+fn newest_last(a: &TokenRecord, b: &TokenRecord) -> std::cmp::Ordering {
+    (a.created_at, &a.id).cmp(&(b.created_at, &b.id))
 }
 
 #[async_trait]

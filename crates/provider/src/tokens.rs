@@ -19,6 +19,17 @@ pub fn token_hash(token: &str) -> Vec<u8> {
     Sha256::digest(token.as_bytes()).to_vec()
 }
 
+/// The activation code of `token`, derived from it so that the code needs no
+/// storage of its own: the store keeps only its digest, and the link is rebuilt
+/// from the sealed token while that is kept. The code reveals nothing of the
+/// token.
+pub(crate) fn activation_code(token: &str) -> String {
+    let mut digest = Sha256::new();
+    digest.update(b"opensharing-activation:");
+    digest.update(token.as_bytes());
+    URL_SAFE_NO_PAD.encode(digest.finalize())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -30,5 +41,14 @@ mod tests {
         assert!(a.len() >= 40);
         assert_eq!(token_hash(&a), token_hash(&a));
         assert_ne!(token_hash(&a), token_hash(&b));
+    }
+
+    #[test]
+    fn activation_codes_are_derived_and_distinct() {
+        let (a, b) = (random_secret(), random_secret());
+        assert_eq!(activation_code(&a), activation_code(&a));
+        assert_ne!(activation_code(&a), activation_code(&b));
+        assert_ne!(activation_code(&a), a);
+        assert_ne!(token_hash(&activation_code(&a)), token_hash(&a));
     }
 }

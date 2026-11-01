@@ -24,8 +24,9 @@ use sqlx::{Row, migrate::Migrator};
 
 use crate::sql::{APPLIED_MIGRATIONS, AppliedMigration, check_applied};
 use opensharing_provider::store::{
-    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, SealedCredential,
-    ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord, now_millis,
+    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, RecipientUpdate,
+    SealedCredential, ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord,
+    now_millis,
 };
 use opensharing_provider::{Error, Result};
 
@@ -134,7 +135,7 @@ fn recipient(row: &SqliteRow) -> Result<RecipientRecord> {
     })
 }
 
-const TOKEN_COLUMNS: &str = "t.id, t.recipient_id, t.token_hash, t.sealed_token, t.activation_code, t.expires_at, t.created_at";
+const TOKEN_COLUMNS: &str = "t.id, t.recipient_id, t.token_hash, t.sealed_token, t.activation_code_hash, t.expires_at, t.created_at";
 
 fn token(row: &SqliteRow) -> Result<TokenRecord> {
     Ok(TokenRecord {
@@ -142,7 +143,7 @@ fn token(row: &SqliteRow) -> Result<TokenRecord> {
         recipient_id: row.try_get("recipient_id").map_err(db)?,
         token_hash: row.try_get("token_hash").map_err(db)?,
         sealed_token: row.try_get("sealed_token").map_err(db)?,
-        activation_code: row.try_get("activation_code").map_err(db)?,
+        activation_code_hash: row.try_get("activation_code_hash").map_err(db)?,
         expires_at: row.try_get("expires_at").map_err(db)?,
         created_at: row.try_get("created_at").map_err(db)?,
     })
@@ -324,25 +325,25 @@ impl TokenReader for SqliteStore {
     }
 }
 
+// Every multi-statement write runs in one transaction, taking the write lock
+// up front (`BEGIN IMMEDIATE`), so it is atomic and never has to upgrade a read
+// lock.
 #[async_trait]
 impl RecipientStore for SqliteStore {
-    async fn create_recipient(
-        &self,
-        name: &str,
-        comment: Option<String>,
-    ) -> Result<RecipientRecord> {
-        let row = sqlx::query(
-            "INSERT INTO recipients (id, name, comment, created_at) \
-             VALUES (?, ?, ?, ?) RETURNING id, name, comment, created_at",
+    async fn create_recipient(&self, r: RecipientRecord, t: TokenRecord) -> Result<()> {
+        let mut tx = self.pool.begin_with("BEGIN IMMEDIATE").await.map_err(db)?;
+        sqlx::query(
+            "INSERT INTO recipients (id, name, comment, created_at) VALUES (?1, ?2, ?3, ?4)",
         )
-        .bind(uuid::Uuid::new_v4().to_string())
-        .bind(name)
-        .bind(comment)
-        .bind(now_millis())
-        .fetch_one(&self.pool)
+        .bind(&r.id)
+        .bind(&r.name)
+        .bind(&r.comment)
+        .bind(r.created_at)
+        .execute(&mut *tx)
         .await
         .map_err(db)?;
-        recipient(&row)
+        insert_token(&mut tx, &t).await?;
+        tx.commit().await.map_err(db)
     }
 
     async fn get_recipient(&self, name: &str) -> Result<RecipientRecord> {
@@ -368,18 +369,33 @@ impl RecipientStore for SqliteStore {
     async fn update_recipient(
         &self,
         name: &str,
-        comment: Option<String>,
+        update: RecipientUpdate,
     ) -> Result<RecipientRecord> {
+        let mut tx = self.pool.begin_with("BEGIN IMMEDIATE").await.map_err(db)?;
         let row = sqlx::query(
-            "UPDATE recipients SET comment = ?2 WHERE name = ?1 \
+            "UPDATE recipients SET comment = coalesce(?2, comment) WHERE name = ?1 \
              RETURNING id, name, comment, created_at",
         )
         .bind(name)
-        .bind(comment)
-        .fetch_one(&self.pool)
+        .bind(update.comment)
+        .fetch_one(&mut *tx)
         .await
         .map_err(db)?;
-        recipient(&row)
+        let record = recipient(&row)?;
+        if let Some(expires_at) = update.expires_at {
+            sqlx::query(
+                "UPDATE recipient_tokens SET expires_at = ?2 WHERE id = \
+                 (SELECT id FROM recipient_tokens WHERE recipient_id = ?1 \
+                  ORDER BY created_at DESC, id DESC LIMIT 1)",
+            )
+            .bind(&record.id)
+            .bind(expires_at)
+            .execute(&mut *tx)
+            .await
+            .map_err(db)?;
+        }
+        tx.commit().await.map_err(db)?;
+        Ok(record)
     }
 
     async fn delete_recipient(&self, name: &str) -> Result<()> {
@@ -392,52 +408,10 @@ impl RecipientStore for SqliteStore {
         affected(done.rows_affected())
     }
 
-    async fn insert_token(&self, t: TokenRecord) -> Result<()> {
-        sqlx::query(
-            "INSERT INTO recipient_tokens \
-             (id, recipient_id, token_hash, sealed_token, activation_code, expires_at, created_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?)",
-        )
-        .bind(t.id)
-        .bind(t.recipient_id)
-        .bind(t.token_hash)
-        .bind(t.sealed_token)
-        .bind(t.activation_code)
-        .bind(t.expires_at)
-        .bind(t.created_at)
-        .execute(&self.pool)
-        .await
-        .map_err(db)?;
-        Ok(())
-    }
-
-    async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord> {
-        let row = sqlx::query(&format!(
-            "SELECT {TOKEN_COLUMNS} FROM recipient_tokens t WHERE t.activation_code = ?"
-        ))
-        .bind(code)
-        .fetch_one(&self.pool)
-        .await
-        .map_err(db)?;
-        token(&row)
-    }
-
-    async fn mark_activated(&self, token_id: &str) -> Result<()> {
-        let done = sqlx::query(
-            "UPDATE recipient_tokens SET sealed_token = NULL, activation_code = NULL \
-             WHERE id = ?",
-        )
-        .bind(token_id)
-        .execute(&self.pool)
-        .await
-        .map_err(db)?;
-        affected(done.rows_affected())
-    }
-
     async fn tokens_for_recipient(&self, recipient_id: &str) -> Result<Vec<TokenRecord>> {
         sqlx::query(&format!(
             "SELECT {TOKEN_COLUMNS} FROM recipient_tokens t \
-             WHERE t.recipient_id = ? ORDER BY t.created_at DESC"
+             WHERE t.recipient_id = ?1 ORDER BY t.created_at DESC, t.id DESC"
         ))
         .bind(recipient_id)
         .fetch_all(&self.pool)
@@ -448,13 +422,64 @@ impl RecipientStore for SqliteStore {
         .collect()
     }
 
-    async fn delete_tokens(&self, recipient_id: &str) -> Result<()> {
-        sqlx::query("DELETE FROM recipient_tokens WHERE recipient_id = ?")
-            .bind(recipient_id)
-            .execute(&self.pool)
+    async fn rotate_token(&self, t: TokenRecord, existing_expire_at: Option<i64>) -> Result<()> {
+        let mut tx = self.pool.begin_with("BEGIN IMMEDIATE").await.map_err(db)?;
+        if let Some(at) = existing_expire_at {
+            sqlx::query(
+                "UPDATE recipient_tokens SET expires_at = ?2 \
+                 WHERE recipient_id = ?1 AND (expires_at IS NULL OR expires_at > ?2)",
+            )
+            .bind(&t.recipient_id)
+            .bind(at)
+            .execute(&mut *tx)
             .await
             .map_err(db)?;
-        Ok(())
+            sqlx::query(
+                "DELETE FROM recipient_tokens WHERE recipient_id = ?1 AND expires_at <= ?2",
+            )
+            .bind(&t.recipient_id)
+            .bind(t.created_at)
+            .execute(&mut *tx)
+            .await
+            .map_err(db)?;
+        } else {
+            sqlx::query("DELETE FROM recipient_tokens WHERE recipient_id = ?1")
+                .bind(&t.recipient_id)
+                .execute(&mut *tx)
+                .await
+                .map_err(db)?;
+        }
+        insert_token(&mut tx, &t).await?;
+        tx.commit().await.map_err(db)
+    }
+
+    async fn redeem_activation(&self, code_hash: &[u8], now: i64) -> Result<TokenRecord> {
+        let mut tx = self.pool.begin_with("BEGIN IMMEDIATE").await.map_err(db)?;
+        let row = sqlx::query(&format!(
+            "SELECT {TOKEN_COLUMNS} FROM recipient_tokens t \
+             WHERE t.activation_code_hash = ?1 AND (t.expires_at IS NULL OR t.expires_at > ?2)"
+        ))
+        .bind(code_hash)
+        .bind(now)
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(db)?
+        .ok_or(Error::NotFound)?;
+        let redeemed = token(&row)?;
+        // Conditional on the code still being there: of concurrent redemptions,
+        // only the first to update matches.
+        let done = sqlx::query(
+            "UPDATE recipient_tokens SET sealed_token = NULL, activation_code_hash = NULL \
+             WHERE id = ?1 AND activation_code_hash = ?2",
+        )
+        .bind(&redeemed.id)
+        .bind(code_hash)
+        .execute(&mut *tx)
+        .await
+        .map_err(db)?;
+        affected(done.rows_affected())?;
+        tx.commit().await.map_err(db)?;
+        Ok(redeemed)
     }
 
     async fn sealed_tokens(&self) -> Result<Vec<TokenRecord>> {
@@ -469,15 +494,36 @@ impl RecipientStore for SqliteStore {
         .collect()
     }
 
-    async fn update_sealed_token(&self, token_id: &str, sealed: Vec<u8>) -> Result<()> {
-        let done = sqlx::query("UPDATE recipient_tokens SET sealed_token = ?2 WHERE id = ?1")
-            .bind(token_id)
-            .bind(sealed)
-            .execute(&self.pool)
-            .await
-            .map_err(db)?;
-        affected(done.rows_affected())
+    async fn reseal_token(&self, token_id: &str, current: &[u8], sealed: Vec<u8>) -> Result<bool> {
+        let done = sqlx::query(
+            "UPDATE recipient_tokens SET sealed_token = ?3 WHERE id = ?1 AND sealed_token = ?2",
+        )
+        .bind(token_id)
+        .bind(current)
+        .bind(sealed)
+        .execute(&self.pool)
+        .await
+        .map_err(db)?;
+        Ok(done.rows_affected() == 1)
     }
+}
+
+async fn insert_token(conn: &mut sqlx::SqliteConnection, t: &TokenRecord) -> Result<()> {
+    sqlx::query(
+        "INSERT INTO recipient_tokens (id, recipient_id, token_hash, sealed_token, \
+         activation_code_hash, expires_at, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+    )
+    .bind(&t.id)
+    .bind(&t.recipient_id)
+    .bind(&t.token_hash)
+    .bind(&t.sealed_token)
+    .bind(&t.activation_code_hash)
+    .bind(t.expires_at)
+    .bind(t.created_at)
+    .execute(conn)
+    .await
+    .map_err(db)?;
+    Ok(())
 }
 
 #[async_trait]

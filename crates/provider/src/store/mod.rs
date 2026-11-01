@@ -13,7 +13,10 @@
 //! - [`ShareStore`] holds shares and grants. Its read-only view,
 //!   [`ShareReader`], is all the protocol needs.
 //! - [`RecipientStore`] holds recipients and tokens. Its read-only view,
-//!   [`TokenReader`], is all recipient authentication needs.
+//!   [`TokenReader`], is all recipient authentication needs. Every write that
+//!   must not be observed half-done is one atomic store operation: creating a
+//!   recipient with its first token, rotating a token, redeeming an activation
+//!   code.
 //! - [`CredentialStore`] holds sealed storage credentials and external
 //!   locations.
 //! - [`SharingStore`] bundles all three.
@@ -160,11 +163,27 @@ pub struct TokenRecord {
     /// The token, sealed, kept only until the recipient activates it (the
     /// activation link is the one time the clear token is handed out).
     pub sealed_token: Option<Vec<u8>>,
-    /// The single-use activation code, until activated.
-    pub activation_code: Option<String>,
+    /// The sha256 digest of the single-use activation code, until activated.
+    pub activation_code_hash: Option<Vec<u8>>,
     /// When the token stops being accepted (ms since epoch); `None` never expires.
     pub expires_at: Option<i64>,
     pub created_at: i64,
+}
+
+impl TokenRecord {
+    /// Whether the token is accepted at `now` (ms since epoch).
+    pub fn is_live(&self, now: i64) -> bool {
+        self.expires_at.is_none_or(|at| at > now)
+    }
+}
+
+/// A change to a recipient. `None` leaves a field as it is.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct RecipientUpdate {
+    pub comment: Option<String>,
+    /// A new expiry for the recipient's newest token (`Some(None)`: never
+    /// expires). Older tokens, still in a rotation's grace period, keep theirs.
+    pub expires_at: Option<Option<i64>>,
 }
 
 /// A storage credential, sealed. The clear value is a
@@ -228,37 +247,47 @@ pub trait TokenReader: Send + Sync + 'static {
 }
 
 /// Recipients and their tokens: issuing, activation, rotation and re-wrapping.
+///
+/// The domain rules (generating and sealing tokens, expiry) live in
+/// [`recipients`](crate::recipients); the store makes each operation atomic.
 #[async_trait]
 pub trait RecipientStore: TokenReader {
-    async fn create_recipient(
-        &self,
-        name: &str,
-        comment: Option<String>,
-    ) -> Result<RecipientRecord>;
+    /// Create `recipient` together with its first token, or neither: a taken
+    /// name leaves no token behind.
+    async fn create_recipient(&self, recipient: RecipientRecord, token: TokenRecord) -> Result<()>;
     async fn get_recipient(&self, name: &str) -> Result<RecipientRecord>;
     /// All recipients, ordered by name.
     async fn list_recipients(&self) -> Result<Vec<RecipientRecord>>;
-    /// Replace a recipient's comment.
     async fn update_recipient(
         &self,
         name: &str,
-        comment: Option<String>,
+        update: RecipientUpdate,
     ) -> Result<RecipientRecord>;
     /// Delete a recipient with its tokens and grants.
     async fn delete_recipient(&self, name: &str) -> Result<()>;
 
-    async fn insert_token(&self, token: TokenRecord) -> Result<()>;
-    /// The not-yet-activated token with this activation code.
-    async fn token_by_activation_code(&self, code: &str) -> Result<TokenRecord>;
-    /// Consume a token's activation: drop its sealed copy and activation code.
-    async fn mark_activated(&self, token_id: &str) -> Result<()>;
     /// The recipient's tokens, newest first.
     async fn tokens_for_recipient(&self, recipient_id: &str) -> Result<Vec<TokenRecord>>;
-    /// Delete all of a recipient's tokens.
-    async fn delete_tokens(&self, recipient_id: &str) -> Result<()>;
+    /// Add `token` for its recipient and retire the recipient's other tokens,
+    /// in one step.
+    ///
+    /// With `existing_expire_at`, the other tokens stay valid until then at
+    /// the latest (an earlier expiry is kept); without, they are deleted. Tokens
+    /// already expired at `token.created_at` are deleted either way.
+    async fn rotate_token(&self, token: TokenRecord, existing_expire_at: Option<i64>)
+    -> Result<()>;
+    /// Consume the activation code with this digest, if its token is live at
+    /// `now`: clear the code and the sealed copy, and return the token as it
+    /// was, sealed copy included.
+    ///
+    /// Exactly one of any number of concurrent redemptions of a code succeeds;
+    /// the others, and any later one, get [`Error::NotFound`](crate::Error::NotFound).
+    async fn redeem_activation(&self, code_hash: &[u8], now: i64) -> Result<TokenRecord>;
     /// Every token still holding a sealed copy (for key rotation).
     async fn sealed_tokens(&self) -> Result<Vec<TokenRecord>>;
-    async fn update_sealed_token(&self, token_id: &str, sealed: Vec<u8>) -> Result<()>;
+    /// Replace a token's sealed copy, if it still is `current`. Returns whether
+    /// it was replaced; a token activated in the meantime keeps none.
+    async fn reseal_token(&self, token_id: &str, current: &[u8], sealed: Vec<u8>) -> Result<bool>;
 }
 
 /// Sealed storage credentials and the external locations that map storage URLs

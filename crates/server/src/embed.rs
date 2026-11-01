@@ -53,7 +53,7 @@ pub struct Service {
 /// The provider side is separate ([`admin_router`], feature `admin`). A host
 /// with its own admin surface manages shares, recipients and grants through the
 /// [`SharingStore`] directly (see
-/// [`issue_token`](opensharing_provider::recipients::issue_token)),
+/// [`create_recipient`](opensharing_provider::recipients::create_recipient)),
 /// or mounts the generated admin routers over its own context (see
 /// [`opensharing_provider::admin`]).
 pub fn router(
