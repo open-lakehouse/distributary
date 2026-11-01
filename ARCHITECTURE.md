@@ -261,12 +261,15 @@ in either of two ways:
   permission model in as the `AdminPolicy`.
 - Implement the generated traits on its own store.
 
-`opensharing-neon` hosts the same router as a Neon Function. It mirrors
-Headwaters (`headwaters-neon`): a napi `cdylib`, a thin dependency-free
-TypeScript fetch handler, and a `release-neon` profile. Configuration comes from
-the environment (`SHARING_SERVER_CONFIG_YAML`, plus Neon's `DATABASE_URL` /
-`DATABASE_URL_UNPOOLED`). Migrations run out of band (`just neon
-migrate`).
+`opensharing-neon` hosts the same router as a Neon Function. It lives in
+[luminescent-lakehouse](https://github.com/open-lakehouse/luminescent-lakehouse),
+next to the other Neon hosts, and depends on `opensharing-server` by a pinned
+git rev. It mirrors Headwaters (`headwaters-neon`): a napi `cdylib`, a thin
+dependency-free TypeScript fetch handler, and a size-tuned release profile.
+Configuration comes from the environment (`SHARING_SERVER_CONFIG_YAML`, plus
+Neon's `DATABASE_URL` / `DATABASE_URL_UNPOOLED`), through `Config::from_env`
+and `embed`, which this crate keeps public for it. Migrations run out of band
+(`just migrate opensharing` there).
 
 Size is the binding constraint: Neon allows 10 MiB zipped and 64 MiB unzipped.
 All builds below are for `aarch64-unknown-linux-gnu.2.28`, with fat LTO, one
@@ -278,15 +281,14 @@ arrow/parquet, `object_store` with AWS/Azure/GCS, sqlx, rustls):
 |---|---|---|---|
 | 3 | unwind | 27.9 MiB | 11.1 MiB (over the limit) |
 | `"z"` | abort | 15.3 MiB | 6.7 MiB |
-| `"z"` (`release-neon`, the actual addon bundle) | unwind | 17.5 MiB | 7.8 MiB |
+| `"z"` (the actual addon bundle) | unwind | 17.5 MiB | 7.8 MiB |
 
 The bundle loads and passes the smoke suite on `node:24-bookworm-slim`
-(linux-arm64) via `just neon test-arm64`. It has not been deployed to a
-Neon branch yet.
+(linux-arm64). It has not been deployed to a Neon branch yet.
 
-`release-neon` therefore uses `opt-level = "z"`. It keeps `panic = "unwind"`,
-so a panic fails the request instead of the isolate. `just neon build`
-gates the real bundle on both limits. If it gets tight, the next levers are:
+The addon is therefore built at `opt-level = "z"`. It keeps `panic = "unwind"`,
+so a panic fails the request instead of the isolate. The luminescent-lakehouse
+build gates the real bundle on both limits. If it gets tight, the next levers are:
 
 1. `panic = "abort"`;
 2. per-cloud `object_store` features;
@@ -316,7 +318,7 @@ surface     opensharing-api               opensharing-admin-api   generated trai
 engine      opensharing-engine                                    the protocol over ports, formats, vending
 domain      opensharing-provider                                  share mapping, recipients, tokens, grants
 stores      opensharing-postgres, opensharing-sqlite              the provider's store traits over sqlx
-batteries   opensharing-server  ->  opensharing-neon              config, store selection, binary, `unity`
+batteries   opensharing-server                                    config, store selection, binary, `unity`
 ```
 
 | Layer | Holds | Depends on |
@@ -442,7 +444,7 @@ One GitHub stack, one PR per layer:
    UC REST catalog source, delegated and local access, admin API, binary,
    end-to-end tests.
 6. The Neon Function host (`opensharing-neon`), with the size measurement
-   above.
+   above. It has since moved to luminescent-lakehouse.
 
 ## Deferred
 

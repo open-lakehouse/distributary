@@ -104,12 +104,6 @@ changelog_path = "crates/server/CHANGELOG.md"
 # git-pinned Unity Catalog crates.
 release = false
 
-[[package]]
-name = "opensharing-neon"
-# Deployment artifact (Neon Function bundle), never published.
-publish = false
-release = false
-
 # ---------------------------------------------------------------------------
 # Changelog rendering (git-cliff, embedded). Conventional-commit grouping.
 # ---------------------------------------------------------------------------
@@ -132,5 +126,5 @@ commit_parsers = [
 # Strip the redundant "(scope)" from each rendered line — each crate's changelog
 # is already crate-scoped.
 commit_preprocessors = [
-  { pattern = '\((common|admin-api|client|api|engine|provider|postgres|sqlite|server|neon)\)', replace = "" },
+  { pattern = '\((common|admin-api|client|api|engine|provider|postgres|sqlite|server)\)', replace = "" },
 ]

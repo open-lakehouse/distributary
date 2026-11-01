@@ -40,8 +40,7 @@ FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
 # Build dependencies first: this is the cached Docker layer that survives
 # source-only changes. Scope to the server package + `bin` feature so a bare
-# workspace build doesn't unify features across all members (which would pull
-# in the napi addon of crates/neon).
+# workspace build doesn't unify features across all members.
 RUN cargo chef cook --release --locked --recipe-path recipe.json \
     -p opensharing-server --features bin --bin sharing-server
 # Build the application.

@@ -17,7 +17,6 @@ composable sharing server that maps shares onto any catalog.
 | [`crates/postgres`](crates/postgres) | `opensharing-postgres` | The Postgres store (sqlx, embedded migrations) |
 | [`crates/sqlite`](crates/sqlite) | `opensharing-sqlite` | The SQLite store (sqlx, embedded migrations), for single-node deployments |
 | [`crates/server`](crates/server) | `opensharing-server` | The batteries-included server: store selection, configuration, Unity Catalog integration (feature `unity`), `sharing-server` binary |
-| [`crates/neon`](crates/neon) | `opensharing-neon` | The server as a Neon Function (deployment artifact, not published) |
 
 The protocol is defined in [`proto/opensharing/v1`](proto/opensharing/v1),
 and its OpenAPI document is [`openapi/sharing.yaml`](openapi/sharing.yaml).

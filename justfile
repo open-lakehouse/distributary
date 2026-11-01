@@ -6,9 +6,6 @@
 
 set dotenv-load
 
-# the OpenSharing server as a Neon Function
-mod neon 'crates/neon/justfile'
-
 # show the available recipes
 _default:
     @just --list

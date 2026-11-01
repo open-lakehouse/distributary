@@ -12,10 +12,8 @@ target/
 # rustup would download a second copy of it (plus rustfmt/clippy).
 rust-toolchain.toml
 
-# The Neon Function bundle (crates/neon): node deps and build output.
+# Node deps.
 **/node_modules/
-crates/neon/function/dist/
-crates/neon/*.zip
 
 # Transient codegen output and local env.
 descriptors.bin

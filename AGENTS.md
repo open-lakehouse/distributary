@@ -115,7 +115,7 @@ has the full guide; trestle only hosts the tooling. In short:
 - **PRs are squash-merged. The PR title is the commit release-plz sees**: a
   conventional commit scoped by crate directory (`common`,
   `admin-api`, `client`, `api`, `engine`, `provider`, `postgres`, `sqlite`,
-  `server`, `neon`). release-plz derives each crate's version bump and
+  `server`). release-plz derives each crate's version bump and
   changelog from it, and CI lints it (`pr-title.yml`). Commits inside a PR are
   for review only.
 - When work should land on `main` as separate commits (several crates or change

@@ -52,12 +52,6 @@ bytes = { version = "1.1" }
 chrono = { version = "0.4.41", features = ["serde"] }
 futures = "0.3.32"
 itertools = { version = "0.14.0" }
-napi = { version = "3.5", default-features = false, features = [
-  "napi9",
-  "async",
-  "web_stream",
-] }
-napi-derive = "3.5"
 # buffa proto runtime consumed by the generated models. Version tracks the
 # `buf.build/anthropics/buffa:v0.7.0` plugin pinned in buf.gen.yaml. NOTE: the
 # snake_case JSON wire names (`json_field_names: proto` in trestle.yaml) are a
@@ -126,13 +120,3 @@ debug = true
 
 [profile.debugging.package."*"]
 debug = true
-
-# The Neon Function bundle (crates/neon; `just neon build`). Neon's limit is
-# 10 MiB zipped: with `opt-level = 3` the server is ~11 MiB zipped, with "z"
-# ~7 MiB (aarch64-unknown-linux-gnu, see ARCHITECTURE.md).
-[profile.release-neon]
-inherits = "release"
-lto = "fat"
-codegen-units = 1
-strip = "symbols"
-opt-level = "z"
