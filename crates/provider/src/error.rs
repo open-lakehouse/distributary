@@ -113,7 +113,7 @@ impl From<Error> for opensharing_admin_api::Error {
             Error::Unauthenticated => Admin::Unauthenticated,
             Error::InvalidArgument(message) => Admin::InvalidArgument(message),
             Error::NotImplemented(what) => Admin::NotImplemented(what),
-            Error::Serde { source } => Admin::MalformedResponse { source },
+            Error::Serde { source } => Admin::SerDe { source },
             // Protocol-crate errors keep their caller-facing meaning where the
             // admin contract has one.
             Error::Api(err) => match Error::from(err) {

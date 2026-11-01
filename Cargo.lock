@@ -2539,30 +2539,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
-name = "opensharing-admin"
-version = "0.0.1"
-dependencies = [
- "axum",
- "axum-extra",
- "buffa",
- "buffa-types",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "opensharing-admin-api"
 version = "0.0.1"
 dependencies = [
  "async-trait",
  "axum",
- "opensharing-admin",
- "serde",
+ "olai-uc-common",
+ "olai-uc-handlers",
  "serde_json",
- "thiserror",
  "tokio",
  "tower",
- "tracing",
 ]
 
 [[package]]
@@ -2678,7 +2664,6 @@ dependencies = [
  "olai-credential-vending",
  "olai-storage-credentials",
  "olai-store",
- "opensharing-admin",
  "opensharing-admin-api",
  "opensharing-api",
  "opensharing-engine",

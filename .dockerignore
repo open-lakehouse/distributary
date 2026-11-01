@@ -19,7 +19,6 @@ crates/neon/*.zip
 
 # Transient codegen output and local env.
 descriptors.bin
-admin-descriptors.bin
 .env
 
 # VCS and editor/agent noise.

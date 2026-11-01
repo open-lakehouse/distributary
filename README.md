@@ -12,8 +12,7 @@ composable sharing server that maps shares onto any catalog.
 | [`crates/client`](crates/client) | `opensharing-client` | HTTP client for the sharing protocol |
 | [`crates/api`](crates/api) | `opensharing-api` | The protocol surface: generated handler traits, the NDJSON query trait, routers, bearer auth |
 | [`crates/engine`](crates/engine) | `opensharing-engine` | The protocol implemented over ports (`ShareCatalog`, `StorageAccess`, `TableFormat`): `SharingService` and the kernel-backed Delta format |
-| [`crates/admin`](crates/admin) | `opensharing-admin` | Provider admin API models: shares, permissions, recipients, providers |
-| [`crates/admin-api`](crates/admin-api) | `opensharing-admin-api` | Provider admin API server surface: generated handler traits, routers, provider auth |
+| [`crates/admin-api`](crates/admin-api) | `opensharing-admin-api` | Provider admin API server surface: Unity Catalog's share / recipient / provider models and handler traits, routers, provider auth |
 | [`crates/provider`](crates/provider) | `opensharing-provider` | The provider domain: share, recipient, token and credential stores (memory), grants, sealed secrets, the admin API service, and the catalog, policy and context they plug into the protocol |
 | [`crates/postgres`](crates/postgres) | `opensharing-postgres` | The Postgres store (sqlx, embedded migrations) |
 | [`crates/sqlite`](crates/sqlite) | `opensharing-sqlite` | The SQLite store (sqlx, embedded migrations), for single-node deployments |
@@ -21,20 +20,21 @@ composable sharing server that maps shares onto any catalog.
 | [`crates/neon`](crates/neon) | `opensharing-neon` | The server as a Neon Function (deployment artifact, not published) |
 
 The protocol is defined in [`proto/opensharing/v1`](proto/opensharing/v1),
-and the provider admin API (wire-compatible with the Databricks Delta Sharing
-REST API) in [`proto/unitycatalog/{shares,recipients,providers}`](proto/unitycatalog).
-Their OpenAPI documents are [`openapi/sharing.yaml`](openapi/sharing.yaml) and
-[`openapi/admin.yaml`](openapi/admin.yaml). The design is in
+and its OpenAPI document is [`openapi/sharing.yaml`](openapi/sharing.yaml).
+The provider admin API (wire-compatible with the Databricks Delta Sharing REST
+API) is Unity Catalog's `unitycatalog.{shares,recipients,providers}.v1`, defined
+in [mangrove](https://github.com/open-lakehouse/mangrove). The design is in
 [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 The crates moved here from
 [mangrove](https://github.com/open-lakehouse/mangrove), a Unity Catalog
-implementation, together with the shares, recipients and providers APIs.
-Unity Catalog stays an optional integration: the server's `unity` feature adds a
-Unity Catalog REST catalog source and local storage access through
-`olai-uc-storage-access` (storage credentials and external locations, with
-their UC admin routes). Without it, no crate here depends on a
-catalog's models (CI's `catalog-independence` job enforces this).
+implementation. Unity Catalog stays an optional integration: the server's
+`unity` feature adds a Unity Catalog REST catalog source and local storage
+access through `olai-uc-storage-access` (storage credentials and external
+locations, with their UC admin routes). Without it, the only Unity Catalog
+crates here are the admin API's models and handler traits (`olai-uc-common`
+and `olai-uc-handlers`, shares, recipients and providers only). CI's
+`catalog-independence` job enforces this.
 
 ## Development
 

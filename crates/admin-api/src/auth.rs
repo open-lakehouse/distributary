@@ -16,7 +16,7 @@ use axum::http::request::Parts;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 
-use crate::error::{Error, Result};
+use crate::{Error, Result};
 
 /// An authenticated provider: the operator of a sharing server, allowed on the
 /// admin API.

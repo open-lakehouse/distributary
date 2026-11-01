@@ -12,7 +12,6 @@ rust-version.workspace = true
 
 [dependencies]
 # local dependencies in alphabetical order
-opensharing-admin = { path = "../admin", version = "0.0.1", optional = true }
 opensharing-admin-api = { path = "../admin-api", version = "0.0.1", optional = true }
 opensharing-api = { path = "../api", version = "0.0.1" }
 opensharing-engine = { path = "../engine", version = "0.0.1" }
@@ -46,8 +45,8 @@ required-features = ["testing"]
 [features]
 default = ["admin"]
 # The provider admin API service (shares, permissions, recipients, activation
-# links) on the handler traits `opensharing-admin-api` generates.
-admin = ["dep:opensharing-admin", "dep:opensharing-admin-api"]
+# links) on the Unity Catalog handler traits `opensharing-admin-api` exposes.
+admin = ["dep:opensharing-admin-api"]
 # `testing::round_trips`, the conformance suite every store implementation runs.
 testing = ["tokio/macros"]
 

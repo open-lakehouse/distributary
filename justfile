@@ -6,11 +6,6 @@
 
 set dotenv-load
 
-# The provider admin API packages. They have their own codegen pipeline
-# (buf.gen.admin.yaml + trestle.admin.yaml -> crates/admin), so the protocol
-# pipeline excludes them.
-ADMIN_PROTOS := "proto/unitycatalog/shares proto/unitycatalog/recipients proto/unitycatalog/providers"
-
 # the OpenSharing server as a Neon Function
 mod neon 'crates/neon/justfile'
 
@@ -26,25 +21,20 @@ generate: generate-proto generate-code
 # generate the buffa models and the OpenAPI specs from proto/
 [group('codegen')]
 generate-proto:
-    buf generate proto {{ prepend('--exclude-path ', ADMIN_PROTOS) }}
-    buf generate proto --template buf.gen.admin.yaml {{ prepend('--path ', ADMIN_PROTOS) }}
+    buf generate proto
     just generate-openapi
 
-# generate the OpenAPI specs: the protocol (merged with the hand-written NDJSON paths) and the admin API
+# generate the OpenAPI spec of the protocol, merged with the hand-written NDJSON paths
 [group('codegen')]
 generate-openapi:
     mkdir -p openapi/sharing-gen
-    buf generate proto --template buf.gen.openapi.yaml {{ prepend('--exclude-path ', ADMIN_PROTOS) }}
+    buf generate proto --template buf.gen.openapi.yaml
     uv run --with pyyaml python3 dev/scripts/merge_sharing_openapi.py \
       openapi/sharing-gen/openapi.yaml \
       openapi/sharing-query-paths.yaml \
       openapi/sharing.yaml
     rm -rf openapi/sharing-gen
     bunx @redocly/cli bundle openapi/sharing.yaml > /dev/null
-    buf generate proto --template buf.gen.openapi.yaml {{ prepend('--path ', ADMIN_PROTOS) }}
-    mv openapi/sharing-gen/openapi.yaml openapi/admin.yaml
-    rm -rf openapi/sharing-gen
-    bunx @redocly/cli bundle openapi/admin.yaml > /dev/null
 
 # The NDJSON table query RPCs are intentionally excluded from the proto service
 # and implemented by hand (see `crates/common/src/query_extractors.rs`).
@@ -52,12 +42,9 @@ generate-openapi:
 # generate server/client/extractor code from proto/ (run after `buf generate`)
 [group('codegen')]
 generate-code:
-    buf build --output descriptors.bin proto {{ prepend('--exclude-path ', ADMIN_PROTOS) }}
+    buf build --output descriptors.bin proto
     trestle generate --config trestle.yaml --descriptors descriptors.bin
     rm descriptors.bin
-    buf build --output admin-descriptors.bin proto {{ prepend('--path ', ADMIN_PROTOS) }}
-    trestle generate --config trestle.admin.yaml --descriptors admin-descriptors.bin
-    rm admin-descriptors.bin
     just fmt
 
 # patch a sibling's crates (e.g. `trestle`, `mangrove`) from its checkout while the crates.io proxy hides a fresh release

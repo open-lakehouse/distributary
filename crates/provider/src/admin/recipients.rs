@@ -1,12 +1,12 @@
 //! The recipient handlers: recipients, their tokens and activation links.
 
 use async_trait::async_trait;
-use opensharing_admin::models::recipients::v1::{
+use opensharing_admin_api::RecipientHandler;
+use opensharing_admin_api::recipients::v1::{
     AuthenticationType, CreateRecipientRequest, DeleteRecipientRequest, GetRecipientRequest,
     ListRecipientsRequest, ListRecipientsResponse, Recipient, RecipientToken,
     RotateRecipientTokenRequest, UpdateRecipientRequest,
 };
-use opensharing_admin_api::RecipientHandler;
 
 use super::{AdminAction, ProviderService, identifier};
 use crate::Result;

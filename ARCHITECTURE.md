@@ -238,10 +238,11 @@ rotating, and redeeming an activation code (of concurrent redemptions exactly
 one succeeds). The SQL stores run each in one transaction. `testing::round_trips`
 checks all of this, the concurrent redemption included, against every store.
 
-The admin API is built the same way as the protocol. Trestle generates the
-`ShareHandler<Cx>`, `RecipientHandler<Cx>` and `ProviderHandler<Cx>` traits and
-their route functions into `opensharing-admin-api` (from
-`trestle.admin.yaml`). The hand-written routers there (`shares_router`,
+The admin API is built the same way as the protocol. The
+`ShareHandler<Cx>`, `RecipientHandler<Cx>` and `ProviderHandler<Cx>` traits,
+their route functions and their error are Unity Catalog's (`olai-uc-handlers`,
+over the `olai-uc-common` models), re-exported by `opensharing-admin-api`. The
+hand-written routers there (`shares_router`,
 `recipients_router`, `providers_router`, `admin_router`) bind them, and the
 request context `Cx` is extracted per request. `opensharing-provider`
 implements the share and recipient traits in a custom `ProviderService<Cx>`,
@@ -310,7 +311,7 @@ and the admin API:
 The crates are now layered:
 
 ```
-wire        opensharing-common            opensharing-admin
+wire        opensharing-common            (olai-uc-common)
 surface     opensharing-api               opensharing-admin-api   generated traits + routers, barebones
 engine      opensharing-engine                                    the protocol over ports, formats, vending
 domain      opensharing-provider                                  share mapping, recipients, tokens, grants
@@ -399,13 +400,14 @@ to host them. The layering:
   `ShareObject` for share entries and the trestle crates'
   `RegisteredCredential` / `VendedCredential` for vending.
 - The provider admin API for shares, permissions and recipients needs no
-  catalog, and it is optional (feature `admin`). Its traits and routers are
-  generated into `opensharing-admin-api`, and implemented by
-  `opensharing-provider`. Its models come from `opensharing-admin`
-  (`proto/unitycatalog/{shares,recipients,providers}`,
-  moved from mangrove with the `unitycatalog.*` package names and wire format
-  unchanged, 2026-10-30). The package names match the Unity Catalog resources
-  they mirror and the `/api/2.1/unity-catalog` prefix they mount under.
+  catalog runtime, and it is optional (feature `admin`). Its models, handler
+  traits, route functions and error come from mangrove: `olai-uc-common` and
+  `olai-uc-handlers` with only the `shares`, `recipients` and `providers`
+  resources, so the API is wire-identical to Unity Catalog's. The protos
+  briefly lived here (2026-10-30) and went back to mangrove on 2026-11-01.
+  `opensharing-admin-api` re-exports them and adds the routers and provider
+  auth; `opensharing-provider` implements the traits. No UC client, store or
+  other resource comes with them (CI's `catalog-independence` job).
 - Unity Catalog comes in only through `opensharing-server`'s `unity` feature
   (`src/unity/`): the UC
   REST `CatalogSource`, the `olai-uc-storage-access` store, and the

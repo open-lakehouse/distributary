@@ -20,7 +20,6 @@ target/
 .env
 # Transient descriptor set written by `just generate-code`.
 descriptors.bin
-admin-descriptors.bin
 # Transient gnostic output of `just generate-openapi`.
 openapi/sharing-gen/
 

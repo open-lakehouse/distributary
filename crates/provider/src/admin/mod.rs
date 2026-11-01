@@ -1,6 +1,6 @@
 //! The provider admin API (feature `admin`), in the Databricks Delta Sharing
-//! REST shape (`/api/2.1/unity-catalog/…`), with the models from
-//! `opensharing-admin`:
+//! REST shape (`/api/2.1/unity-catalog/…`), with Unity Catalog's models
+//! (re-exported by `opensharing-admin-api`):
 //!
 //! - `shares`: create / list / get / update (add, remove or update data objects)
 //!   / delete, and `shares/{name}/permissions` (grant `SELECT` to recipients);
@@ -8,7 +8,7 @@
 //!   update / delete, and `recipients/{name}/rotate-token`.
 //!
 //! The surface itself — the [`ShareHandler`] and [`RecipientHandler`] traits and
-//! their routers — is generated in `opensharing-admin-api`, generic over the
+//! their routers — comes from `opensharing-admin-api`, generic over the
 //! request context `Cx`. [`ProviderService`] implements both over the
 //! [`SharingStore`] and [`Secrets`]: token issuing, activation links and sealing
 //! need more than a plain resource store. Every handler first asks the

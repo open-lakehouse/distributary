@@ -10,11 +10,11 @@ use axum::body::Body;
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::{Request, StatusCode};
-use opensharing_admin::models::recipients::v1::{
+use opensharing_admin_api::recipients::v1::{
     CreateRecipientRequest, DeleteRecipientRequest, GetRecipientRequest, ListRecipientsRequest,
     ListRecipientsResponse, Recipient, RotateRecipientTokenRequest, UpdateRecipientRequest,
 };
-use opensharing_admin::models::shares::v1::{
+use opensharing_admin_api::shares::v1::{
     CreateShareRequest, DeleteShareRequest, GetPermissionsRequest, GetPermissionsResponse,
     GetShareRequest, ListSharesRequest, ListSharesResponse, Share, UpdatePermissionsRequest,
     UpdatePermissionsResponse, UpdateShareRequest,
@@ -101,7 +101,7 @@ impl ShareHandler<Principal> for Host {
         _request: UpdateShareRequest,
         _context: Principal,
     ) -> Result<Share> {
-        Err(Error::not_implemented("update_share"))
+        Err(Error::NotImplemented("update_share"))
     }
 
     async fn delete_share(&self, request: DeleteShareRequest, context: Principal) -> Result<()> {
@@ -127,7 +127,7 @@ impl ShareHandler<Principal> for Host {
         _request: UpdatePermissionsRequest,
         _context: Principal,
     ) -> Result<UpdatePermissionsResponse> {
-        Err(Error::not_implemented("update_permissions"))
+        Err(Error::NotImplemented("update_permissions"))
     }
 }
 
@@ -288,6 +288,33 @@ async fn handler_errors_use_the_error_envelope() {
     .await;
     assert_eq!(status, StatusCode::NOT_IMPLEMENTED);
     assert_eq!(body["errorCode"], "NOT_IMPLEMENTED");
+}
+
+#[tokio::test]
+async fn errors_carry_the_unity_catalog_codes() {
+    let app = app();
+    let (status, body) = call(&app, "GET", "/shares/missing", Some("admin"), None).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(body["errorCode"], "RESOURCE_NOT_FOUND");
+    assert!(body["message"].is_string());
+
+    let (status, body) = call(&app, "GET", "/shares", None, None).await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(body["errorCode"], "UNAUTHENTICATED");
+}
+
+#[tokio::test]
+async fn internal_details_are_not_returned() {
+    use axum::response::IntoResponse;
+
+    let response = Error::generic("db password wrong").into_response();
+    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let body: Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(body["errorCode"], "INTERNAL_ERROR");
+    assert!(!body["message"].as_str().unwrap().contains("password"));
 }
 
 #[tokio::test]

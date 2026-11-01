@@ -42,7 +42,7 @@ configuration, Unity Catalog integration and the `sharing-server` binary. See
 | `postgres` | ✓ | The Postgres store (`opensharing-postgres`) |
 | `sqlite` | | The SQLite store (`opensharing-sqlite`), for single-node deployments |
 | `unity` | ✓ | Unity Catalog integration: the UC REST catalog source, and local storage access through `olai-uc-storage-access` (with `admin`, its `credentials` / `external-locations` admin routes); `storage_credentials: none` turns the local credentials off |
-| `admin` | ✓ | The provider admin API: `ProviderService` implements `opensharing-admin-api`'s generated `ShareHandler` / `RecipientHandler`, authorized by an `AdminPolicy` |
+| `admin` | ✓ | The provider admin API: `ProviderService` implements Unity Catalog's `ShareHandler` / `RecipientHandler`, authorized by an `AdminPolicy` |
 | `bin` | | The `sharing-server` binary (implies `postgres`, `sqlite`, `unity` and `admin`) |
 
 ### Without Unity Catalog

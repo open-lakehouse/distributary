@@ -3,13 +3,13 @@
 use std::collections::HashSet;
 
 use async_trait::async_trait;
-use opensharing_admin::models::shares::v1::{
+use opensharing_admin_api::ShareHandler;
+use opensharing_admin_api::shares::v1::{
     Action, CreateShareRequest, DataObject, DataObjectType, DeleteShareRequest,
     GetPermissionsRequest, GetPermissionsResponse, GetShareRequest, ListSharesRequest,
     ListSharesResponse, PrivilegeAssignment, Share, UpdatePermissionsRequest,
     UpdatePermissionsResponse, UpdateShareRequest,
 };
-use opensharing_admin_api::ShareHandler;
 
 use super::{AdminAction, ProviderService, identifier};
 use crate::catalog::shared_as;

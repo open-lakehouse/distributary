@@ -6,15 +6,15 @@
 //! merges the shares and recipients routers, which is what a sharing server
 //! serves. Paths are relative; a host nests them under [`ADMIN_PREFIX`].
 //!
-//! The routes bind to the generated route functions, so the request context
+//! The routes bind to Unity Catalog's generated route functions, so the request context
 //! `Cx` is extracted per request and handed to the handler, exactly as on the
 //! recipient-facing protocol in `opensharing-api`.
 
 use axum::routing::{Router, get, post};
 
-use crate::codegen::providers::{self, ProviderHandler};
-use crate::codegen::recipients::{self, RecipientHandler};
-use crate::codegen::shares::{self, ShareHandler};
+use unitycatalog_handlers::providers::{self, ProviderHandler};
+use unitycatalog_handlers::recipients::{self, RecipientHandler};
+use unitycatalog_handlers::shares::{self, ShareHandler};
 
 /// Where the admin API is conventionally mounted, matching the Databricks /
 /// Unity Catalog REST API.
