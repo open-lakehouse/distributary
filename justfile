@@ -60,10 +60,19 @@ generate-code:
     rm admin-descriptors.bin
     just fmt
 
-# patch the trestle crates (olai-*) from the trestle checkout while the crates.io proxy hides a fresh release
+# patch a sibling's crates (e.g. `trestle`, `mangrove`) from its checkout while the crates.io proxy hides a fresh release
 [group('dev')]
-configure-trestle-deps:
-    dev/scripts/crates-proxy.sh patch trestle
+patch-deps upstream:
+    dev/scripts/crates-proxy.sh patch {{ upstream }}
+
+# drop a sibling's local patch again
+[group('dev')]
+unpatch-deps upstream:
+    dev/scripts/crates-proxy.sh patch --remove {{ upstream }}
+
+# shortcut for `patch-deps trestle`
+[group('dev')]
+configure-trestle-deps: (patch-deps "trestle")
 
 # restore crates.io source/checksum lines in Cargo.lock after building under the patch
 [group('dev')]

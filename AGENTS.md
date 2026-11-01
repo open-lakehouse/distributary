@@ -24,9 +24,10 @@ for the design.
   depends on the admin crates or the provider. `opensharing-provider` never
   depends on sqlx; the store crates do. The same CI job guards this. See
   `ARCHITECTURE.md` ("Crate layering").
-- **Cargo.lock and trestle.** CI resolves the `olai-*` trestle crates from
-  crates.io. A lock resolved under the local `just configure-trestle-deps` patch
-  must not be committed: run `just lock-registry` first. `just check-lock`, which
+- **Cargo.lock and sibling crates.** CI resolves the crates of sibling repos
+  (trestle's `olai-*`, mangrove's `olai-uc-*` once unpinned) from crates.io. A
+  lock resolved under a local `just patch-deps <upstream>` patch must not be
+  committed: run `just lock-registry` first. `just check-lock`, which
   the pre-commit hook also runs (`git config core.hooksPath .githooks`), catches
   it. See "crates.io proxy" below.
 - **Every change ships with tests.** Never delete a passing test to green a
@@ -81,18 +82,23 @@ work. For a debugger, use `cargo build --profile debugging` (separate
 
 ## crates.io proxy
 
-The local crates.io proxy hides versions for 7 days after release. Trestle's
+The local crates.io proxy hides versions for 7 days after release. That applies
+to every crate a sibling repo publishes, not only trestle's: distributary
+consumes trestle's `olai-*` from crates.io and mangrove's `olai-uc-*` (git pins
+today). Trestle's
 [`docs/crates-proxy.md`](https://github.com/open-lakehouse/trestle/blob/main/docs/crates-proxy.md)
-has the full guide. In short:
+has the full guide; trestle only hosts the tooling. In short:
 
-- A fresh `olai-*` release: `just configure-trestle-deps`, build, then
-  `just lock-registry` before committing. The shim
-  `dev/scripts/crates-proxy.sh` runs trestle's `scripts/crates-proxy/` from a
-  trestle checkout next to this one (or `TRESTLE_ROOT`), and also works from
-  worktrees.
-- The mangrove crates (`olai-uc-*`) are git pins (`version` + `git` + `rev`).
-  Git dependencies bypass the proxy. Drop `git`/`rev` once the version is on
-  crates.io and older than 7 days.
+- A fresh sibling release: `just patch-deps <upstream>` (`trestle`, `mangrove`;
+  `configure-trestle-deps` is a shortcut), build, then `just lock-registry`
+  before committing. The shim `dev/scripts/crates-proxy.sh` runs trestle's
+  `scripts/crates-proxy/` and finds the checkouts next to this one (or via
+  `<REPO>_ROOT`), from worktrees too.
+- Chained releases: a fresh mangrove release usually needs a fresh trestle
+  release too. Patch both: `just patch-deps mangrove && just patch-deps trestle`.
+- The mangrove crates are git pins (`version` + `git` + `rev`), which bypass the
+  proxy. Switching one to a plain `version` that is less than 7 days old is the
+  case above. Otherwise just drop `git`/`rev`.
 
 ## Commits and pull requests
 
