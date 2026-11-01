@@ -5,8 +5,8 @@ assets in source catalogs, issues recipients their bearer tokens and grants them
 shares. This crate holds that state and its logic:
 
 - `store`: shares (lists of `ShareObject`s naming source-catalog assets),
-  recipients, tokens, grants and sealed storage credentials, behind targeted
-  per-resource traits, with an in-memory implementation;
+  recipients, tokens and grants, behind targeted per-resource traits, with an
+  in-memory implementation;
 - `secrets`: envelope encryption with lazy key rotation;
 - `recipients`: recipient tokens with one-time activation links;
 - `admin` (feature `admin`, on by default): `ProviderService`, which
@@ -26,9 +26,10 @@ request context:
 | `recipients::StoreAuthenticator` | `BearerAuthenticator<Recipient>` | `TokenReader` |
 | `catalog::StoreCatalog` | `ShareCatalog<Cx>` | `ShareReader` + `SourceRegistry` |
 | `catalog::GrantPolicy` | `SharingPolicy<Cx>` | `ShareReader` grants |
-| `credentials::StoreCredentialResolver` | trestle `CredentialResolver` | `CredentialStore` + `Secrets` |
 
-`sharing_service` wires them into a `SharingService`. A catalog that keeps
+`sharing_service` wires them into a `SharingService`, with the trestle
+`CredentialResolver` local-mode storage access mints from (the server's comes
+from `olai-uc-storage-access`; `NoCredentials` serves `file://` only). A catalog that keeps
 shares and recipients in its own store implements only the read-only
 `ShareReader` and `TokenReader` views and reuses the rest
 (`tests/host_store.rs`, which also uses its own context type).
@@ -40,8 +41,7 @@ The state is split into targeted traits rather than one generic resource store:
 - `ShareStore` holds shares and grants; its read-only view is `ShareReader`.
 - `RecipientStore` holds recipients and tokens; its read-only view is
   `TokenReader`.
-- `CredentialStore` holds sealed storage credentials and external locations.
-- `SharingStore` bundles all three.
+- `SharingStore` bundles both.
 
 Every implementation runs the conformance suite `testing::round_trips`
 (feature `testing`). The SQL implementations live outside this crate, so it

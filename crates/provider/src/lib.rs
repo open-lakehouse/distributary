@@ -4,15 +4,13 @@
 //! their bearer tokens and grants them shares. This crate holds that state and
 //! its logic, and plugs it into the protocol on both sides:
 //!
-//! - [`store`]: shares, recipients, tokens, grants and sealed storage
-//!   credentials, behind targeted per-resource traits, with an in-memory
-//!   implementation (the SQL ones live in their own crates);
+//! - [`store`]: shares, recipients, tokens and grants, behind targeted
+//!   per-resource traits, with an in-memory implementation (the SQL ones live
+//!   in their own crates);
 //! - [`secrets`]: envelope encryption with lazy key rotation;
 //! - [`recipients`]: recipient tokens with activation links;
 //! - `admin` (feature `admin`): the provider admin API service, implementing
-//!   the handler traits `opensharing-admin-api` generates;
-//! - [`credentials`]: the stored credentials local-mode storage access mints
-//!   from.
+//!   the handler traits `opensharing-admin-api` generates.
 //!
 //! # Plugging into the protocol
 //!
@@ -25,18 +23,19 @@
 //! - [`RecipientIdentity`], which a host implements for its own context;
 //! - [`StoreCatalog`], the `ShareCatalog` over the share mapping and the
 //!   source catalogs;
-//! - [`GrantPolicy`], the `SharingPolicy` over the grants;
-//! - [`StoreCredentialResolver`], the `CredentialResolver` local-mode vending
-//!   mints from.
+//! - [`GrantPolicy`], the `SharingPolicy` over the grants.
 //!
-//! [`sharing_service`] wires all of them into an `opensharing-engine`
-//! `SharingService`.
+//! [`sharing_service`] wires them into an `opensharing-engine` `SharingService`,
+//! with the `CredentialResolver` local-mode storage access mints from. The
+//! standalone server resolves through `olai-uc-storage-access` (feature
+//! `unity`); `NoCredentials` serves `file://` only.
 //!
 //! See `ARCHITECTURE.md` for the design.
 
 use std::sync::Arc;
 use std::time::Duration;
 
+use olai_credential_vending::CredentialResolver;
 use opensharing_engine::SharingService;
 use opensharing_engine::source::SourceRegistry;
 use opensharing_engine::vending::SourceStorageAccess;
@@ -44,7 +43,6 @@ use opensharing_engine::vending::SourceStorageAccess;
 #[cfg(feature = "admin")]
 pub mod admin;
 pub mod catalog;
-pub mod credentials;
 pub mod error;
 pub mod recipients;
 pub mod secrets;
@@ -56,8 +54,6 @@ mod tokens;
 pub use error::{Error, Result};
 
 use crate::catalog::{GrantPolicy, StoreCatalog};
-use crate::credentials::StoreCredentialResolver;
-use crate::secrets::Secrets;
 use crate::store::SharingStore;
 
 /// Who the caller in a request context is, as far as the provider's grants go.
@@ -82,18 +78,23 @@ pub struct AccessSettings {
 
 /// The recipient surface over the provider's state: shares resolved through
 /// `sources`, authorized by the grants, with storage access delegated to the
-/// sources or minted from the stored credentials.
-pub fn sharing_service<Cx: RecipientIdentity + Clone>(
+/// sources or, for local-mode sources, minted from the credentials `resolver`
+/// finds.
+pub fn sharing_service<Cx, R>(
     store: Arc<dyn SharingStore>,
-    secrets: Secrets,
     sources: SourceRegistry,
+    resolver: R,
     access: AccessSettings,
-) -> SharingService<Cx> {
+) -> SharingService<Cx>
+where
+    Cx: RecipientIdentity + Clone,
+    R: CredentialResolver + 'static,
+{
     let catalog = Arc::new(StoreCatalog::new(store.clone(), sources.clone()));
-    let policy = Arc::new(GrantPolicy::new(store.clone()));
+    let policy = Arc::new(GrantPolicy::new(store));
     let access = Arc::new(SourceStorageAccess::new(
         sources,
-        StoreCredentialResolver::new(store, secrets),
+        resolver,
         access.presign_ttl,
         access.aws_region,
     ));

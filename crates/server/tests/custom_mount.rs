@@ -15,7 +15,7 @@ use opensharing_engine::source::{AccessMode, RegisteredSource, SourceRegistry};
 use opensharing_provider::recipients::{activation_url, create_recipient};
 use opensharing_provider::secrets::Secrets;
 use opensharing_server::config::EncryptionConfig;
-use opensharing_server::embed::{self, Settings};
+use opensharing_server::embed::{self, Settings, Stores};
 use opensharing_server::store::memory::InMemoryStore;
 use opensharing_server::store::{ShareObject, ShareObjectKind, SharingStore};
 use serde_json::Value;
@@ -74,7 +74,7 @@ async fn serves_shares_provisioned_through_the_store() {
     let store: Arc<dyn SharingStore> = Arc::new(InMemoryStore::new());
     let secrets = Secrets::new(EncryptionConfig::insecure_dev().build().unwrap());
     let app = embed::router(
-        store.clone(),
+        &Stores::new(store.clone()),
         secrets.clone(),
         sources(),
         Settings {

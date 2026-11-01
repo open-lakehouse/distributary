@@ -1,7 +1,7 @@
 # opensharing-postgres
 
 The Postgres implementation of the [`opensharing-provider`](../provider)
-store traits (`ShareStore`, `RecipientStore`, `CredentialStore`), over sqlx,
+store traits (`ShareStore`, `RecipientStore`), over sqlx,
 with embedded migrations (`migrations/`).
 
 Migrations run only through `migrate`, never on startup. `ensure_schema_current`
@@ -12,3 +12,7 @@ connection string.
 
 `tests/store.rs` runs the provider's conformance suite when
 `SHARING_SERVER_TEST_DATABASE_URL` points at a disposable database.
+
+The migrations are numbered below 0200. `migrator_with` merges another
+component's into one migrator for the same database: the server adds the
+storage-access tables (`olai-uc-storage-access`, 02xx) that way.

@@ -8,8 +8,7 @@
 
 use crate::Error;
 use crate::store::{
-    ExternalLocationRecord, RecipientRecord, RecipientUpdate, SealedCredential, ShareObject,
-    ShareObjectKind, SharingStore, TokenRecord,
+    RecipientRecord, RecipientUpdate, ShareObject, ShareObjectKind, SharingStore, TokenRecord,
 };
 
 fn recipient_record(id: &str, name: &str) -> RecipientRecord {
@@ -220,25 +219,6 @@ pub async fn round_trips(store: &dyn SharingStore) {
             .await
             .unwrap()
     );
-
-    // Sealed credentials and external locations.
-    store
-        .put_credential(SealedCredential {
-            name: "cred".into(),
-            sealed: vec![7],
-        })
-        .await
-        .unwrap();
-    store
-        .put_external_location(ExternalLocationRecord {
-            name: "loc".into(),
-            url: "s3://bucket/prefix".into(),
-            credential_name: "cred".into(),
-        })
-        .await
-        .unwrap();
-    assert_eq!(store.list_external_locations().await.unwrap().len(), 1);
-    assert_eq!(store.get_credential("cred").await.unwrap().sealed, vec![7]);
 
     // Deleting a recipient cascades to its tokens and grants.
     store

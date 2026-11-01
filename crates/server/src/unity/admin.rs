@@ -1,181 +1,307 @@
-//! The Unity Catalog-shaped storage routes of the provider admin API:
-//! `credentials` and `external-locations`, the stored storage credentials local
-//! access vends from (credentials are sealed and never returned).
+//! The Unity Catalog storage routes of the provider admin API: `credentials`
+//! and `external-locations`, over the [`StorageAccessStore`] local access mints
+//! from. Credential secrets are sealed and never returned.
 //!
-//! [`routes`] is merged into the [admin routes](opensharing_provider::admin::routes), behind
-//! the same provider-token check. Unlike the share and recipient routes these
-//! are hand-written (the UC credential handler traits are not part of the UC
-//! models crate), but they take the same request context `Cx` and check the
-//! same [`AdminPolicy`](opensharing_provider::admin::AdminPolicy), with
-//! [`AdminAction::ManageStorage`].
+//! The routes and request types are the ones `olai-uc-handlers` generates for a
+//! Unity Catalog server; [`StorageAdmin`] implements their handler traits. The
+//! store owns the rules of the pair (a location names an existing credential,
+//! locations never overlap, a credential in use cannot be deleted). Each
+//! handler first checks the same
+//! [`AdminPolicy`](opensharing_provider::admin::AdminPolicy) as the share and
+//! recipient routes, with [`AdminAction::ManageStorage`].
+//!
+//! [`routes`] is merged into the [admin routes](crate::embed::admin_routes),
+//! behind the same provider-token check.
 
-use axum::Json;
-use axum::extract::{FromRequestParts, Path, State};
-use axum::http::StatusCode;
+use std::sync::Arc;
+
+use async_trait::async_trait;
+use axum::Router;
+use axum::extract::FromRequestParts;
 use axum::routing::get;
-use olai_credential_vending::RegisteredCredential;
-use olai_storage_credentials::StorageLocation;
-use serde_json::json;
-use unitycatalog_common::models::credentials::v1::Credential;
-use unitycatalog_common::models::external_locations::v1::CreateExternalLocationRequest;
+use unitycatalog_common::models::credentials::v1::{
+    CreateCredentialRequest, Credential, DeleteCredentialRequest, GetCredentialRequest,
+    ListCredentialsRequest, ListCredentialsResponse, Purpose, UpdateCredentialRequest,
+};
+use unitycatalog_common::models::external_locations::v1::{
+    CreateExternalLocationRequest, DeleteExternalLocationRequest, ExternalLocation,
+    GetExternalLocationRequest, ListExternalLocationsRequest, ListExternalLocationsResponse,
+    UpdateExternalLocationRequest,
+};
+use unitycatalog_handlers::credentials::CredentialHandler;
+use unitycatalog_handlers::external_locations::ExternalLocationHandler;
+use unitycatalog_handlers::{Error, Result};
+use unitycatalog_storage_access::{
+    CredentialSecrets, CredentialUpdate, ExternalLocationUpdate, Page, StorageAccessStore,
+};
 
-use crate::Error;
-use crate::store::{ExternalLocationRecord, SealedCredential};
-use opensharing_admin_api::Result as AdminResult;
 use opensharing_provider::admin::{AdminAction, ProviderService, identifier};
-use opensharing_provider::credentials::credential_aad;
 
-/// The credential and external-location routes, to merge into
-/// [`admin_router`](crate::embed::admin_router).
-pub fn routes<Cx>() -> axum::Router<ProviderService<Cx>>
+/// The credential and external-location handlers: the admin policy of
+/// `service`, over `storage`. Cheap to clone.
+pub struct StorageAdmin<Cx> {
+    service: ProviderService<Cx>,
+    storage: Arc<dyn StorageAccessStore>,
+}
+
+impl<Cx> Clone for StorageAdmin<Cx> {
+    fn clone(&self) -> Self {
+        Self {
+            service: self.service.clone(),
+            storage: self.storage.clone(),
+        }
+    }
+}
+
+impl<Cx: Send + Sync + 'static> StorageAdmin<Cx> {
+    pub fn new(service: ProviderService<Cx>, storage: Arc<dyn StorageAccessStore>) -> Self {
+        Self { service, storage }
+    }
+
+    async fn authorize(&self, context: &Cx) -> Result<()> {
+        self.service
+            .authorize(AdminAction::ManageStorage, context)
+            .await
+            .map_err(provider_error)
+    }
+}
+
+/// The admin policy's and name checks' errors, as the UC handlers report them.
+fn provider_error(e: opensharing_provider::Error) -> Error {
+    use opensharing_provider::Error as P;
+    match e {
+        P::NotFound => Error::NotFound,
+        P::NotAllowed => Error::NotAllowed,
+        P::Unauthenticated => Error::Unauthenticated,
+        P::InvalidArgument(message) => Error::InvalidArgument(message),
+        P::NotImplemented(what) => Error::NotImplemented(what),
+        other => Error::generic(other),
+    }
+}
+
+fn page(max_results: Option<i32>, token: Option<String>) -> Result<Page> {
+    let max_results = match max_results {
+        Some(max) if max < 0 => {
+            return Err(Error::invalid_argument("max_results must not be negative"));
+        }
+        Some(max) if max > 0 => Some(max as usize),
+        _ => None,
+    };
+    Ok(Page::new(max_results, token))
+}
+
+/// The credential and external-location routes over `admin`, to merge into
+/// [`admin_routes`](crate::embed::admin_routes).
+pub fn routes<Cx>(admin: StorageAdmin<Cx>) -> Router
 where
-    Cx: FromRequestParts<ProviderService<Cx>> + Send + Sync + 'static,
+    Cx: FromRequestParts<StorageAdmin<Cx>> + Send + Sync + 'static,
 {
-    axum::Router::new()
+    use unitycatalog_handlers::credentials::server as credentials;
+    use unitycatalog_handlers::external_locations::server as locations;
+
+    type S<Cx> = StorageAdmin<Cx>;
+    Router::new()
         .route(
             "/credentials",
-            get(list_credentials::<Cx>).post(create_credential::<Cx>),
+            get(credentials::list_credentials::<S<Cx>, Cx>)
+                .post(credentials::create_credential::<S<Cx>, Cx>),
         )
         .route(
             "/credentials/{name}",
-            axum::routing::delete(delete_credential::<Cx>),
+            get(credentials::get_credential::<S<Cx>, Cx>)
+                .patch(credentials::update_credential::<S<Cx>, Cx>)
+                .delete(credentials::delete_credential::<S<Cx>, Cx>),
         )
         .route(
             "/external-locations",
-            get(list_external_locations::<Cx>).post(create_external_location::<Cx>),
+            get(locations::list_external_locations::<S<Cx>, Cx>)
+                .post(locations::create_external_location::<S<Cx>, Cx>),
         )
         .route(
             "/external-locations/{name}",
-            axum::routing::delete(delete_external_location::<Cx>),
+            get(locations::get_external_location::<S<Cx>, Cx>)
+                .patch(locations::update_external_location::<S<Cx>, Cx>)
+                .delete(locations::delete_external_location::<S<Cx>, Cx>),
         )
+        .with_state(admin)
 }
 
-// -- storage credentials ------------------------------------------------------
-
-async fn create_credential<Cx: Send + Sync + 'static>(
-    State(state): State<ProviderService<Cx>>,
-    context: Cx,
-    Json(credential): Json<Credential>,
-) -> AdminResult<Json<serde_json::Value>> {
-    state
-        .authorize(AdminAction::ManageStorage, &context)
-        .await?;
-    identifier(&credential.name)?;
-    // Only the storage credential itself is kept; the catalog metadata is not.
-    let storage = RegisteredCredential::try_from(&credential).map_err(|_| {
-        Error::invalid_argument(
-            "a credential needs one of aws_iam_role, azure_service_principal, \
-             azure_managed_identity, azure_storage_key or databricks_gcp_service_account",
-        )
-    })?;
-    let sealed = state
-        .secrets()
-        .seal(
-            &credential_aad(&credential.name),
-            &serde_json::to_vec(&storage)?,
-        )
-        .await?;
-    state
-        .store()
-        .put_credential(SealedCredential {
-            name: credential.name.clone(),
-            sealed,
+#[async_trait]
+impl<Cx: Send + Sync + 'static> CredentialHandler<Cx> for StorageAdmin<Cx> {
+    async fn list_credentials(
+        &self,
+        request: ListCredentialsRequest,
+        context: Cx,
+    ) -> Result<ListCredentialsResponse> {
+        self.authorize(&context).await?;
+        let purpose = request
+            .purpose
+            .and_then(|p| p.as_known())
+            .filter(|p| *p != Purpose::PURPOSE_UNSPECIFIED);
+        let (credentials, next_page_token) = self
+            .storage
+            .list_credentials(purpose, page(request.max_results, request.page_token)?)
+            .await?;
+        Ok(ListCredentialsResponse {
+            credentials,
+            next_page_token,
+            ..Default::default()
         })
-        .await?;
-    Ok(Json(json!({ "name": credential.name })))
+    }
+
+    async fn create_credential(
+        &self,
+        request: CreateCredentialRequest,
+        context: Cx,
+    ) -> Result<Credential> {
+        self.authorize(&context).await?;
+        identifier(&request.name).map_err(provider_error)?;
+        let credential = Credential {
+            name: request.name,
+            comment: request.comment,
+            purpose: request.purpose,
+            read_only: request.read_only.unwrap_or(false),
+            azure_managed_identity: request.azure_managed_identity,
+            azure_service_principal: request.azure_service_principal,
+            azure_storage_key: request.azure_storage_key,
+            aws_iam_role: request.aws_iam_role,
+            databricks_gcp_service_account: request.databricks_gcp_service_account,
+            ..Default::default()
+        };
+        if CredentialSecrets::take(&mut credential.clone()).is_empty() {
+            return Err(Error::invalid_argument(
+                "a credential needs one of aws_iam_role, azure_service_principal, \
+                 azure_managed_identity, azure_storage_key or databricks_gcp_service_account",
+            ));
+        }
+        Ok(self.storage.create_credential(credential).await?)
+    }
+
+    async fn get_credential(
+        &self,
+        request: GetCredentialRequest,
+        context: Cx,
+    ) -> Result<Credential> {
+        self.authorize(&context).await?;
+        Ok(self.storage.get_credential(&request.name).await?)
+    }
+
+    /// `purpose` is fixed; the secrets are replaced only when the request sets
+    /// one.
+    async fn update_credential(
+        &self,
+        request: UpdateCredentialRequest,
+        context: Cx,
+    ) -> Result<Credential> {
+        self.authorize(&context).await?;
+        if let Some(name) = &request.new_name {
+            identifier(name).map_err(provider_error)?;
+        }
+        let secrets = CredentialSecrets::take(&mut Credential {
+            azure_managed_identity: request.azure_managed_identity,
+            azure_service_principal: request.azure_service_principal,
+            azure_storage_key: request.azure_storage_key,
+            aws_iam_role: request.aws_iam_role,
+            databricks_gcp_service_account: request.databricks_gcp_service_account,
+            ..Default::default()
+        });
+        let update = CredentialUpdate {
+            new_name: request.new_name,
+            comment: request.comment,
+            read_only: request.read_only,
+            owner: request.owner,
+            secrets: (!secrets.is_empty()).then_some(secrets),
+        };
+        Ok(self
+            .storage
+            .update_credential(&request.name, update)
+            .await?)
+    }
+
+    /// Refused while an external location uses the credential.
+    async fn delete_credential(&self, request: DeleteCredentialRequest, context: Cx) -> Result<()> {
+        self.authorize(&context).await?;
+        Ok(self.storage.delete_credential(&request.name).await?)
+    }
 }
 
-async fn list_credentials<Cx: Send + Sync + 'static>(
-    State(state): State<ProviderService<Cx>>,
-    context: Cx,
-) -> AdminResult<Json<serde_json::Value>> {
-    state
-        .authorize(AdminAction::ManageStorage, &context)
-        .await?;
-    let names: Vec<_> = state
-        .store()
-        .list_credentials()
-        .await?
-        .into_iter()
-        .map(|c| json!({ "name": c.name }))
-        .collect();
-    Ok(Json(json!({ "credentials": names })))
-}
+#[async_trait]
+impl<Cx: Send + Sync + 'static> ExternalLocationHandler<Cx> for StorageAdmin<Cx> {
+    async fn list_external_locations(
+        &self,
+        request: ListExternalLocationsRequest,
+        context: Cx,
+    ) -> Result<ListExternalLocationsResponse> {
+        self.authorize(&context).await?;
+        let (external_locations, next_page_token) = self
+            .storage
+            .list_external_locations(page(request.max_results, request.page_token)?)
+            .await?;
+        Ok(ListExternalLocationsResponse {
+            external_locations,
+            next_page_token,
+            ..Default::default()
+        })
+    }
 
-async fn delete_credential<Cx: Send + Sync + 'static>(
-    State(state): State<ProviderService<Cx>>,
-    context: Cx,
-    Path(name): Path<String>,
-) -> AdminResult<StatusCode> {
-    state
-        .authorize(AdminAction::ManageStorage, &context)
-        .await?;
-    state.store().delete_credential(&name).await?;
-    Ok(StatusCode::OK)
-}
+    /// Refused when the URL overlaps a registered location, in either
+    /// direction, so a storage path has at most one governing credential.
+    async fn create_external_location(
+        &self,
+        request: CreateExternalLocationRequest,
+        context: Cx,
+    ) -> Result<ExternalLocation> {
+        self.authorize(&context).await?;
+        identifier(&request.name).map_err(provider_error)?;
+        let location = ExternalLocation {
+            name: request.name,
+            url: request.url,
+            credential_name: request.credential_name,
+            read_only: request.read_only.unwrap_or(false),
+            comment: request.comment,
+            ..Default::default()
+        };
+        Ok(self.storage.create_external_location(location).await?)
+    }
 
-async fn create_external_location<Cx: Send + Sync + 'static>(
-    State(state): State<ProviderService<Cx>>,
-    context: Cx,
-    Json(request): Json<CreateExternalLocationRequest>,
-) -> AdminResult<Json<serde_json::Value>> {
-    state
-        .authorize(AdminAction::ManageStorage, &context)
-        .await?;
-    identifier(&request.name)?;
-    request
-        .url
-        .parse::<StorageLocation>()
-        .map_err(|e| Error::invalid_argument(format!("invalid url: {e}")))?;
-    state
-        .store()
-        .get_credential(&request.credential_name)
-        .await?;
-    let location = ExternalLocationRecord {
-        name: request.name,
-        url: request.url,
-        credential_name: request.credential_name,
-    };
-    state
-        .store()
-        .put_external_location(location.clone())
-        .await?;
-    Ok(Json(location_json(&location)))
-}
+    async fn get_external_location(
+        &self,
+        request: GetExternalLocationRequest,
+        context: Cx,
+    ) -> Result<ExternalLocation> {
+        self.authorize(&context).await?;
+        Ok(self.storage.get_external_location(&request.name).await?)
+    }
 
-fn location_json(location: &ExternalLocationRecord) -> serde_json::Value {
-    json!({
-        "name": location.name,
-        "url": location.url,
-        "credential_name": location.credential_name,
-    })
-}
+    async fn update_external_location(
+        &self,
+        request: UpdateExternalLocationRequest,
+        context: Cx,
+    ) -> Result<ExternalLocation> {
+        self.authorize(&context).await?;
+        if let Some(name) = &request.new_name {
+            identifier(name).map_err(provider_error)?;
+        }
+        let update = ExternalLocationUpdate {
+            new_name: request.new_name,
+            url: request.url,
+            credential_name: request.credential_name,
+            read_only: request.read_only,
+            comment: request.comment,
+            owner: request.owner,
+        };
+        Ok(self
+            .storage
+            .update_external_location(&request.name, update)
+            .await?)
+    }
 
-async fn list_external_locations<Cx: Send + Sync + 'static>(
-    State(state): State<ProviderService<Cx>>,
-    context: Cx,
-) -> AdminResult<Json<serde_json::Value>> {
-    state
-        .authorize(AdminAction::ManageStorage, &context)
-        .await?;
-    let locations: Vec<_> = state
-        .store()
-        .list_external_locations()
-        .await?
-        .iter()
-        .map(location_json)
-        .collect();
-    Ok(Json(json!({ "external_locations": locations })))
-}
-
-async fn delete_external_location<Cx: Send + Sync + 'static>(
-    State(state): State<ProviderService<Cx>>,
-    context: Cx,
-    Path(name): Path<String>,
-) -> AdminResult<StatusCode> {
-    state
-        .authorize(AdminAction::ManageStorage, &context)
-        .await?;
-    state.store().delete_external_location(&name).await?;
-    Ok(StatusCode::OK)
+    async fn delete_external_location(
+        &self,
+        request: DeleteExternalLocationRequest,
+        context: Cx,
+    ) -> Result<()> {
+        self.authorize(&context).await?;
+        Ok(self.storage.delete_external_location(&request.name).await?)
+    }
 }

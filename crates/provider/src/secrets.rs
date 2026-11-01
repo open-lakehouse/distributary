@@ -32,6 +32,12 @@ impl Secrets {
         }
     }
 
+    /// The envelope encryptor, for a component that seals its own secrets
+    /// under the same keys (the storage-access store).
+    pub fn encryptor(&self) -> &EnvelopeEncryptor {
+        &self.encryptor
+    }
+
     /// Seal `plaintext` under the active KEK, bound to `name`.
     pub async fn seal(&self, name: &str, plaintext: &[u8]) -> Result<Vec<u8>> {
         self.encryptor

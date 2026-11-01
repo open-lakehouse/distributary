@@ -81,10 +81,9 @@ async fn run(cli: Cli) -> Result<(), String> {
         Command::Healthcheck => healthcheck(config.port()).await,
         Command::RotateKeys => {
             let service = embed::start(&config).await?;
-            let (credentials, tokens) =
-                embed::rotate_keys(service.store.as_ref(), &service.secrets)
-                    .await
-                    .map_err(|e| e.to_string())?;
+            let (credentials, tokens) = embed::rotate_keys(&service.stores, &service.secrets)
+                .await
+                .map_err(|e| e.to_string())?;
             tracing::info!("re-wrapped {credentials} credential(s) and {tokens} pending token(s)");
             Ok(())
         }
@@ -92,7 +91,7 @@ async fn run(cli: Cli) -> Result<(), String> {
 }
 
 async fn migrate(config: &Config) -> Result<(), String> {
-    use opensharing_server::store::{postgres, sqlite};
+    use opensharing_server::store::{postgres, postgres_migrator, sqlite, sqlite_migrator};
     match &config.database {
         DatabaseConfig::Postgres {
             url, migration_url, ..
@@ -105,12 +104,16 @@ async fn migrate(config: &Config) -> Result<(), String> {
             let pool = postgres::connect(&url, 1)
                 .await
                 .map_err(|e| e.to_string())?;
-            postgres::migrate(&pool).await.map_err(|e| e.to_string())?;
+            postgres::migrate(&postgres_migrator(), &pool)
+                .await
+                .map_err(|e| e.to_string())?;
         }
         DatabaseConfig::Sqlite { url, .. } => {
             let url = url.value().ok_or("database url is not set")?;
             let pool = sqlite::connect(&url, 1).await.map_err(|e| e.to_string())?;
-            sqlite::migrate(&pool).await.map_err(|e| e.to_string())?;
+            sqlite::migrate(&sqlite_migrator(), &pool)
+                .await
+                .map_err(|e| e.to_string())?;
         }
         DatabaseConfig::Memory => {
             return Err("`migrate` needs a postgres or sqlite database".to_string());

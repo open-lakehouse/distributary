@@ -1,6 +1,6 @@
 //! The SQLite store, on a fresh database file.
 
-use opensharing_sqlite::{SqliteStore, connect, ensure_schema_current, migrate};
+use opensharing_sqlite::{MIGRATOR, SqliteStore, connect, ensure_schema_current, migrate};
 
 use opensharing_provider::testing::round_trips;
 
@@ -10,11 +10,11 @@ async fn sqlite_store_round_trips() {
     let url = format!("sqlite://{}", dir.path().join("sharing.db").display());
     let pool = connect(&url, 2).await.unwrap();
     assert!(
-        ensure_schema_current(&pool).await.is_err(),
+        ensure_schema_current(&MIGRATOR, &pool).await.is_err(),
         "pending migrations must be reported"
     );
-    migrate(&pool).await.unwrap();
-    ensure_schema_current(&pool).await.unwrap();
+    migrate(&MIGRATOR, &pool).await.unwrap();
+    ensure_schema_current(&MIGRATOR, &pool).await.unwrap();
     round_trips(&SqliteStore::new(pool)).await;
 }
 
@@ -25,7 +25,7 @@ async fn sqlite_state_survives_reconnecting() {
     let dir = tempfile::tempdir().unwrap();
     let url = format!("sqlite://{}", dir.path().join("sharing.db").display());
     let pool = connect(&url, 1).await.unwrap();
-    migrate(&pool).await.unwrap();
+    migrate(&MIGRATOR, &pool).await.unwrap();
     SqliteStore::new(pool.clone())
         .create_share("kept", None)
         .await
@@ -33,7 +33,7 @@ async fn sqlite_state_survives_reconnecting() {
     pool.close().await;
 
     let pool = connect(&url, 1).await.unwrap();
-    ensure_schema_current(&pool).await.unwrap();
+    ensure_schema_current(&MIGRATOR, &pool).await.unwrap();
     assert_eq!(
         SqliteStore::new(pool).get_share("kept").await.unwrap().name,
         "kept"

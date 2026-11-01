@@ -6,9 +6,8 @@ use std::sync::Mutex;
 use async_trait::async_trait;
 
 use super::{
-    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, RecipientUpdate,
-    SealedCredential, ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord,
-    now_millis,
+    RecipientRecord, RecipientStore, RecipientUpdate, ShareObject, ShareReader, ShareRecord,
+    ShareStore, TokenReader, TokenRecord, now_millis,
 };
 use crate::{Error, Result};
 
@@ -19,8 +18,6 @@ struct State {
     tokens: Vec<TokenRecord>,
     /// (share name, recipient name)
     grants: BTreeSet<(String, String)>,
-    credentials: BTreeMap<String, SealedCredential>,
-    locations: BTreeMap<String, ExternalLocationRecord>,
 }
 
 impl State {
@@ -304,53 +301,4 @@ impl RecipientStore for InMemoryStore {
 /// Orders tokens by creation, the SQL stores' `created_at, id` order.
 fn newest_last(a: &TokenRecord, b: &TokenRecord) -> std::cmp::Ordering {
     (a.created_at, &a.id).cmp(&(b.created_at, &b.id))
-}
-
-#[async_trait]
-impl CredentialStore for InMemoryStore {
-    async fn put_credential(&self, credential: SealedCredential) -> Result<()> {
-        self.state()
-            .credentials
-            .insert(credential.name.clone(), credential);
-        Ok(())
-    }
-
-    async fn get_credential(&self, name: &str) -> Result<SealedCredential> {
-        self.state()
-            .credentials
-            .get(name)
-            .cloned()
-            .ok_or(Error::NotFound)
-    }
-
-    async fn list_credentials(&self) -> Result<Vec<SealedCredential>> {
-        Ok(self.state().credentials.values().cloned().collect())
-    }
-
-    async fn delete_credential(&self, name: &str) -> Result<()> {
-        self.state()
-            .credentials
-            .remove(name)
-            .map(|_| ())
-            .ok_or(Error::NotFound)
-    }
-
-    async fn put_external_location(&self, location: ExternalLocationRecord) -> Result<()> {
-        self.state()
-            .locations
-            .insert(location.name.clone(), location);
-        Ok(())
-    }
-
-    async fn list_external_locations(&self) -> Result<Vec<ExternalLocationRecord>> {
-        Ok(self.state().locations.values().cloned().collect())
-    }
-
-    async fn delete_external_location(&self, name: &str) -> Result<()> {
-        self.state()
-            .locations
-            .remove(name)
-            .map(|_| ())
-            .ok_or(Error::NotFound)
-    }
 }

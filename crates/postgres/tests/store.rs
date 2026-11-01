@@ -9,7 +9,7 @@
 //!   cargo test -p opensharing-postgres --test store
 //! ```
 
-use opensharing_postgres::{PostgresStore, connect, ensure_schema_current, migrate};
+use opensharing_postgres::{MIGRATOR, PostgresStore, connect, ensure_schema_current, migrate};
 
 use opensharing_provider::testing::round_trips;
 
@@ -21,10 +21,10 @@ async fn postgres_store_round_trips() {
     };
     let pool = connect(&url, 2).await.unwrap();
     assert!(
-        ensure_schema_current(&pool).await.is_err(),
+        ensure_schema_current(&MIGRATOR, &pool).await.is_err(),
         "pending migrations must be reported"
     );
-    migrate(&pool).await.unwrap();
-    ensure_schema_current(&pool).await.unwrap();
+    migrate(&MIGRATOR, &pool).await.unwrap();
+    ensure_schema_current(&MIGRATOR, &pool).await.unwrap();
     round_trips(&PostgresStore::new(pool)).await;
 }

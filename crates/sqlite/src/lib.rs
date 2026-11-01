@@ -16,24 +16,35 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use sqlx::Row;
 use sqlx::error::ErrorKind;
+pub use sqlx::migrate::{Migration, Migrator};
 use sqlx::sqlite::{
     SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqlitePoolOptions, SqliteRow,
 };
-use sqlx::{Row, migrate::Migrator};
 
-use crate::sql::{APPLIED_MIGRATIONS, AppliedMigration, check_applied};
+use crate::sql::{APPLIED_MIGRATIONS, AppliedMigration, check_applied, merged};
 use opensharing_provider::store::{
-    CredentialStore, ExternalLocationRecord, RecipientRecord, RecipientStore, RecipientUpdate,
-    SealedCredential, ShareObject, ShareReader, ShareRecord, ShareStore, TokenReader, TokenRecord,
-    now_millis,
+    RecipientRecord, RecipientStore, RecipientUpdate, ShareObject, ShareReader, ShareRecord,
+    ShareStore, TokenReader, TokenRecord, now_millis,
 };
 use opensharing_provider::{Error, Result};
 
 mod sql;
 
-/// The embedded migrations.
+/// The embedded migrations, versioned below 0200.
+///
+/// Another component keeping tables in the same database merges its own into
+/// one migrator with [`migrator_with`]; the 02xx range belongs to the
+/// storage-access tables of `olai-uc-storage-access`.
 pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+
+/// [`MIGRATOR`] merged with `extra`, so the database keeps one ordered
+/// `_sqlx_migrations` ledger. Pass the result to [`migrate`] and
+/// [`ensure_schema_current`].
+pub fn migrator_with(extra: impl IntoIterator<Item = Migration>) -> Migrator {
+    merged(&MIGRATOR, extra)
+}
 
 /// Connect a pool to `url` (`sqlite://path/to/sharing.db`), creating the
 /// database file if needed.
@@ -51,16 +62,16 @@ pub async fn connect(url: &str, max_connections: u32) -> Result<SqlitePool> {
         .map_err(|e| Error::generic(format!("connecting to sqlite: {e}")))
 }
 
-/// Apply all pending migrations.
-pub async fn migrate(pool: &SqlitePool) -> Result<()> {
-    MIGRATOR
+/// Apply all of `migrator`'s pending migrations.
+pub async fn migrate(migrator: &Migrator, pool: &SqlitePool) -> Result<()> {
+    migrator
         .run(pool)
         .await
         .map_err(|e| Error::generic(format!("running migrations: {e}")))
 }
 
-/// Fail unless the database schema is exactly what this binary expects.
-pub async fn ensure_schema_current(pool: &SqlitePool) -> Result<()> {
+/// Fail unless the database schema is exactly `migrator`'s.
+pub async fn ensure_schema_current(migrator: &Migrator, pool: &SqlitePool) -> Result<()> {
     let applied: Vec<AppliedMigration> =
         match sqlx::query_as(APPLIED_MIGRATIONS).fetch_all(pool).await {
             Ok(rows) => rows,
@@ -68,7 +79,7 @@ pub async fn ensure_schema_current(pool: &SqlitePool) -> Result<()> {
             Err(sqlx::Error::Database(e)) if e.message().contains("no such table") => Vec::new(),
             Err(e) => return Err(db(e)),
         };
-    check_applied(&MIGRATOR, &applied)
+    check_applied(migrator, &applied)
 }
 
 /// A SQLite [`SharingStore`](opensharing_provider::store::SharingStore).
@@ -524,95 +535,4 @@ async fn insert_token(conn: &mut sqlx::SqliteConnection, t: &TokenRecord) -> Res
     .await
     .map_err(db)?;
     Ok(())
-}
-
-#[async_trait]
-impl CredentialStore for SqliteStore {
-    async fn put_credential(&self, c: SealedCredential) -> Result<()> {
-        sqlx::query(
-            "INSERT INTO credentials (name, sealed) VALUES (?, ?) \
-             ON CONFLICT (name) DO UPDATE SET sealed = excluded.sealed",
-        )
-        .bind(c.name)
-        .bind(c.sealed)
-        .execute(&self.pool)
-        .await
-        .map_err(db)?;
-        Ok(())
-    }
-
-    async fn get_credential(&self, name: &str) -> Result<SealedCredential> {
-        let row = sqlx::query("SELECT name, sealed FROM credentials WHERE name = ?")
-            .bind(name)
-            .fetch_one(&self.pool)
-            .await
-            .map_err(db)?;
-        Ok(SealedCredential {
-            name: row.try_get("name").map_err(db)?,
-            sealed: row.try_get("sealed").map_err(db)?,
-        })
-    }
-
-    async fn list_credentials(&self) -> Result<Vec<SealedCredential>> {
-        sqlx::query("SELECT name, sealed FROM credentials ORDER BY name")
-            .fetch_all(&self.pool)
-            .await
-            .map_err(db)?
-            .iter()
-            .map(|row| {
-                Ok(SealedCredential {
-                    name: row.try_get("name").map_err(db)?,
-                    sealed: row.try_get("sealed").map_err(db)?,
-                })
-            })
-            .collect()
-    }
-
-    async fn delete_credential(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM credentials WHERE name = ?")
-            .bind(name)
-            .execute(&self.pool)
-            .await
-            .map_err(db)?;
-        affected(done.rows_affected())
-    }
-
-    async fn put_external_location(&self, l: ExternalLocationRecord) -> Result<()> {
-        sqlx::query(
-            "INSERT INTO external_locations (name, url, credential_name) VALUES (?, ?, ?) \
-             ON CONFLICT (name) DO UPDATE SET url = excluded.url, credential_name = excluded.credential_name",
-        )
-        .bind(l.name)
-        .bind(l.url)
-        .bind(l.credential_name)
-        .execute(&self.pool)
-        .await
-        .map_err(db)?;
-        Ok(())
-    }
-
-    async fn list_external_locations(&self) -> Result<Vec<ExternalLocationRecord>> {
-        sqlx::query("SELECT name, url, credential_name FROM external_locations ORDER BY name")
-            .fetch_all(&self.pool)
-            .await
-            .map_err(db)?
-            .iter()
-            .map(|row| {
-                Ok(ExternalLocationRecord {
-                    name: row.try_get("name").map_err(db)?,
-                    url: row.try_get("url").map_err(db)?,
-                    credential_name: row.try_get("credential_name").map_err(db)?,
-                })
-            })
-            .collect()
-    }
-
-    async fn delete_external_location(&self, name: &str) -> Result<()> {
-        let done = sqlx::query("DELETE FROM external_locations WHERE name = ?")
-            .bind(name)
-            .execute(&self.pool)
-            .await
-            .map_err(db)?;
-        affected(done.rows_affected())
-    }
 }

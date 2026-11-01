@@ -20,6 +20,10 @@
 //!     token: { env: UC_TOKEN }
 //!     catalogs: ["*"]
 //!     access: delegated
+//! # Where local-mode sources find storage credentials: `local` (the default,
+//! # registered through the admin API) or `none` (a deployed catalog vends
+//! # them, through delegated sources).
+//! storage_credentials: local
 //! ```
 //!
 //! Environment overrides: `DATABASE_URL` / `DATABASE_URL_UNPOOLED` set the
@@ -93,6 +97,23 @@ pub struct Config {
     /// The S3 region used when presigning (else `AWS_REGION`).
     #[serde(default)]
     pub aws_region: Option<String>,
+    /// Where local-mode sources find storage credentials.
+    #[serde(default)]
+    pub storage_credentials: StorageCredentials,
+}
+
+/// Where local-mode storage access finds its credentials.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StorageCredentials {
+    /// Credentials and the external locations they govern, registered through
+    /// the admin API and kept in the server's database (feature `unity`).
+    #[default]
+    Local,
+    /// None: a deployed catalog is the authority over storage, and vends
+    /// credentials to delegated sources. The credential routes are not
+    /// mounted, and local-mode sources serve `file://` only.
+    None,
 }
 
 fn default_presign_ttl() -> u64 {
@@ -111,6 +132,7 @@ impl Default for Config {
             sources: Vec::new(),
             presign_ttl_secs: default_presign_ttl(),
             aws_region: None,
+            storage_credentials: StorageCredentials::default(),
         }
     }
 }
@@ -426,6 +448,14 @@ sources:
         // `uc` serves every catalog and is listed first.
         assert_eq!(demo.name, "uc");
         assert_eq!(demo.access, AccessMode::Delegated);
+        assert_eq!(config.storage_credentials, StorageCredentials::Local);
+    }
+
+    #[test]
+    fn storage_credentials_can_be_turned_off() {
+        let config: Config = serde_yml::from_str("storage_credentials: none").unwrap();
+        assert_eq!(config.storage_credentials, StorageCredentials::None);
+        assert!(serde_yml::from_str::<Config>("storage_credentials: remote").is_err());
     }
 
     #[test]

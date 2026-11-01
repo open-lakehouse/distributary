@@ -1,9 +1,23 @@
-//! What the SQL stores share: checking an applied schema against the
-//! migrations embedded in this binary.
+//! What the SQL stores share: composing migrators, and checking an applied
+//! schema against the migrations embedded in this binary.
 
-use sqlx::migrate::Migrator;
+use std::borrow::Cow;
+
+use sqlx::migrate::{Migration, Migrator};
 
 use opensharing_provider::{Error, Result};
+
+/// `base` merged with `extra`, in version order: one migrator, so the database
+/// keeps one `_sqlx_migrations` ledger.
+pub(crate) fn merged(base: &Migrator, extra: impl IntoIterator<Item = Migration>) -> Migrator {
+    let mut migrations: Vec<Migration> = base.iter().cloned().collect();
+    migrations.extend(extra);
+    migrations.sort_by_key(|m| m.version);
+    Migrator {
+        migrations: Cow::Owned(migrations),
+        ..Migrator::DEFAULT
+    }
+}
 
 /// One row of sqlx's `_sqlx_migrations`: version, checksum, success.
 pub(crate) type AppliedMigration = (i64, Vec<u8>, bool);

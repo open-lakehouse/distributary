@@ -32,13 +32,14 @@ delta_kernel_default_engine = { package = "buoyant_kernel_engine", version = "0.
   "rustls",
 ] }
 
-# The Unity Catalog crates behind `opensharing-server`'s `unity` feature (the
-# UC REST catalog source and the UC-shaped credential / external-location admin
-# routes). Git-pinned to mangrove until it publishes a release with the
-# `credential-vending` feature (the crates.io 0.0.5 predates it); switch to the
-# crates.io version then. Fine while every sharing crate is `release = false`.
-unitycatalog-client = { package = "olai-uc-client", version = "0.0.5", git = "https://github.com/open-lakehouse/mangrove", rev = "71b202990a4410d7c347d5d433cc52ba75a36d30" }
-unitycatalog-common = { package = "olai-uc-common", version = "0.0.5", git = "https://github.com/open-lakehouse/mangrove", rev = "71b202990a4410d7c347d5d433cc52ba75a36d30" }
+# The Unity Catalog crates behind `opensharing-server`'s `unity` feature: the
+# UC REST catalog source, the storage-access store (credentials and the
+# external locations they govern) and the generated credential /
+# external-location handler traits the admin routes implement.
+unitycatalog-client = { package = "olai-uc-client", version = "0.0.7" }
+unitycatalog-common = { package = "olai-uc-common", version = "0.0.7" }
+unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.1", default-features = false }
+unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.1" }
 
 async-trait = "0.1.83"
 axum = { version = "0.8" }

@@ -25,11 +25,21 @@ opensharing-engine = { path = "../engine", version = "0.0.1" }
 opensharing-postgres = { path = "../postgres", version = "0.0.1", optional = true }
 opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false }
 opensharing-sqlite = { path = "../sqlite", version = "0.0.1", optional = true }
-# The Unity Catalog source and the UC-shaped credential admin routes (feature `unity`).
+# The Unity Catalog source, the storage-access store and the UC credential /
+# external-location admin routes (feature `unity`).
 unitycatalog-client = { workspace = true, optional = true }
 unitycatalog-common = { workspace = true, optional = true, features = [
   "axum",
   "credential-vending",
+] }
+unitycatalog-handlers = { workspace = true, optional = true, features = [
+  "axum",
+  "credentials",
+  "external_locations",
+] }
+unitycatalog-storage-access = { workspace = true, optional = true, features = [
+  "memory",
+  "vending",
 ] }
 
 # workspace dependencies in alphabetical order
@@ -63,23 +73,29 @@ required-features = ["admin"]
 chrono = { workspace = true }
 olai-storage-credentials = { workspace = true }
 opensharing-provider = { path = "../provider", version = "0.0.1", default-features = false, features = ["testing"] }
+tempfile = "3"
 tower = { workspace = true }
 
 [features]
 default = ["postgres", "unity", "admin"]
-# The Postgres store (`opensharing-postgres`).
-postgres = ["dep:opensharing-postgres"]
+# The Postgres store (`opensharing-postgres`; with `unity`, the storage-access
+# tables too).
+postgres = ["dep:opensharing-postgres", "unitycatalog-storage-access?/postgres"]
 # The SQLite store (`opensharing-sqlite`), for single-node deployments.
-sqlite = ["dep:opensharing-sqlite"]
-# Unity Catalog integration: the UC REST catalog source and the UC-shaped
-# credential / external-location admin routes. Without it the crate depends on
-# no catalog's models (the share and recipient admin API remains, with `admin`).
+sqlite = ["dep:opensharing-sqlite", "unitycatalog-storage-access?/sqlite"]
+# Unity Catalog integration: the UC REST catalog source, and local storage
+# access through `olai-uc-storage-access` (credentials and external locations,
+# with their UC admin routes). Without it the crate depends on no catalog's
+# models (the share and recipient admin API remains, with `admin`), and local
+# access serves `file://` only.
 unity = [
   "dep:futures",
   "dep:olai-credential-vending",
   "dep:olai-storage-credentials",
   "dep:unitycatalog-client",
   "dep:unitycatalog-common",
+  "dep:unitycatalog-handlers",
+  "dep:unitycatalog-storage-access",
   "dep:uuid",
 ]
 # The provider admin API (shares, permissions, recipients, activation links;

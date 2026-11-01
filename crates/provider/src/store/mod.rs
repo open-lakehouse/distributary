@@ -1,11 +1,11 @@
 //! The store ports: the sharing server's own state.
 //!
-//! The store holds what the provider configures — shares (each a list of
+//! The store holds what the provider configures: shares (each a list of
 //! [`ShareObject`]s naming assets in a source catalog), recipients, their bearer
-//! tokens and the share grants — plus, for local storage access, sealed storage
-//! credentials and the external locations that map storage URLs onto them.
-//! Secrets are stored only sealed (see [`crate::secrets`]) and tokens only as
-//! digests.
+//! tokens and the share grants. Secrets are stored only sealed (see
+//! [`crate::secrets`]) and tokens only as digests. The storage credentials local
+//! access mints from are not kept here: [`sharing_service`](crate::sharing_service)
+//! takes them as a `CredentialResolver`.
 //!
 //! The state is split by resource into targeted traits, not one generic
 //! resource store, because the set of resources is small and fixed:
@@ -17,9 +17,7 @@
 //!   must not be observed half-done is one atomic store operation: creating a
 //!   recipient with its first token, rotating a token, redeeming an activation
 //!   code.
-//! - [`CredentialStore`] holds sealed storage credentials and external
-//!   locations.
-//! - [`SharingStore`] bundles all three.
+//! - [`SharingStore`] bundles both.
 //!
 //! A catalog that keeps shares and recipients in its own store can implement
 //! just [`ShareReader`] and [`TokenReader`] and reuse the server's
@@ -186,22 +184,6 @@ pub struct RecipientUpdate {
     pub expires_at: Option<Option<i64>>,
 }
 
-/// A storage credential, sealed. The clear value is a
-/// [`RegisteredCredential`](olai_credential_vending::RegisteredCredential) (JSON).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SealedCredential {
-    pub name: String,
-    pub sealed: Vec<u8>,
-}
-
-/// A storage URL prefix governed by a stored credential.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExternalLocationRecord {
-    pub name: String,
-    pub url: String,
-    pub credential_name: String,
-}
-
 // The store is split by resource, with read-only views for what the
 // recipient-facing protocol needs. Lookups of something missing return
 // [`Error::NotFound`](crate::Error::NotFound); creating something that exists
@@ -290,29 +272,13 @@ pub trait RecipientStore: TokenReader {
     async fn reseal_token(&self, token_id: &str, current: &[u8], sealed: Vec<u8>) -> Result<bool>;
 }
 
-/// Sealed storage credentials and the external locations that map storage URLs
-/// onto them (local storage access).
-#[async_trait]
-pub trait CredentialStore: Send + Sync + 'static {
-    async fn put_credential(&self, credential: SealedCredential) -> Result<()>;
-    async fn get_credential(&self, name: &str) -> Result<SealedCredential>;
-    /// All credentials, ordered by name.
-    async fn list_credentials(&self) -> Result<Vec<SealedCredential>>;
-    async fn delete_credential(&self, name: &str) -> Result<()>;
-
-    async fn put_external_location(&self, location: ExternalLocationRecord) -> Result<()>;
-    /// All external locations, ordered by name.
-    async fn list_external_locations(&self) -> Result<Vec<ExternalLocationRecord>>;
-    async fn delete_external_location(&self, name: &str) -> Result<()>;
-}
-
 /// All of the server's state: what the standalone server runs on. Implemented
-/// for every type that implements the three stores.
+/// for every type that implements both stores.
 ///
 /// An `Arc<dyn SharingStore>` coerces to any of the narrower stores and readers.
-pub trait SharingStore: ShareStore + RecipientStore + CredentialStore {}
+pub trait SharingStore: ShareStore + RecipientStore {}
 
-impl<T: ShareStore + RecipientStore + CredentialStore + ?Sized> SharingStore for T {}
+impl<T: ShareStore + RecipientStore + ?Sized> SharingStore for T {}
 
 /// The current time in milliseconds since the epoch.
 pub fn now_millis() -> i64 {
