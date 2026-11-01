@@ -52,8 +52,8 @@ crate uses no catalog's models: the store, recipient tokens and activation,
 sealed secrets, the static source and storage access remain, and `admin` adds
 the share / recipient admin API. A catalog that already has discovery and an
 admin surface implements `CatalogSource`, provisions shares and recipients
-through the `SharingStore` (`opensharing_provider::recipients::issue_token`
-issues tokens), and serves `embed::router` (`tests/custom_mount.rs`).
+through the `SharingStore` (`opensharing_provider::recipients::create_recipient`
+issues the first token), and serves `embed::router` (`tests/custom_mount.rs`).
 
 A host that wants less than the whole server composes the library crates
 instead: see [`opensharing-provider`](../provider) for reusing the share

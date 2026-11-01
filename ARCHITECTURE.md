@@ -159,7 +159,10 @@ Each catalog source chooses its mode (`access = delegated | local`).
 Storage credentials (local mode) and catalog-source client secrets (PATs,
 OAuth client secrets) are sealed with `olai-store`'s `EnvelopeEncryptor`.
 This is the same envelope encryption `uc-server` uses. Recipient tokens are
-stored only as hashes.
+stored as sha256 digests. The clear token is also kept sealed until the
+recipient opens its activation link, which is the one time it is handed out.
+The activation code is derived from the token and stored only as a digest, so
+a database read alone yields neither tokens nor working links.
 
 `KeyProvider` is async and keyed by KEK id, so an external key store slots in
 without format changes. Rotation is **lazy**. When a read opens a blob sealed
@@ -207,9 +210,19 @@ service crate:
   `recipients` and `credentials` protos under `/api/2.1/unity-catalog/…`,
   gated by a provider token. It is mounted only when provider tokens are
   configured. Recipient creation issues a token and an activation URL, and
-  `GET /api/1.0/opensharing/activations/{code}` returns the profile. The
+  `GET /api/1.0/opensharing/activations/{code}` returns the profile, once.
+  Rotation keeps the old tokens valid for the request's
+  `existing_token_expire_in_seconds` (never longer than they had). The
   activation route belongs to the protocol router, so tokens provisioned
-  straight through the `RecipientStore` activate too.
+  straight through `opensharing_provider::recipients` activate too.
+
+`RecipientStore` follows the same shape as the storage-access port: the
+domain rules (generating, sealing and expiring tokens, the grace period) live
+in `opensharing_provider::recipients`, and each write is a single atomic store
+operation. Those operations are creating a recipient with its first token,
+rotating, and redeeming an activation code (of concurrent redemptions exactly
+one succeeds). The SQL stores run each in one transaction. `testing::round_trips`
+checks all of this, the concurrent redemption included, against every store.
 
 The admin API is built the same way as the protocol. Trestle generates the
 `ShareHandler<Cx>`, `RecipientHandler<Cx>` and `ProviderHandler<Cx>` traits and
