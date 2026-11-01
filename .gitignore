@@ -10,7 +10,7 @@
 .isaac/
 
 # Rust
-# Local-only cargo config (e.g. the `just configure-trestle-deps` path patches).
+# Local-only cargo config (e.g. the `dev/scripts/crates-proxy.sh patch` path patches).
 .cargo/
 target/
 # Cargo.lock IS committed: the workspace ships a binary (`sharing-server`) and a

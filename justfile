@@ -60,10 +60,20 @@ generate-code:
     rm admin-descriptors.bin
     just fmt
 
-# patch the trestle crates (olai-*) from ../trestle (once per clone behind a crates.io proxy)
+# patch the trestle crates (olai-*) from the trestle checkout while the crates.io proxy hides a fresh release
 [group('dev')]
 configure-trestle-deps:
-    dev/scripts/configure-trestle-deps.sh
+    dev/scripts/crates-proxy.sh patch trestle
+
+# restore crates.io source/checksum lines in Cargo.lock after building under the patch
+[group('dev')]
+lock-registry:
+    dev/scripts/crates-proxy.sh lock-registry
+
+# fail if Cargo.lock still resolves a crate from a local [patch]
+[group('dev')]
+check-lock:
+    dev/scripts/crates-proxy.sh check-lock
 
 # format all code (Rust, protobuf, Python)
 [group('meta')]

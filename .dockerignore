@@ -4,7 +4,7 @@
 # Rust build artifacts.
 target/
 
-# Local-only cargo config (e.g. the `just configure-trestle-deps` path patches):
+# Local-only cargo config (e.g. the `dev/scripts/crates-proxy.sh patch` path patches):
 # the image resolves the olai-* crates from crates.io, like CI.
 .cargo/
 

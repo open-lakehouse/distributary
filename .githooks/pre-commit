@@ -5,7 +5,8 @@
 # 1. Delegates to any globally-configured hooks (e.g. a secret scanner). A
 #    repo-local core.hooksPath overrides the global one, so we re-invoke the
 #    global hook here to avoid disabling it for this repo.
-# 2. Verifies Cargo.lock trestle crates still list crates.io registry entries.
+# 2. Verifies Cargo.lock resolves no crate from a local [patch] (trestle's
+#    scripts/crates-proxy/check-lock.sh; skipped without a trestle checkout).
 #
 set -e
 
@@ -20,9 +21,9 @@ if [ -n "$global_hooks" ]; then
   fi
 fi
 
-# --- 2) Cargo.lock must list the olai-* trestle crates from crates.io --------
+# --- 2) Cargo.lock must not be resolved under a local [patch] ----------------
 if git diff --cached --name-only | grep -qx 'Cargo.lock'; then
-  if ! bash dev/scripts/check-cargo-lock-trestle.sh; then
+  if ! bash dev/scripts/crates-proxy.sh --if-available check-lock; then
     exit 1
   fi
 fi
