@@ -104,6 +104,24 @@ files.extend-exclude = ["crates/common/src/models/_gen/**/*", "openapi/**/*"]
 # to avoid having to name fields r#type
 typ = "typ"
 
+# Local dev/test builds: line tables for workspace crates, so panics and
+# backtraces keep file:line, and no debug info for dependencies, which is most of
+# target/. Many parallel worktrees each carry a target/, so this matters on disk.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
+# Full debug info for a debugger: `cargo build --profile debugging`
+# (builds into target/debugging/, separate from the dev artifacts).
+[profile.debugging]
+inherits = "dev"
+debug = true
+
+[profile.debugging.package."*"]
+debug = true
+
 # The Neon Function bundle (crates/neon; `just neon build`). Neon's limit is
 # 10 MiB zipped: with `opt-level = 3` the server is ~11 MiB zipped, with "z"
 # ~7 MiB (aarch64-unknown-linux-gnu, see ARCHITECTURE.md).
