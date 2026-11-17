@@ -89,6 +89,8 @@ fn assignments(recipients: Vec<String>) -> Vec<PrivilegeAssignment> {
 
 #[async_trait]
 impl<Cx: Send + Sync + 'static> ShareHandler<Cx> for ProviderService<Cx> {
+    type Error = AdminError;
+
     async fn list_shares(
         &self,
         _request: ListSharesRequest,

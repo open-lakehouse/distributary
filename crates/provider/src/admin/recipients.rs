@@ -54,6 +54,8 @@ impl<Cx> ProviderService<Cx> {
 
 #[async_trait]
 impl<Cx: Send + Sync + 'static> RecipientHandler<Cx> for ProviderService<Cx> {
+    type Error = AdminError;
+
     async fn list_recipients(
         &self,
         _request: ListRecipientsRequest,

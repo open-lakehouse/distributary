@@ -61,6 +61,8 @@ impl Host {
 
 #[async_trait]
 impl ShareHandler<Principal> for Host {
+    type Error = Error;
+
     async fn list_shares(
         &self,
         _request: ListSharesRequest,
@@ -133,6 +135,8 @@ impl ShareHandler<Principal> for Host {
 
 #[async_trait]
 impl RecipientHandler<Principal> for Host {
+    type Error = Error;
+
     async fn list_recipients(
         &self,
         _request: ListRecipientsRequest,

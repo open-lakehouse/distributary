@@ -187,7 +187,7 @@ async fn blocking<T: Send + 'static>(f: impl FnOnce() -> Result<T> + Send + 'sta
 
 /// A kernel failure while reading a table: an internal error (→ 500), whose
 /// detail is logged rather than returned to the recipient.
-fn kernel_error(err: delta_kernel::Error) -> Error {
+fn kernel_error(err: delta_kernel::KernelError) -> Error {
     Error::generic(format!("Delta Kernel Error: {err}"))
 }
 

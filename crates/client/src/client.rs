@@ -238,9 +238,10 @@ impl DeltaSharingClient {
         let response = self.client.get(url).send().await?;
         response.error_for_status_ref()?;
         let result = response.bytes().await?;
-        // split newlines and parse each as json
+        // One JSON value per line; the answer ends with a newline.
         let line_data: Vec<MetadataResponse> = result
             .split(|c| *c == b'\n')
+            .filter(|line| !line.is_empty())
             .map(::serde_json::from_slice)
             .try_collect()?;
         let mut protocol = None;
