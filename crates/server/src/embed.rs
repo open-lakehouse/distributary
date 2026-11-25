@@ -12,7 +12,7 @@ use opensharing_engine::SharingService;
 use opensharing_engine::source::SourceRegistry;
 use opensharing_engine::vending::NoCredentials;
 use opensharing_provider::recipients::{
-    Recipient, StoreAuthenticator, activation_router, rewrap_tokens,
+    Recipient, RewrapReport, StoreAuthenticator, activation_router, rewrap_tokens,
 };
 use opensharing_provider::secrets::Secrets;
 use opensharing_provider::{AccessSettings, sharing_service};
@@ -319,6 +319,9 @@ pub async fn start(config: &Config) -> std::result::Result<Service, String> {
 
 /// Re-wrap every stored secret under the active key. Returns how many were
 /// re-wrapped (storage credentials, tokens awaiting activation).
+///
+/// Both sweeps run to the end. If either left a value under its old key, this
+/// fails and names each one, so the old key is not retired too early.
 pub async fn rotate_keys(stores: &Stores, secrets: &Secrets) -> Result<(usize, usize)> {
     #[cfg(feature = "unity")]
     let credentials = match &stores.storage_access {
@@ -326,10 +329,27 @@ pub async fn rotate_keys(stores: &Stores, secrets: &Secrets) -> Result<(usize, u
             .rewrap_secrets()
             .await
             .map_err(|e| crate::Error::generic(format!("re-wrapping storage credentials: {e}")))?,
-        None => 0,
+        None => RewrapReport::default(),
     };
     #[cfg(not(feature = "unity"))]
-    let credentials = 0;
+    let credentials = RewrapReport::default();
     let tokens = rewrap_tokens(stores.sharing.as_ref(), secrets).await?;
-    Ok((credentials, tokens))
+
+    let failed: Vec<String> = [("storage credential", &credentials), ("token", &tokens)]
+        .into_iter()
+        .flat_map(|(what, report)| {
+            report.failed.iter().map(move |f| {
+                let kek = f.kek_id.as_deref().unwrap_or("unknown key");
+                format!("{what} {} (under {kek}, {:?}): {}", f.id, f.kind, f.message)
+            })
+        })
+        .collect();
+    if !failed.is_empty() {
+        return Err(crate::Error::generic(format!(
+            "{} value(s) were not re-wrapped: {}",
+            failed.len(),
+            failed.join("; ")
+        )));
+    }
+    Ok((credentials.rewrapped as usize, tokens.rewrapped as usize))
 }

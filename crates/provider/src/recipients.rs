@@ -27,6 +27,8 @@ use crate::store::{RecipientRecord, RecipientStore, TokenReader, TokenRecord};
 use crate::{Error, Result};
 use opensharing_api::{Error as ApiError, Result as ApiResult};
 use unitycatalog_sharing::recipients as rules;
+
+pub use unitycatalog_common::rotation::{RewrapFailure, RewrapFailureKind, RewrapReport};
 pub use unitycatalog_sharing::tokens::token_hash;
 
 /// Where activation links are served, under the server's public URL.
@@ -216,6 +218,9 @@ async fn activation(
 }
 
 /// Re-wrap every token awaiting activation under the active key.
-pub async fn rewrap_tokens(store: &dyn RecipientStore, secrets: &Secrets) -> Result<usize> {
+///
+/// The sweep goes on past a token it cannot re-wrap and lists it in
+/// [`RewrapReport::failed`]; only a failure to read the store is an error.
+pub async fn rewrap_tokens(store: &dyn RecipientStore, secrets: &Secrets) -> Result<RewrapReport> {
     Ok(rules::rewrap_tokens(store, secrets.encryptor()).await?)
 }

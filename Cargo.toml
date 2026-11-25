@@ -39,11 +39,11 @@ delta_kernel_default_engine = { package = "buoyant_kernel_engine", version = "0.
 # and the sharing store (shares, recipients, tokens and grants) the provider
 # runs on. Their models, clients and handler traits are gated per resource, so
 # no default features: each dependent enables only the resources it uses.
-unitycatalog-client = { package = "olai-uc-client", version = "0.0.8", default-features = false }
-unitycatalog-common = { package = "olai-uc-common", version = "0.0.8", default-features = false }
-unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.2", default-features = false }
-unitycatalog-sharing = { package = "olai-uc-sharing", version = "0.0.2" }
-unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.3" }
+unitycatalog-client = { package = "olai-uc-client", version = "0.0.15", default-features = false }
+unitycatalog-common = { package = "olai-uc-common", version = "0.0.13", default-features = false }
+unitycatalog-handlers = { package = "olai-uc-handlers", version = "0.0.8", default-features = false }
+unitycatalog-sharing = { package = "olai-uc-sharing", version = "0.0.6" }
+unitycatalog-storage-access = { package = "olai-uc-storage-access", version = "0.0.8" }
 
 async-trait = "0.1.83"
 axum = { version = "0.8" }
@@ -60,11 +60,11 @@ itertools = { version = "0.14.0" }
 buffa = { version = "0.7", features = ["json"] }
 buffa-types = { version = "0.7", features = ["json"] }
 object_store = { version = "0.14", features = ["azure", "aws", "gcp"] }
-olai-credential-vending = { version = "0.0.4" }
-olai-http = { version = "0.0.11" }
-olai-storage-credentials = { version = "0.0.3" }
-olai-store = { version = "0.0.8" }
-olai-vended-store = { version = "0.0.4", default-features = false }
+olai-credential-vending = { version = "0.0.9" }
+olai-http = { version = "0.0.14" }
+olai-storage-credentials = { version = "0.0.6" }
+olai-store = { version = "0.0.9" }
+olai-vended-store = { version = "0.0.8", default-features = false }
 reqwest = { version = "0.13", default-features = false, features = [
   "rustls",
   "http2",

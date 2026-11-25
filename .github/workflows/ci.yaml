@@ -125,13 +125,14 @@ jobs:
           }
           admin_uc_only() { # <description> <cargo tree args...>
             # Only olai-uc-common / olai-uc-handlers, only the admin resources,
-            # and the sharing store.
+            # and the sharing store. `sealing` is the sharing store's envelope
+            # encryption (olai-store), not a resource.
             local what="$1" crates features; shift
             crates=$(cargo tree --locked -e normal --prefix none "$@" \
               | grep -E '^olai-uc-' | grep -vE '^olai-uc-(common|handlers|sharing) ' || true)
             features=$(cargo tree --locked -e features --prefix none "$@" \
               | grep -oE '^olai-uc-(common|handlers) feature "[^"]+"' \
-              | grep -vE 'feature "(axum|http|providers|recipients|shares)"$' | sort -u || true)
+              | grep -vE 'feature "(axum|http|providers|recipients|sealing|shares)"$' | sort -u || true)
             if [ -n "$crates$features" ]; then
               printf '%s\n' "$crates" "$features"
               echo "::error::$what"
@@ -139,13 +140,15 @@ jobs:
             fi
           }
           sharing_only() { # <description> <cargo tree args...>
-            # Only the sharing store, and olai-uc-common (its error) with no
-            # resource feature.
+            # Only the sharing store, and olai-uc-common (its error and
+            # rotation report) with no resource feature: only `sealing`, which
+            # the sharing store turns on for its envelope encryption.
             local what="$1" crates features; shift
             crates=$(cargo tree --locked -e normal --prefix none "$@" \
               | grep -E '^olai-uc-' | grep -vE '^olai-uc-(common|sharing) ' || true)
             features=$(cargo tree --locked -e features --prefix none "$@" \
-              | grep -oE '^olai-uc-common feature "[^"]+"' | sort -u || true)
+              | grep -oE '^olai-uc-common feature "[^"]+"' \
+              | grep -vE 'feature "sealing"$' | sort -u || true)
             if [ -n "$crates$features" ]; then
               printf '%s\n' "$crates" "$features"
               echo "::error::$what"
