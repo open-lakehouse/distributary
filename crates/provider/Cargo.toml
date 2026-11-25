@@ -19,6 +19,8 @@ opensharing-engine = { path = "../engine", version = "0.0.1" }
 # and grants). Only the shared error of olai-uc-common: see the
 # catalog-independence CI job.
 unitycatalog-sharing = { workspace = true, features = ["memory"] }
+# The rotation report of the token sweep, with no resource feature.
+unitycatalog-common = { workspace = true }
 
 # workspace dependencies in alphabetical order
 async-trait = { workspace = true }

@@ -726,6 +726,20 @@ async fn rotating_keys_rewraps_stored_secrets() {
         )
         .await;
 
+    // Rotating without v1 cannot open what v1 sealed: the sweep reports every
+    // value instead of passing, and leaves them under v1.
+    let without_v1 = secrets(key("v2", 2), vec![]);
+    let stores = sqlite_stores(&url, &without_v1).await;
+    let err = embed::rotate_keys(&stores, &without_v1)
+        .await
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("2 value(s) were not re-wrapped"), "{err}");
+    assert!(
+        err.contains("storage credential") && err.contains("token"),
+        "{err}"
+    );
+
     // Rotate: v2 becomes active, v1 is retired.
     let rotating = secrets(key("v2", 2), vec![key("v1", 1)]);
     let stores = sqlite_stores(&url, &rotating).await;
